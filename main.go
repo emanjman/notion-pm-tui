@@ -6,7 +6,9 @@ import (
 	"log"
 	"os"
 
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/emanuelpecson/notion-project-tui/internal/models"
+	"github.com/emanuelpecson/notion-project-tui/internal/tui"
 	"github.com/jomei/notionapi"
 	"github.com/joho/godotenv"
 )
@@ -33,27 +35,15 @@ func main() {
 		log.Fatalf("Error querying database: %v", err)
 	}
 
-	fmt.Printf("📊 Total projects found: %d\n\n", len(projects))
+	fmt.Printf("📊 Total projects found: %d\n", len(projects))
+	fmt.Println("Starting TUI...\n")
 
-	fmt.Println("Projects:")
-	fmt.Println("─────────────────────────────────────────────────")
-	for i, project := range projects {
-		icon := project.GetIcon()
-		if icon == "" {
-			icon = "•"
-		}
+	// Create and run the TUI
+	tuiModel := tui.NewProjectsListModel(projects)
+	p := tea.NewProgram(tuiModel)
 
-		fmt.Printf("%d. %s %s\n", i+1, icon, project.GetTitle())
-		fmt.Printf("   Status: %s | Group: %s | Branches: %d\n",
-			project.GetStatus(),
-			project.GetGroup(),
-			project.GetBranchCount())
-
-		types := project.GetTypes()
-		if len(types) > 0 {
-			fmt.Printf("   Types: %v\n", types)
-		}
-		fmt.Println()
+	if _, err := p.Run(); err != nil {
+		log.Fatalf("Error running TUI: %v", err)
 	}
 }
 
