@@ -1,6 +1,9 @@
 # Environment variables (contains secrets)
 .env
 
+# User-specific config
+.notion-tui-config
+
 # Go build artifacts
 *.exe
 *.exe~

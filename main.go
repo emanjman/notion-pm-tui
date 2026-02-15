@@ -1,15 +1,14 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"os"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/emanuelpecson/notion-project-tui/internal/models"
+	"github.com/emanuelpecson/notion-project-tui/internal/config"
+	"github.com/emanuelpecson/notion-project-tui/internal/notion"
 	"github.com/emanuelpecson/notion-project-tui/internal/tui"
-	"github.com/jomei/notionapi"
 	"github.com/joho/godotenv"
 )
 
@@ -28,52 +27,29 @@ func main() {
 
 	fmt.Printf("📊 Database ID: %s\n\n", databaseID)
 
-	client := notionapi.NewClient(notionapi.Token(apiToken))
+	// Create Notion client
+	notionClient := notion.NewClient(apiToken)
 
-	projects, err := fetchAllProjects(client, notionapi.DatabaseID(databaseID))
+	projects, err := notionClient.FetchAllProjects(databaseID)
 	if err != nil {
 		log.Fatalf("Error querying database: %v", err)
 	}
 
 	fmt.Printf("📊 Total projects found: %d\n", len(projects))
+
+	// Load config (optional - provides empty config if file doesn't exist)
+	cfg := config.LoadConfig(".notion-tui-config")
+	if len(cfg.PriorityProjectIDs) > 0 {
+		fmt.Printf("⚙️  Priority projects configured: %d\n", len(cfg.PriorityProjectIDs))
+	}
+
 	fmt.Println("Starting TUI...\n")
 
-	// Create and run the TUI
-	tuiModel := tui.NewProjectsListModel(projects)
+	// Create and run the TUI with the root model
+	tuiModel := tui.NewRootModel(projects, notionClient, cfg)
 	p := tea.NewProgram(tuiModel)
 
 	if _, err := p.Run(); err != nil {
 		log.Fatalf("Error running TUI: %v", err)
 	}
-}
-
-// fetchAllProjects queries the Notion database and returns all projects, handling pagination.
-func fetchAllProjects(client *notionapi.Client, dbID notionapi.DatabaseID) ([]models.Project, error) {
-	var projects []models.Project
-	var cursor notionapi.Cursor
-
-	for {
-		req := &notionapi.DatabaseQueryRequest{
-			PageSize: 100,
-		}
-		if cursor != "" {
-			req.StartCursor = cursor
-		}
-
-		resp, err := client.Database.Query(context.Background(), dbID, req)
-		if err != nil {
-			return nil, fmt.Errorf("database query failed: %w", err)
-		}
-
-		for _, page := range resp.Results {
-			projects = append(projects, models.NewProject(page))
-		}
-
-		if !resp.HasMore || resp.NextCursor == "" {
-			break
-		}
-		cursor = notionapi.Cursor(resp.NextCursor)
-	}
-
-	return projects, nil
 }

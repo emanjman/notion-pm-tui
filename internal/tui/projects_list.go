@@ -27,10 +27,11 @@ type ListItem struct {
 
 // ProjectsListModel is the Bubble Tea model for the projects list view
 type ProjectsListModel struct {
-	groups       []ProjectGroup
-	items        []ListItem      // Flattened list of headers + projects
-	cursor       int             // Currently selected item index
-	selectedItem *ListItem       // The currently selected item
+	groups          []ProjectGroup
+	items           []ListItem      // Flattened list of headers + projects
+	cursor          int             // Currently selected item index
+	selectedItem    *ListItem       // The currently selected item
+	collapsedGroups map[string]bool // Track which status groups are collapsed
 }
 
 // keyMap defines the keyboard shortcuts
@@ -63,18 +64,21 @@ var keys = keyMap{
 // NewProjectsListModel creates a new projects list model
 func NewProjectsListModel(projects []models.Project) ProjectsListModel {
 	groups := GroupProjectsByStatus(projects)
-	items := flattenGroupsToItems(groups)
+	collapsedGroups := make(map[string]bool)
+	items := flattenGroupsToItems(groups, collapsedGroups)
 
 	return ProjectsListModel{
-		groups: groups,
-		items:  items,
-		cursor: 0,
+		groups:          groups,
+		items:           items,
+		cursor:          0,
+		collapsedGroups: collapsedGroups,
 	}
 }
 
 // flattenGroupsToItems converts grouped projects into a flat list of items
 // with headers and projects interleaved
-func flattenGroupsToItems(groups []ProjectGroup) []ListItem {
+// Respects collapsed state - collapsed groups don't include their projects
+func flattenGroupsToItems(groups []ProjectGroup, collapsedGroups map[string]bool) []ListItem {
 	var items []ListItem
 
 	for _, group := range groups {
@@ -84,12 +88,14 @@ func flattenGroupsToItems(groups []ProjectGroup) []ListItem {
 			Group: group.Status,
 		})
 
-		// Add all projects in this group
-		for i := range group.Projects {
-			items = append(items, ListItem{
-				Type:    ItemTypeProject,
-				Project: &group.Projects[i],
-			})
+		// Only add projects if this group is not collapsed
+		if !collapsedGroups[group.Status] {
+			for i := range group.Projects {
+				items = append(items, ListItem{
+					Type:    ItemTypeProject,
+					Project: &group.Projects[i],
+				})
+			}
 		}
 	}
 
@@ -120,10 +126,22 @@ func (m ProjectsListModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 		case key.Matches(msg, keys.Enter):
-			// For now, just store the selected item
-			// Later we'll navigate to the project detail view
 			if m.cursor < len(m.items) {
-				m.selectedItem = &m.items[m.cursor]
+				item := m.items[m.cursor]
+
+				// If cursor is on a header, toggle its collapsed state
+				if item.Type == ItemTypeHeader {
+					m.collapsedGroups[item.Group] = !m.collapsedGroups[item.Group]
+					// Rebuild items list
+					m.items = flattenGroupsToItems(m.groups, m.collapsedGroups)
+					// Keep cursor in valid range
+					if m.cursor >= len(m.items) {
+						m.cursor = len(m.items) - 1
+					}
+				} else {
+					// If cursor is on a project, store it for selection
+					m.selectedItem = &m.items[m.cursor]
+				}
 			}
 		}
 	}
@@ -146,14 +164,31 @@ func (m ProjectsListModel) View() string {
 	// Render each item
 	for i, item := range m.items {
 		if item.Type == ItemTypeHeader {
-			// Render group header
+			// Render group header with collapse indicator
 			count := m.countProjectsInGroup(item.Group)
-			headerText := fmt.Sprintf("%s (%d)", capitalizeStatus(item.Group), count)
+
+			// Choose indicator based on collapsed state
+			indicator := "▼" // Expanded
+			if m.collapsedGroups[item.Group] {
+				indicator = "▶" // Collapsed
+			}
+
+			// Highlight header if cursor is on it
+			cursor := " "
+			if i == m.cursor {
+				cursor = ">"
+			}
+
+			headerText := fmt.Sprintf("%s %s %s (%d)", cursor, indicator, capitalizeStatus(item.Group), count)
 
 			style := lipgloss.NewStyle().
 				Bold(true).
 				Foreground(lipgloss.Color("12")).
 				Padding(0, 2)
+
+			if i == m.cursor {
+				style = style.Foreground(lipgloss.Color("170"))
+			}
 
 			b.WriteString(style.Render(headerText))
 			b.WriteString("\n")
@@ -191,7 +226,7 @@ func (m ProjectsListModel) View() string {
 	b.WriteString("\n")
 	help := lipgloss.NewStyle().
 		Foreground(lipgloss.Color("241")).
-		Render("↑/↓: Navigate • Enter: Select • q: Quit")
+		Render("↑/↓: Navigate • Enter: Select/Toggle • q: Quit")
 	b.WriteString(help)
 
 	return b.String()

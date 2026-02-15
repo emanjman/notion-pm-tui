@@ -68,3 +68,22 @@ func (p *Project) GetBranchCount() int {
 	}
 	return len(prop.Relation)
 }
+
+// GetBranchIDs returns the IDs of all task groups/branches
+func (p *Project) GetBranchIDs() []string {
+	prop, ok := p.Page.Properties["[branches]"].(*notionapi.RelationProperty)
+	if !ok {
+		return nil
+	}
+
+	ids := make([]string, 0, len(prop.Relation))
+	for _, rel := range prop.Relation {
+		ids = append(ids, string(rel.ID))
+	}
+	return ids
+}
+
+// GetID returns the project's page ID
+func (p *Project) GetID() string {
+	return string(p.Page.ID)
+}
