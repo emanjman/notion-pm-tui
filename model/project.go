@@ -2,7 +2,7 @@ package model
 
 type Tab int
 
-// enum representation of each
+// enum representation for better readability
 const (
 	MilestonesTab Tab = iota
 	OverviewTab
@@ -15,5 +15,5 @@ type ProjectModel struct {
 	milestones   views.MilestonesListModel
 	overview     views.PageContentModel
 	projectNotes views.NotesListModel
-	debugNotes   views.NotesListMode
+	debugNotes   views.NotesListModel
 }
