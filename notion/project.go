@@ -1,8 +1,11 @@
 package notion
 
+import "time"
+
 type ProjectMsg struct {
-	Data ProjectPage
-	Err  error
+	Data     ProjectPage
+	Duration time.Duration
+	Err      error
 }
 
 // -------

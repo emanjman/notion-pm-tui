@@ -33,11 +33,13 @@ func NewClient() *Client {
 // cmd func returns a tea.Msg
 func (c *Client) FetchProjectById() tea.Cmd {
 	return func() tea.Msg {
+		start := time.Now()
+
 		url := baseUrl + "/pages/" + c.projId
 
 		req, err := http.NewRequest("GET", url, nil)
 		if err != nil {
-			return ProjectMsg{Err: err}
+			return ProjectMsg{Err: err, Duration: time.Since(start)}
 		}
 
 		req.Header.Add("Notion-Version", version)
@@ -45,21 +47,24 @@ func (c *Client) FetchProjectById() tea.Cmd {
 
 		res, err := c.http.Do(req)
 		if err != nil {
-			return ProjectMsg{Err: err}
+			return ProjectMsg{Err: err, Duration: time.Since(start)}
 		}
 		defer res.Body.Close() // close by end-of-life
 
 		if res.StatusCode != http.StatusOK {
 			body, _ := io.ReadAll(res.Body)
-			return ProjectMsg{Err: fmt.Errorf("Notion API error: %d: %s", res.StatusCode, body)}
+			return ProjectMsg{
+				Err:      fmt.Errorf("Notion API error: %d: %s", res.StatusCode, body),
+				Duration: time.Since(start),
+			}
 		}
 
 		// parse as json
 		var proj ProjectPage
 		if err := json.NewDecoder(res.Body).Decode(&proj); err != nil {
-			return ProjectMsg{Err: err}
+			return ProjectMsg{Err: err, Duration: time.Since(start)}
 		}
 
-		return ProjectMsg{Data: proj}
+		return ProjectMsg{Data: proj, Duration: time.Since(start)}
 	}
 }

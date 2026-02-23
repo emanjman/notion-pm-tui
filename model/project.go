@@ -3,6 +3,8 @@ package model
 import (
 	"fmt"
 	"notion-project-tui/notion"
+	"strings"
+	"time"
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
@@ -28,7 +30,8 @@ type ProjectModel struct {
 	page *notion.ProjectPage
 	keys KeyMap
 
-	help help.Model
+	help     help.Model
+	duration time.Duration
 }
 
 func InitProjectModel() ProjectModel {
@@ -67,6 +70,7 @@ func (m ProjectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case notion.ProjectMsg:
 		m.page = &msg.Data
+		m.duration = msg.Duration
 		return m, nil
 
 	}
@@ -79,5 +83,13 @@ func (m ProjectModel) View() string {
 		return "Loading..."
 	}
 
-	return fmt.Sprintf("Project ID: %s\n\n%s", m.page.ID, m.help.View(m.keys))
+	var view strings.Builder
+
+	view.WriteString(fmt.Sprintf("Project ID: %s", m.page.ID))
+	view.WriteString("\n\n")
+	view.WriteString(fmt.Sprintf("Fetched in %dms", m.duration.Milliseconds()))
+	view.WriteString("\n\n")
+	view.WriteString(m.help.View(m.keys))
+
+	return view.String()
 }
