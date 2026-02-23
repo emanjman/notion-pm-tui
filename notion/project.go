@@ -4,8 +4,8 @@ import "time"
 
 type ProjectMsg struct {
 	Data     ProjectPage
-	Duration time.Duration
 	Err      error
+	Duration time.Duration
 }
 
 // -------

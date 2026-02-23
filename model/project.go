@@ -44,7 +44,7 @@ func InitProjectModel() ProjectModel {
 }
 
 func (m ProjectModel) Init() tea.Cmd {
-	return notion.NewClient().FetchProjectById()
+	return notion.NewClient().FetchProject()
 }
 
 func (m ProjectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
