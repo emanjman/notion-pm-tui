@@ -16,6 +16,7 @@ type ProjectPage struct {
 }
 
 type ProjectProperties struct {
+	Title        TitleProperty    `json:"project"`
 	Milestones   RelationProperty `json:"@milestones"`
 	OverviewPage RelationProperty `json:"$overview"`
 	ProjectNotes RelationProperty `json:"@notes"`
