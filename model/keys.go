@@ -8,6 +8,7 @@ type KeyMap struct {
 	Select key.Binding
 	Back   key.Binding
 	Quit   key.Binding
+	Help   key.Binding
 }
 
 var DefaultKeyMap = KeyMap{
@@ -15,6 +16,32 @@ var DefaultKeyMap = KeyMap{
 		key.WithKeys("up", "k"),
 		key.WithHelp("↑/k", "move up"),
 	),
+
+	Down: key.NewBinding(
+		key.WithKeys("down", "j"),
+		key.WithHelp("↓/j", "move down"),
+	),
+
+	Quit: key.NewBinding(
+		key.WithKeys("ctrl+c", "q"),
+		key.WithHelp("ctrl+c/q", "quit"),
+	),
+
+	Help: key.NewBinding(
+		key.WithKeys("?"),
+		key.WithHelp("?", "toggle help"),
+	),
+}
+
+func (k KeyMap) ShortHelp() []key.Binding {
+	return []key.Binding{k.Up, k.Down}
+}
+
+func (k KeyMap) FullHelp() [][]key.Binding {
+	return [][]key.Binding{
+		{k.Up, k.Down},
+		{k.Quit, k.Help},
+	}
 }
 
 /*

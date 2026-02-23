@@ -1,7 +1,7 @@
 package notion
 
 type ProjectMsg struct {
-	Data []byte
+	Data ProjectPage
 	Err  error
 }
 
