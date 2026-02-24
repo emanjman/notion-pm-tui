@@ -3,7 +3,7 @@ package notion
 import "time"
 
 type MilestoneMsg struct {
-	Data     MilestonePage
+	Data     []MilestonePage
 	Err      error
 	Duration time.Duration
 }
@@ -20,6 +20,6 @@ type MilestoneProperties struct {
 	Tags             MultiSelectProperty `json:"tags"`
 	Progress         FormulaProperty     `json:"progress"`            // type:number
 	Status           FormulaProperty     `json:"$status"`             // type:string
-	LatestActivityAt FormulaProperty     `json:"$latest-activity-at"` //type:date
+	LatestActivityAt FormulaProperty     `json:"$latest-activity-at"` // type:date
 	Tasks            RelationProperty    `json:"@tasks"`
 }

@@ -114,3 +114,28 @@ func (c *Client) FetchAllRelationIds(pageID string, prop RelationProperty) ([]st
 
 	return ids, nil
 }
+
+func (c *Client) FetchMilestones(ids []string) tea.Cmd {
+	start := time.Now()
+
+	return func() tea.Msg {
+		milestones := make([]MilestonePage, 0, len(ids))
+
+		for _, id := range ids {
+			url := baseUrl + "/pages/" + id
+			req, err := http.NewRequest("GET", url, nil)
+			if err != nil {
+				return MilestoneMsg{Err: err, Duration: time.Since(start)}
+			}
+
+			var milestone MilestonePage
+			if err := c.do(req, &milestone); err != nil {
+				return MilestoneMsg{Err: err, Duration: time.Since(start)}
+			}
+
+			milestones = append(milestones, milestone)
+		}
+
+		return MilestoneMsg{Data: milestones, Duration: time.Since(start)}
+	}
+}
