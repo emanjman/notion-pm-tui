@@ -8,7 +8,7 @@ import (
 
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	lg "github.com/charmbracelet/lipgloss"
 )
 
 type MilestoneListModel struct {
@@ -112,8 +112,8 @@ func NewMilestoneListItem(page notion.MilestonePage) MilestoneListItem {
 
 // implementation for delegate
 type MilestoneListDelegate struct {
-	defaultStyle  lipgloss.Style
-	selectedStyle lipgloss.Style
+	defaultStyle  lg.Style
+	selectedStyle lg.Style
 }
 
 func (d MilestoneListDelegate) Height() int  { return 1 }
@@ -138,11 +138,11 @@ func (d MilestoneListDelegate) Render(w io.Writer, m list.Model, index int, item
 
 func NewMilestoneListDelegate() MilestoneListDelegate {
 	return MilestoneListDelegate{
-		defaultStyle: lipgloss.NewStyle(),
-		selectedStyle: lipgloss.NewStyle().
+		defaultStyle: lg.NewStyle(),
+		selectedStyle: lg.NewStyle().
 			Bold(true).
 			PaddingLeft(1).
-			Foreground(lipgloss.Color("205")),
+			Foreground(lg.Color("205")),
 	}
 }
 
