@@ -23,15 +23,19 @@ const (
 
 type ProjectModel struct {
 	activeTab Tab
-	// milestones   views.MilestonesListModel
-	// overview     views.PageContentModel
-	// projectNotes views.NotesListModel
-	// debugNotes   views.NotesListModel
+
 	page *notion.ProjectPage
 	keys KeyMap
 
 	help     help.Model
 	duration time.Duration
+
+	client *notion.Client
+
+	// milestones   views.MilestonesListModel
+	// overview     views.PageContentModel
+	// projectNotes views.NotesListModel
+	// debugNotes   views.NotesListModel
 }
 
 func InitProjectModel() ProjectModel {
@@ -40,11 +44,12 @@ func InitProjectModel() ProjectModel {
 		page:      nil,
 		keys:      DefaultKeyMap,
 		help:      help.New(),
+		client:    notion.NewClient(),
 	}
 }
 
 func (m ProjectModel) Init() tea.Cmd {
-	return notion.NewClient().FetchProject()
+	return m.client.FetchProject()
 }
 
 func (m ProjectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
