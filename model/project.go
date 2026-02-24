@@ -62,17 +62,35 @@ func (m ProjectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keys.Quit):
 			return m, tea.Quit
 
-		case key.Matches(msg, m.keys.Up):
-			return m, nil // todo: handle nav
-
-		case key.Matches(msg, m.keys.Down):
-			return m, nil // todo: handle nav
+		// case key.Matches(msg, m.keys.Up):
+		// 	return m, nil // todo: handle nav
+		//
+		// case key.Matches(msg, m.keys.Down):
+		// 	return m, nil // todo: handle nav
 
 		case key.Matches(msg, m.keys.Help):
 			m.help.ShowAll = !m.help.ShowAll
 			return m, nil
 
+		// send other keymaps to the active tab
+		default:
+			var cmd tea.Cmd
+
+			switch m.activeTab {
+
+			case MilestonesTab:
+				m.milestones, cmd = m.milestones.Update(msg)
+
+			}
+
+			return m, cmd
 		}
+
+	// send window size to the milestones model
+	case tea.WindowSizeMsg:
+		var cmd tea.Cmd
+		m.milestones, cmd = m.milestones.Update(msg)
+		return m, cmd
 
 	case notion.ProjectMsg:
 		// if failed fetch, don't proceed w/ fetching ids
@@ -94,9 +112,9 @@ func (m ProjectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		return m, m.client.FetchMilestones(msg.IDs)
 
+	// forward updated milestones model + cmd
 	case notion.MilestoneMsg:
 		var cmd tea.Cmd
-		// forward updated milestones model + cmd
 		m.milestones, cmd = m.milestones.Update(msg)
 		return m, cmd
 
@@ -115,6 +133,21 @@ func (m ProjectModel) View() string {
 	view.WriteString(fmt.Sprintf("Project ID: %s", m.page.ID))
 	view.WriteString("\n\n")
 	view.WriteString(fmt.Sprintf("Fetched in %dms", m.duration.Milliseconds()))
+	view.WriteString("\n\n")
+
+	switch m.activeTab {
+
+	case MilestonesTab:
+		view.WriteString(m.milestones.View())
+	case OverviewTab:
+		view.WriteString("Overview (coming soon)")
+	case ProjectNotesTab:
+		view.WriteString("Project notes (coming soon)")
+	case DebugNotesTab:
+		view.WriteString("Debug notes (coming soon)")
+
+	}
+
 	view.WriteString("\n\n")
 	view.WriteString(m.help.View(m.keys))
 

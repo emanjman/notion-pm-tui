@@ -12,15 +12,15 @@ type KeyMap struct {
 }
 
 var DefaultKeyMap = KeyMap{
-	Up: key.NewBinding(
-		key.WithKeys("up", "k"),
-		key.WithHelp("↑/k", "move up"),
-	),
-
-	Down: key.NewBinding(
-		key.WithKeys("down", "j"),
-		key.WithHelp("↓/j", "move down"),
-	),
+	// Up: key.NewBinding(
+	// 	key.WithKeys("up", "k"),
+	// 	key.WithHelp("↑/k", "move up"),
+	// ),
+	//
+	// Down: key.NewBinding(
+	// 	key.WithKeys("down", "j"),
+	// 	key.WithHelp("↓/j", "move down"),
+	// ),
 
 	Quit: key.NewBinding(
 		key.WithKeys("ctrl+c", "q"),
@@ -34,12 +34,12 @@ var DefaultKeyMap = KeyMap{
 }
 
 func (k KeyMap) ShortHelp() []key.Binding {
-	return []key.Binding{k.Up, k.Down}
+	return []key.Binding{k.Quit, k.Help}
 }
 
 func (k KeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.Up, k.Down},
+		// {k.Up, k.Down},
 		{k.Quit, k.Help},
 	}
 }
