@@ -32,7 +32,7 @@ type ProjectModel struct {
 
 	client *notion.Client
 
-	milestones MilestonesModel
+	milestones MilestoneListModel
 	// overview     views.PageContentModel
 	// projectNotes views.NotesListModel
 	// debugNotes   views.NotesListModel
@@ -45,7 +45,7 @@ func InitProjectModel() ProjectModel {
 		keys:       DefaultKeyMap,
 		help:       help.New(),
 		client:     notion.NewClient(),
-		milestones: NewMilestonesModel(),
+		milestones: NewMilestoneListModel(),
 	}
 }
 
@@ -61,13 +61,6 @@ func (m ProjectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case key.Matches(msg, m.keys.Quit):
 			return m, tea.Quit
-
-		// case key.Matches(msg, m.keys.Up):
-		// 	return m, nil // todo: handle nav
-		//
-		// case key.Matches(msg, m.keys.Down):
-		// 	return m, nil // todo: handle nav
-
 		case key.Matches(msg, m.keys.Help):
 			m.help.ShowAll = !m.help.ShowAll
 			return m, nil

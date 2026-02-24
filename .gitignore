@@ -17,3 +17,6 @@ notion-project-tui
 
 # Go workspace file
 go.work
+
+# Compiled binary 
+main

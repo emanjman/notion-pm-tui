@@ -11,18 +11,18 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-type MilestonesModel struct {
+type MilestoneListModel struct {
 	list    list.Model
 	loading bool
 }
 
-func NewMilestonesModel() MilestonesModel {
+func NewMilestoneListModel() MilestoneListModel {
 	delegate := MilestoneDelegate{}
 
 	l := list.New([]list.Item{}, delegate, 0, 0)
 	l.Title = "Milestones"
 
-	return MilestonesModel{
+	return MilestoneListModel{
 		list:    l,
 		loading: true,
 	}
@@ -30,7 +30,7 @@ func NewMilestonesModel() MilestonesModel {
 
 // just forward the list.Update(msg)
 // and forward its returned response
-func (m MilestonesModel) Update(msg tea.Msg) (MilestonesModel, tea.Cmd) {
+func (m MilestoneListModel) Update(msg tea.Msg) (MilestoneListModel, tea.Cmd) {
 	switch msg := msg.(type) {
 
 	case tea.WindowSizeMsg:
@@ -58,7 +58,7 @@ func (m MilestonesModel) Update(msg tea.Msg) (MilestonesModel, tea.Cmd) {
 }
 
 // just forward the list.View()
-func (m MilestonesModel) View() string {
+func (m MilestoneListModel) View() string {
 	if m.loading {
 		return "Loading milestones..."
 	}
