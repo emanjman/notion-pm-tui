@@ -17,15 +17,13 @@ type MilestoneListModel struct {
 }
 
 func NewMilestoneListModel() MilestoneListModel {
-	delegate := MilestoneDelegate{}
+	l := list.New([]list.Item{}, MilestoneDelegate{}, 0, 0)
 
-	l := list.New([]list.Item{}, delegate, 0, 0)
+	// custom configs
 	l.Title = "Milestones"
+	l.SetShowHelp(false)
 
-	return MilestoneListModel{
-		list:    l,
-		loading: true,
-	}
+	return MilestoneListModel{list: l, loading: true}
 }
 
 // just forward the list.Update(msg)
