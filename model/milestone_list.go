@@ -17,7 +17,7 @@ type MilestoneListModel struct {
 }
 
 func NewMilestoneListModel() MilestoneListModel {
-	l := list.New([]list.Item{}, MilestoneListDelegate{}, 0, 0)
+	l := list.New([]list.Item{}, NewMilestoneListDelegate(), 0, 0)
 
 	// custom configs
 	l.Title = "Milestones"
