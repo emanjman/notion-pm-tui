@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"notion-project-tui/notion"
+	"strings"
 	"time"
 
 	"github.com/charmbracelet/bubbles/list"
@@ -116,16 +117,19 @@ type MilestoneListDelegate struct {
 	selectedStyle lg.Style
 }
 
-func (d MilestoneListDelegate) Height() int  { return 2 }
+func (d MilestoneListDelegate) Height() int  { return 3 }
 func (d MilestoneListDelegate) Spacing() int { return 0 }
 func (d MilestoneListDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd {
 	return nil
 }
 
-// required delegate function, where `index` holds the hovering item
 func (d MilestoneListDelegate) Render(w io.Writer, m list.Model, index int, item list.Item) {
-	milestone := item.(MilestoneListItem)
+	milestone := item.(MilestoneListItem) // conform as specific list item type
 	selected := index == m.Index()
+
+	row1 := padBetween(milestone.Name, milestone.Status, m.Width())
+	row2 := fmt.Sprintf("%.0f%%", milestone.Progress*100)
+	block := row1 + "\n" + row2
 
 	style := d.defaultStyle
 	if selected {
@@ -133,8 +137,17 @@ func (d MilestoneListDelegate) Render(w io.Writer, m list.Model, index int, item
 	}
 
 	// write to `w`
-	// fmt.Fprintf(w, style.Render(milestone.Name))
-	fmt.Fprintf(w, style.Width(m.Width()-2).Render(milestone.Name))
+	fmt.Fprint(w, style.Width(m.Width()).Render(block))
+}
+
+func padBetween(left, right string, windowWidth int) string {
+	// use lg.Width to only consider visible cells
+	padding := windowWidth - lg.Width(left) - lg.Width(right)
+	if padding < 0 {
+		padding = 0
+	}
+
+	return left + strings.Repeat(" ", padding) + right
 }
 
 func NewMilestoneListDelegate() MilestoneListDelegate {
@@ -147,7 +160,6 @@ func NewMilestoneListDelegate() MilestoneListDelegate {
 
 		selectedStyle: base.
 			Bold(true).
-			PaddingLeft(1).
 			Foreground(lg.Color("205")),
 	}
 }
