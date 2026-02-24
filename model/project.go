@@ -75,21 +75,24 @@ func (m ProjectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 	case notion.ProjectMsg:
+		// if failed fetch, don't proceed w/ fetching ids
+		if msg.Err != nil {
+			return m, nil
+		}
+
+		// update project data
+		m.page = &msg.Data
+		m.duration = msg.Duration
+
+		return m, m.client.FetchAllRelationIds(m.page.ID, m.page.Properties.Milestones)
+
+	case notion.RelationIdsMsg:
 		// if failed fetch, don't proceed w/ milestones fetch
 		if msg.Err != nil {
 			return m, nil
 		}
 
-		m.page = &msg.Data
-		m.duration = msg.Duration
-
-		milestoneIds, err := m.client.FetchAllRelationIds(m.page.ID, m.page.Properties.Milestones)
-		if err != nil {
-			return m, nil
-		}
-
-		// get all milestones after getting all ids
-		return m, m.client.FetchMilestones(milestoneIds)
+		return m, m.client.FetchMilestones(msg.IDs)
 
 	case notion.MilestoneMsg:
 		var cmd tea.Cmd

@@ -71,48 +71,58 @@ func (c *Client) FetchProject() tea.Cmd {
 	}
 }
 
-func (c *Client) FetchAllRelationIds(pageID string, prop RelationProperty) ([]string, error) {
-	// populate w/ the initial set of relations
-	ids := make([]string, len(prop.Relation))
-	for i, r := range prop.Relation {
-		ids[i] = r.ID
+type RelationIdsMsg struct {
+	IDs      []string
+	Err      error
+	Duration time.Duration
+}
+
+func (c *Client) FetchAllRelationIds(pageID string, prop RelationProperty) tea.Cmd {
+	return func() tea.Msg {
+		start := time.Now()
+
+		// populate w/ the initial set of relations
+		ids := make([]string, len(prop.Relation))
+		for i, r := range prop.Relation {
+			ids[i] = r.ID
+		}
+
+		if !prop.HasMore {
+			return RelationIdsMsg{IDs: ids, Duration: time.Since(start)}
+		}
+
+		// add the rest of relations
+		cursor := ""
+		for {
+			url := baseUrl + "/pages/" + pageID + "/properties/" + prop.ID + "?page_size=100"
+			if cursor != "" {
+				url += "&start_cursor=" + cursor
+			}
+
+			req, err := http.NewRequest("GET", url, nil)
+			if err != nil {
+				return RelationIdsMsg{Err: err, Duration: time.Since(start)}
+			}
+
+			var res RelationListResponse
+			if err := c.do(req, &res); err != nil {
+				return RelationIdsMsg{Err: err, Duration: time.Since(start)}
+			}
+
+			for _, result := range res.Results {
+				ids = append(ids, result.Relation.ID)
+			}
+
+			// exit if we've exhausted all relations
+			if !res.HasMore || res.NextCursor == nil {
+				break
+			}
+
+			cursor = *res.NextCursor
+		}
+
+		return RelationIdsMsg{IDs: ids, Duration: time.Since(start)}
 	}
-
-	if !prop.HasMore {
-		return ids, nil
-	}
-
-	// add the rest of relations
-	cursor := ""
-	for {
-		url := baseUrl + "/pages/" + pageID + "/properties/" + prop.ID + "?page_size=100"
-		if cursor != "" {
-			url += "&start_cursor=" + cursor
-		}
-
-		req, err := http.NewRequest("GET", url, nil)
-		if err != nil {
-			return nil, err
-		}
-
-		var res RelationListResponse
-		if err := c.do(req, &res); err != nil {
-			return nil, err
-		}
-
-		for _, result := range res.Results {
-			ids = append(ids, result.Relation.ID)
-		}
-
-		// exit if we've exhausted all relations
-		if !res.HasMore || res.NextCursor == nil {
-			break
-		}
-
-		cursor = *res.NextCursor
-	}
-
-	return ids, nil
 }
 
 func (c *Client) FetchMilestones(ids []string) tea.Cmd {
