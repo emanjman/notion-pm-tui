@@ -116,9 +116,8 @@ func (c *Client) FetchAllRelationIds(pageID string, prop RelationProperty) ([]st
 }
 
 func (c *Client) FetchMilestones(ids []string) tea.Cmd {
-	start := time.Now()
-
 	return func() tea.Msg {
+		start := time.Now()
 		milestones := make([]MilestonePage, 0, len(ids))
 
 		for _, id := range ids {
