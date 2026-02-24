@@ -32,7 +32,7 @@ type ProjectModel struct {
 
 	client *notion.Client
 
-	// milestones   views.MilestonesListModel
+	milestones MilestonesModel
 	// overview     views.PageContentModel
 	// projectNotes views.NotesListModel
 	// debugNotes   views.NotesListModel
@@ -40,11 +40,12 @@ type ProjectModel struct {
 
 func InitProjectModel() ProjectModel {
 	return ProjectModel{
-		activeTab: 0,
-		page:      nil,
-		keys:      DefaultKeyMap,
-		help:      help.New(),
-		client:    notion.NewClient(),
+		activeTab:  0,
+		page:       nil,
+		keys:       DefaultKeyMap,
+		help:       help.New(),
+		client:     notion.NewClient(),
+		milestones: NewMilestonesModel(),
 	}
 }
 
@@ -74,9 +75,27 @@ func (m ProjectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 	case notion.ProjectMsg:
+		// if failed fetch, don't proceed w/ milestones fetch
+		if msg.Err != nil {
+			return m, nil
+		}
+
 		m.page = &msg.Data
 		m.duration = msg.Duration
-		return m, nil
+
+		milestoneIds, err := m.client.FetchAllRelationIds(m.page.ID, m.page.Properties.Milestones)
+		if err != nil {
+			return m, nil
+		}
+
+		// get all milestones after getting all ids
+		return m, m.client.FetchMilestones(milestoneIds)
+
+	case notion.MilestoneMsg:
+		var cmd tea.Cmd
+		// forward updated milestones model + cmd
+		m.milestones, cmd = m.milestones.Update(msg)
+		return m, cmd
 
 	}
 
