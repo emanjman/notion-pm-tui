@@ -127,8 +127,15 @@ func (d MilestoneListDelegate) Render(w io.Writer, m list.Model, index int, item
 	milestone := item.(MilestoneListItem) // conform as specific list item type
 	selected := index == m.Index()
 
-	row1 := padBetween(milestone.Name, milestone.Status, m.Width())
-	row2 := fmt.Sprintf("%.0f%%", milestone.Progress*100)
+	var (
+		name     = milestone.Name
+		status   = milestone.Status
+		tags     = strings.Join(milestone.Tags, " · ")
+		progress = fmt.Sprintf("%.0f%%", milestone.Progress*100)
+	)
+
+	row1 := padBetween(name, status, m.Width())
+	row2 := padBetween(tags, progress, m.Width())
 	block := row1 + "\n" + row2
 
 	style := d.defaultStyle
@@ -141,8 +148,10 @@ func (d MilestoneListDelegate) Render(w io.Writer, m list.Model, index int, item
 }
 
 func padBetween(left, right string, windowWidth int) string {
+	staticPadding := 4 // left/right padding(2)
+
 	// use lg.Width to only consider visible cells
-	padding := windowWidth - lg.Width(left) - lg.Width(right)
+	padding := windowWidth - lg.Width(left) - lg.Width(right) - staticPadding
 	if padding < 0 {
 		padding = 0
 	}
@@ -153,7 +162,9 @@ func padBetween(left, right string, windowWidth int) string {
 func NewMilestoneListDelegate() MilestoneListDelegate {
 	base := lg.NewStyle().
 		Border(lg.NormalBorder(), false, false, true, false).
-		BorderForeground(lg.Color("238"))
+		BorderForeground(lg.Color("238")).
+		PaddingLeft(2).
+		PaddingRight(2)
 
 	return MilestoneListDelegate{
 		defaultStyle: base,
