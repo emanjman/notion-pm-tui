@@ -116,7 +116,7 @@ type MilestoneListDelegate struct {
 	selectedStyle lg.Style
 }
 
-func (d MilestoneListDelegate) Height() int  { return 1 }
+func (d MilestoneListDelegate) Height() int  { return 2 }
 func (d MilestoneListDelegate) Spacing() int { return 0 }
 func (d MilestoneListDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd {
 	return nil
@@ -125,21 +125,27 @@ func (d MilestoneListDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd {
 // required delegate function, where `index` holds the hovering item
 func (d MilestoneListDelegate) Render(w io.Writer, m list.Model, index int, item list.Item) {
 	milestone := item.(MilestoneListItem)
+	selected := index == m.Index()
 
-	// where `index` is the curr item's index, vs `m.Index()` is the item the user is hovering over
 	style := d.defaultStyle
-	if index == m.Index() {
+	if selected {
 		style = d.selectedStyle
 	}
 
 	// write to `w`
-	fmt.Fprintf(w, style.Render(milestone.Name))
+	// fmt.Fprintf(w, style.Render(milestone.Name))
+	fmt.Fprintf(w, style.Width(m.Width()-2).Render(milestone.Name))
 }
 
 func NewMilestoneListDelegate() MilestoneListDelegate {
+	base := lg.NewStyle().
+		Border(lg.NormalBorder(), false, false, true, false).
+		BorderForeground(lg.Color("238"))
+
 	return MilestoneListDelegate{
-		defaultStyle: lg.NewStyle(),
-		selectedStyle: lg.NewStyle().
+		defaultStyle: base,
+
+		selectedStyle: base.
 			Bold(true).
 			PaddingLeft(1).
 			Foreground(lg.Color("205")),
