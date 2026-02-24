@@ -17,7 +17,7 @@ type MilestoneListModel struct {
 }
 
 func NewMilestoneListModel() MilestoneListModel {
-	l := list.New([]list.Item{}, MilestoneDelegate{}, 0, 0)
+	l := list.New([]list.Item{}, MilestoneListDelegate{}, 0, 0)
 
 	// custom configs
 	l.Title = "Milestones"
@@ -109,19 +109,19 @@ func NewMilestoneListItem(page notion.MilestonePage) MilestoneListItem {
 // -------------------------------------------
 
 // implementation for delegate
-type MilestoneDelegate struct {
+type MilestoneListDelegate struct {
 	defaultStyle  lipgloss.Style
 	selectedStyle lipgloss.Style
 }
 
-func (d MilestoneDelegate) Height() int  { return 1 }
-func (d MilestoneDelegate) Spacing() int { return 0 }
-func (d MilestoneDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd {
+func (d MilestoneListDelegate) Height() int  { return 1 }
+func (d MilestoneListDelegate) Spacing() int { return 0 }
+func (d MilestoneListDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd {
 	return nil
 }
 
 // required delegate function, where `index` holds the hovering item
-func (d MilestoneDelegate) Render(w io.Writer, m list.Model, index int, item list.Item) {
+func (d MilestoneListDelegate) Render(w io.Writer, m list.Model, index int, item list.Item) {
 	milestone := item.(MilestoneListItem)
 
 	// where `index` is the curr item's index, vs `m.Index()` is the item the user is hovering over
@@ -134,8 +134,8 @@ func (d MilestoneDelegate) Render(w io.Writer, m list.Model, index int, item lis
 	fmt.Fprintf(w, style.Render(milestone.Name))
 }
 
-func NewMilestoneDelegate() MilestoneDelegate {
-	return MilestoneDelegate{
+func NewMilestoneListDelegate() MilestoneListDelegate {
+	return MilestoneListDelegate{
 		defaultStyle:  lipgloss.NewStyle(),
 		selectedStyle: lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("205")),
 	}
