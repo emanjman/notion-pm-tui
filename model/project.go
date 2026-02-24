@@ -1,7 +1,8 @@
 package model
 
 import (
-	"fmt"
+	// ! temp, styling ui
+	// "fmt"
 	"notion-project-tui/notion"
 	"strings"
 	"time"
@@ -50,7 +51,8 @@ func InitProjectModel() ProjectModel {
 }
 
 func (m ProjectModel) Init() tea.Cmd {
-	return m.client.FetchProject()
+	// return m.client.FetchProject()
+	return nil // ! temp, styling ui
 }
 
 func (m ProjectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -117,16 +119,18 @@ func (m ProjectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m ProjectModel) View() string {
-	if m.page == nil {
-		return "Loading..."
-	}
+	// ! temp, styling ui
+	// if m.page == nil {
+	// 	return "Loading project..."
+	// }
 
 	var view strings.Builder
 
-	view.WriteString(fmt.Sprintf("Project ID: %s", m.page.ID))
-	view.WriteString("\n\n")
-	view.WriteString(fmt.Sprintf("Fetched in %dms", m.duration.Milliseconds()))
-	view.WriteString("\n\n")
+	// ! temp, styling ui
+	// view.WriteString(fmt.Sprintf("Project ID: %s", m.page.ID))
+	// view.WriteString("\n\n")
+	// view.WriteString(fmt.Sprintf("Fetched in %dms", m.duration.Milliseconds()))
+	// view.WriteString("\n\n")
 
 	switch m.activeTab {
 

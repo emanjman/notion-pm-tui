@@ -17,7 +17,8 @@ type MilestoneListModel struct {
 }
 
 func NewMilestoneListModel() MilestoneListModel {
-	l := list.New([]list.Item{}, NewMilestoneListDelegate(), 0, 0)
+	// l := list.New([]list.Item{}, NewMilestoneListDelegate(), 0, 0)
+	l := list.New(mockMilestoneItems(), NewMilestoneListDelegate(), 0, 0)
 
 	// custom configs
 	l.Title = "Milestones"
@@ -57,9 +58,10 @@ func (m MilestoneListModel) Update(msg tea.Msg) (MilestoneListModel, tea.Cmd) {
 
 // just forward the list.View()
 func (m MilestoneListModel) View() string {
-	if m.loading {
-		return "Loading milestones..."
-	}
+	// ! temp, styling
+	// if m.loading {
+	// 	return "Loading milestones..."
+	// }
 	return m.list.View()
 }
 
@@ -136,7 +138,66 @@ func (d MilestoneListDelegate) Render(w io.Writer, m list.Model, index int, item
 
 func NewMilestoneListDelegate() MilestoneListDelegate {
 	return MilestoneListDelegate{
-		defaultStyle:  lipgloss.NewStyle(),
-		selectedStyle: lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("205")),
+		defaultStyle: lipgloss.NewStyle(),
+		selectedStyle: lipgloss.NewStyle().
+			Bold(true).
+			PaddingLeft(1).
+			Foreground(lipgloss.Color("205")),
+	}
+}
+
+// ---
+
+func mockMilestoneItems() []list.Item {
+	return []list.Item{
+		MilestoneListItem{
+			ID:       "1",
+			Name:     "Setup Project Structure",
+			Status:   "Completed",
+			Progress: 1.0,
+			Tags:     []string{"backend", "setup"},
+		},
+		MilestoneListItem{
+			ID:       "2",
+			Name:     "Implement Notion API",
+			Status:   "In Progress",
+			Progress: 0.75,
+			Tags:     []string{"backend", "api"},
+		},
+		MilestoneListItem{
+			ID:       "3",
+			Name:     "Build TUI Dashboard",
+			Status:   "In Progress",
+			Progress: 0.4,
+			Tags:     []string{"frontend", "tui"},
+		},
+		MilestoneListItem{
+			ID:       "4",
+			Name:     "Authentication System",
+			Status:   "Not Started",
+			Progress: 0.0,
+			Tags:     []string{"backend", "auth"},
+		},
+		MilestoneListItem{
+			ID:       "5",
+			Name:     "Data Persistence Layer",
+			Status:   "Not Started",
+			Progress: 0.0,
+			Tags:     []string{"backend", "database"},
+		},
+		MilestoneListItem{
+			ID:       "6",
+			Name:     "Testing & QA",
+			Status:   "Not Started",
+			Progress: 0.0,
+			Tags:     []string{"testing"},
+		},
+		MilestoneListItem{
+			ID:       "7",
+			Name:     "Documentation",
+			Status:   "In Progress",
+			Progress: 0.2,
+			Tags:     []string{"docs"},
+		},
 	}
 }
