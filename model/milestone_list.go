@@ -16,8 +16,8 @@ type MilestoneListModel struct {
 	list    list.Model
 	loading bool
 
-	grouped   map[string][]MilestoneListItem // header to items
-	collapsed map[string]bool                // collapsed headers
+	grouped map[string][]MilestoneListItem // header to items
+	hidden  map[string]bool                // hidden group
 }
 
 func NewMilestoneListModel() MilestoneListModel {
@@ -115,12 +115,52 @@ func NewMilestoneListItem(page notion.MilestonePage) MilestoneListItem {
 // -------------------------------------------
 
 type MilestoneListItemGroup struct {
-	Label     string
-	Collapsed bool
+	Label  string
+	Hidden bool
 }
 
-// exclude header in filter-search
+// exclude header in filter-search (required item function)
 func (g MilestoneListItemGroup) FilterValue() string { return "" }
+
+// helper func to group items into a map (keyed by their status)
+func groupByStatus(items []MilestoneListItem) map[string][]MilestoneListItem {
+
+	groups := map[string][]MilestoneListItem{}
+	for _, item := range items {
+		groups[item.Status] = append(groups[item.Status], item)
+	}
+	return groups
+}
+
+var statusOrder = []string{"🚧 under development", "😴 idle", "🎉 complete"}
+
+// conforms the group-map into a []list.Item + add headers
+func (m MilestoneListModel) buildGroupedList() []list.Item {
+	var items []list.Item
+
+	// build list in this group order
+	for _, status := range statusOrder {
+		group, ok := m.grouped[status]
+		if !ok {
+			continue
+		}
+
+		// add group header
+		items = append(items, MilestoneListItemGroup{
+			Label:  status,
+			Hidden: m.hidden[status],
+		})
+
+		// add the group's items (if not hidden)
+		if !m.hidden[status] {
+			for _, milestone := range group {
+				items = append(items, milestone)
+			}
+		}
+	}
+
+	return items
+}
 
 // -------------------------------------------
 
