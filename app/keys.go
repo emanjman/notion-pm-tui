@@ -1,57 +1,49 @@
 package app
 
-import "github.com/charmbracelet/bubbles/key"
+import (
+	"github.com/charmbracelet/bubbles/help"
+	"github.com/charmbracelet/bubbles/key"
+)
 
-type KeyMap struct {
-	Up   key.Binding
-	Down key.Binding
-	// Select key.Binding
-	// Back   key.Binding
+type GlobalKeyMap struct {
 	Quit key.Binding
 	Help key.Binding
 }
 
-var DefaultKeyMap = KeyMap{
-	Up: key.NewBinding(
-		key.WithKeys("up", "k"),
-		key.WithHelp("↑/k", "up"),
-	),
-
-	Down: key.NewBinding(
-		key.WithKeys("down", "j"),
-		key.WithHelp("↓/j", "down"),
-	),
-
+var RootKeyMap = GlobalKeyMap{
 	Quit: key.NewBinding(
 		key.WithKeys("ctrl+c", "q"),
 		key.WithHelp("ctrl+c/q", "quit"),
 	),
-
 	Help: key.NewBinding(
 		key.WithKeys("?"),
 		key.WithHelp("?", "help"),
 	),
 }
 
-func (k KeyMap) ShortHelp() []key.Binding {
-	return []key.Binding{k.Quit, k.Help, k.Up, k.Down}
+func (k GlobalKeyMap) ShortHelp() []key.Binding {
+	return []key.Binding{k.Quit, k.Help}
 }
 
-func (k KeyMap) FullHelp() [][]key.Binding {
+func (k GlobalKeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.Quit, k.Help, k.Up, k.Down},
+		{k.Quit, k.Help},
 		{},
 	}
 }
 
-/*
-in the Update() function:
+// ---
+// merge the root-level keys w/ the curr view's keys
 
-case tea.KeyMsg:
-    switch {
-    case key.Matches(msg, m.keys.Quit):
-        return m, tea.Quit
-    case key.Matches(msg, m.keys.Up):
-        m.cursor--
-    }
-*/
+type MergedKeyMap struct {
+	curr   help.KeyMap
+	global GlobalKeyMap
+}
+
+func (m MergedKeyMap) ShortHelp() []key.Binding {
+	return append(m.curr.ShortHelp(), m.global.Help)
+}
+
+func (m MergedKeyMap) FullHelp() [][]key.Binding {
+	return append(m.curr.FullHelp(), m.global.FullHelp()...)
+}

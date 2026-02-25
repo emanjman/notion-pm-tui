@@ -4,6 +4,7 @@ import (
 	"notion-project-tui/notion"
 	"time"
 
+	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -11,29 +12,25 @@ import (
 type MilestoneListModel struct {
 	list    list.Model
 	loading bool
-
 	grouped map[string][]MilestoneListItem // header to items
 	hidden  map[string]bool                // hidden group
-
-	// keys KeyMap
+	Keys    KeyMap
 }
 
 func NewMilestoneListModel() MilestoneListModel {
 	l := list.New([]list.Item{}, NewMilestoneListDelegate(), 0, 0)
-
-	// custom configs
 	l.Title = "Milestones"
 	l.SetShowHelp(false)
 
 	m := MilestoneListModel{
 		list:    l,
 		loading: true,
-
 		grouped: groupByStatus(mockMilestoneItems()),
 		hidden:  map[string]bool{},
+		Keys:    DefaultKeyMap,
 	}
-
 	m.list.SetItems(m.buildGroupedList())
+
 	return m
 }
 
@@ -47,7 +44,15 @@ func (m MilestoneListModel) Update(msg tea.Msg) (MilestoneListModel, tea.Cmd) {
 
 	case tea.KeyMsg:
 		switch {
-		// case key.Matches(msg, )
+		case key.Matches(msg, m.Keys.Select):
+			selected := m.list.SelectedItem()
+
+			if header, ok := selected.(MilestoneListItemHeader); ok {
+				m.hidden[header.Label] = !m.hidden[header.Label] // toggle
+				m.list.SetItems(m.buildGroupedList())            // rebuild list
+			}
+
+			return m, nil
 		}
 
 	case notion.MilestoneMsg:
@@ -70,7 +75,7 @@ func (m MilestoneListModel) Update(msg tea.Msg) (MilestoneListModel, tea.Cmd) {
 	}
 
 	var cmd tea.Cmd
-	m.list, cmd = m.list.Update(msg)
+	m.list, cmd = m.list.Update(msg) // handles up/down nav
 	return m, cmd
 }
 

@@ -27,7 +27,7 @@ type ProjectModel struct {
 	activeTab Tab
 
 	page *notion.ProjectPage
-	keys KeyMap
+	keys MergedKeyMap
 
 	help     help.Model
 	duration time.Duration
@@ -44,7 +44,7 @@ func InitProjectModel() ProjectModel {
 	return ProjectModel{
 		activeTab:  0,
 		page:       nil,
-		keys:       DefaultKeyMap,
+		keys:       MergedKeyMap{curr: nil, global: RootKeyMap},
 		help:       help.New(),
 		client:     notion.NewClient(),
 		milestones: milestonelist.NewMilestoneListModel(),
@@ -62,9 +62,9 @@ func (m ProjectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch {
 
-		case key.Matches(msg, m.keys.Quit):
+		case key.Matches(msg, m.keys.global.Quit):
 			return m, tea.Quit
-		case key.Matches(msg, m.keys.Help):
+		case key.Matches(msg, m.keys.global.Help):
 			m.help.ShowAll = !m.help.ShowAll
 			return m, nil
 
@@ -147,7 +147,25 @@ func (m ProjectModel) View() string {
 	}
 
 	view.WriteString("\n\n")
-	view.WriteString(m.help.View(m.keys))
+	view.WriteString(m.help.View(MergedKeyMap{
+		curr:   m.getActiveKeyMap(),
+		global: RootKeyMap,
+	}))
 
 	return view.String()
+}
+
+func (m ProjectModel) getActiveKeyMap() help.KeyMap {
+	switch m.activeTab {
+
+	case MilestonesTab:
+		return m.milestones.Keys
+
+	// todo... handle other tabs
+
+	default:
+		return nil
+
+	}
+
 }
