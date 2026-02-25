@@ -15,6 +15,9 @@ import (
 type MilestoneListModel struct {
 	list    list.Model
 	loading bool
+
+	grouped   map[string][]MilestoneListItem // header to items
+	collapsed map[string]bool                // collapsed headers
 }
 
 func NewMilestoneListModel() MilestoneListModel {
@@ -108,6 +111,16 @@ func NewMilestoneListItem(page notion.MilestonePage) MilestoneListItem {
 		Tags:     tags,
 	}
 }
+
+// -------------------------------------------
+
+type MilestoneListItemGroup struct {
+	Label     string
+	Collapsed bool
+}
+
+// exclude header in filter-search
+func (g MilestoneListItemGroup) FilterValue() string { return "" }
 
 // -------------------------------------------
 
