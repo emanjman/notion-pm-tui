@@ -10,10 +10,43 @@ import (
 	lg "github.com/charmbracelet/lipgloss"
 )
 
-// implementation for delegate
-type MilestoneListDelegate struct {
+type delegateStyle struct {
 	defaultStyle  lg.Style
 	selectedStyle lg.Style
+}
+
+// implementation for delegate
+type MilestoneListDelegate struct {
+	milestone delegateStyle
+	header    delegateStyle
+}
+
+func NewMilestoneListDelegate() MilestoneListDelegate {
+	milestoneBase := lg.NewStyle().
+		Border(lg.NormalBorder(), false, false, true, false).
+		BorderForeground(lg.Color("236")).
+		PaddingLeft(4).
+		PaddingRight(4)
+
+	headerBase := lg.NewStyle().
+		Border(lg.NormalBorder(), false, false, true, false).
+		BorderForeground(lg.Color("236")).
+		PaddingLeft(2).
+		PaddingRight(2)
+
+	return MilestoneListDelegate{
+		milestone: delegateStyle{
+			defaultStyle: milestoneBase,
+			selectedStyle: milestoneBase.
+				Foreground(lg.Color("205")),
+		},
+
+		header: delegateStyle{
+			defaultStyle: headerBase,
+			selectedStyle: headerBase.
+				Foreground(lg.Color("205")),
+		},
+	}
 }
 
 func (d MilestoneListDelegate) Height() int  { return 3 }
@@ -35,8 +68,16 @@ func (d MilestoneListDelegate) Render(w io.Writer, m list.Model, index int, item
 			chevron = "▶"
 		}
 
+		style := d.header.defaultStyle
+		if selected {
+			style = d.header.selectedStyle
+		}
+
 		row1 = fmt.Sprintf("%s %s", chevron, item.Label)
 		row2 = fmt.Sprintf("%d", item.Count)
+		block := row1 + "\n" + row2
+
+		fmt.Fprint(w, style.Width(m.Width()).Render(block))
 
 	case MilestoneListItem:
 		var (
@@ -46,46 +87,28 @@ func (d MilestoneListDelegate) Render(w io.Writer, m list.Model, index int, item
 			progress = fmt.Sprintf("%.0f%%", item.Progress*100)
 		)
 
-		row1 = padBetween(name, status, m.Width())
-		row2 = padBetween(tags, progress, m.Width())
+		style := d.milestone.defaultStyle
+		if selected {
+			style = d.milestone.selectedStyle
+		}
+
+		row1 = padBetween(name, status, m.Width(), style)
+		row2 = padBetween(tags, progress, m.Width(), style)
+		block := row1 + "\n" + row2
+
+		// write to `w`
+		fmt.Fprint(w, style.Width(m.Width()).Render(block))
+
 	}
-
-	block := row1 + "\n" + row2
-
-	style := d.defaultStyle
-	if selected {
-		style = d.selectedStyle
-	}
-
-	// write to `w`
-	fmt.Fprint(w, style.Width(m.Width()).Render(block))
-
 }
 
-func padBetween(left, right string, windowWidth int) string {
-	staticPadding := 4 // left/right padding(2)
+func padBetween(left, right string, windowWidth int, style lg.Style) string {
 
 	// use lg.Width to only consider visible cells
-	padding := windowWidth - lg.Width(left) - lg.Width(right) - staticPadding
+	padding := windowWidth - lg.Width(left) - lg.Width(right) - style.GetHorizontalPadding()
 	if padding < 0 {
 		padding = 0
 	}
 
 	return left + strings.Repeat(" ", padding) + right
-}
-
-func NewMilestoneListDelegate() MilestoneListDelegate {
-	base := lg.NewStyle().
-		Border(lg.NormalBorder(), false, false, true, false).
-		BorderForeground(lg.Color("238")).
-		PaddingLeft(2).
-		PaddingRight(2)
-
-	return MilestoneListDelegate{
-		defaultStyle: base,
-
-		selectedStyle: base.
-			Bold(true).
-			Foreground(lg.Color("205")),
-	}
 }
