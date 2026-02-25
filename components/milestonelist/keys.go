@@ -10,12 +10,12 @@ type KeyMap struct {
 
 var DefaultKeyMap = KeyMap{
 	Up: key.NewBinding(
-		key.WithKeys("k"),
-		key.WithHelp("k", "up"),
+		key.WithKeys("up", "k"),
+		key.WithHelp("↑/k", "up"),
 	),
 	Down: key.NewBinding(
-		key.WithKeys("j"),
-		key.WithHelp("j", "down"),
+		key.WithKeys("down", "j"),
+		key.WithHelp("↓/j", "down"),
 	),
 	Select: key.NewBinding(
 		key.WithKeys("enter"),
