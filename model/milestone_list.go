@@ -21,14 +21,22 @@ type MilestoneListModel struct {
 }
 
 func NewMilestoneListModel() MilestoneListModel {
-	// l := list.New([]list.Item{}, NewMilestoneListDelegate(), 0, 0)
-	l := list.New(mockMilestoneItems(), NewMilestoneListDelegate(), 0, 0)
+	l := list.New([]list.Item{}, NewMilestoneListDelegate(), 0, 0)
 
 	// custom configs
 	l.Title = "Milestones"
 	l.SetShowHelp(false)
 
-	return MilestoneListModel{list: l, loading: true}
+	m := MilestoneListModel{
+		list:    l,
+		loading: true,
+
+		grouped: groupByStatus(mockMilestoneItems()),
+		hidden:  map[string]bool{},
+	}
+
+	m.list.SetItems(m.buildGroupedList())
+	return m
 }
 
 // just forward the list.Update(msg)
@@ -45,10 +53,13 @@ func (m MilestoneListModel) Update(msg tea.Msg) (MilestoneListModel, tea.Cmd) {
 		}
 
 		// create the list items
-		items := make([]list.Item, len(msg.Data))
+		tempItems := make([]MilestoneListItem, len(msg.Data))
 		for i, page := range msg.Data {
-			items[i] = NewMilestoneListItem(page)
+			tempItems[i] = NewMilestoneListItem(page)
 		}
+
+		m.grouped = groupByStatus(tempItems)
+		items := m.buildGroupedList()
 
 		m.list.SetItems(items)
 		m.loading = false
@@ -114,13 +125,14 @@ func NewMilestoneListItem(page notion.MilestonePage) MilestoneListItem {
 
 // -------------------------------------------
 
-type MilestoneListItemGroup struct {
+type MilestoneListItemHeader struct {
 	Label  string
 	Hidden bool
+	Count  int
 }
 
 // exclude header in filter-search (required item function)
-func (g MilestoneListItemGroup) FilterValue() string { return "" }
+func (g MilestoneListItemHeader) FilterValue() string { return "" }
 
 // helper func to group items into a map (keyed by their status)
 func groupByStatus(items []MilestoneListItem) map[string][]MilestoneListItem {
@@ -146,9 +158,10 @@ func (m MilestoneListModel) buildGroupedList() []list.Item {
 		}
 
 		// add group header
-		items = append(items, MilestoneListItemGroup{
+		items = append(items, MilestoneListItemHeader{
 			Label:  status,
 			Hidden: m.hidden[status],
+			Count:  len(group),
 		})
 
 		// add the group's items (if not hidden)
@@ -176,19 +189,34 @@ func (d MilestoneListDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd {
 	return nil
 }
 
+// render items (based on the list item type => header vs milestone)
 func (d MilestoneListDelegate) Render(w io.Writer, m list.Model, index int, item list.Item) {
-	milestone := item.(MilestoneListItem) // conform as specific list item type
+	row1 := ""
+	row2 := ""
 	selected := index == m.Index()
 
-	var (
-		name     = milestone.Name
-		status   = milestone.Status
-		tags     = strings.Join(milestone.Tags, " · ")
-		progress = fmt.Sprintf("%.0f%%", milestone.Progress*100)
-	)
+	switch item := item.(type) {
+	case MilestoneListItemHeader:
+		chevron := "▼"
+		if item.Hidden {
+			chevron = "▶"
+		}
 
-	row1 := padBetween(name, status, m.Width())
-	row2 := padBetween(tags, progress, m.Width())
+		row1 = fmt.Sprintf("%s %s", chevron, item.Label)
+		row2 = fmt.Sprintf("%d", item.Count)
+
+	case MilestoneListItem:
+		var (
+			name     = item.Name
+			status   = item.Status
+			tags     = strings.Join(item.Tags, " · ")
+			progress = fmt.Sprintf("%.0f%%", item.Progress*100)
+		)
+
+		row1 = padBetween(name, status, m.Width())
+		row2 = padBetween(tags, progress, m.Width())
+	}
+
 	block := row1 + "\n" + row2
 
 	style := d.defaultStyle
@@ -198,6 +226,7 @@ func (d MilestoneListDelegate) Render(w io.Writer, m list.Model, index int, item
 
 	// write to `w`
 	fmt.Fprint(w, style.Width(m.Width()).Render(block))
+
 }
 
 func padBetween(left, right string, windowWidth int) string {
@@ -230,54 +259,54 @@ func NewMilestoneListDelegate() MilestoneListDelegate {
 
 // ---
 
-func mockMilestoneItems() []list.Item {
-	return []list.Item{
+func mockMilestoneItems() []MilestoneListItem {
+	return []MilestoneListItem{
 		MilestoneListItem{
 			ID:       "1",
 			Name:     "Setup Project Structure",
-			Status:   "Completed",
+			Status:   "🎉 complete",
 			Progress: 1.0,
 			Tags:     []string{"backend", "setup"},
 		},
 		MilestoneListItem{
 			ID:       "2",
 			Name:     "Implement Notion API",
-			Status:   "In Progress",
+			Status:   "🚧 under development",
 			Progress: 0.75,
 			Tags:     []string{"backend", "api"},
 		},
 		MilestoneListItem{
 			ID:       "3",
 			Name:     "Build TUI Dashboard",
-			Status:   "In Progress",
+			Status:   "🚧 under development",
 			Progress: 0.4,
 			Tags:     []string{"frontend", "tui"},
 		},
 		MilestoneListItem{
 			ID:       "4",
 			Name:     "Authentication System",
-			Status:   "Not Started",
+			Status:   "😴 idle",
 			Progress: 0.0,
 			Tags:     []string{"backend", "auth"},
 		},
 		MilestoneListItem{
 			ID:       "5",
 			Name:     "Data Persistence Layer",
-			Status:   "Not Started",
+			Status:   "😴 idle",
 			Progress: 0.0,
 			Tags:     []string{"backend", "database"},
 		},
 		MilestoneListItem{
 			ID:       "6",
 			Name:     "Testing & QA",
-			Status:   "Not Started",
+			Status:   "😴 idle",
 			Progress: 0.0,
 			Tags:     []string{"testing"},
 		},
 		MilestoneListItem{
 			ID:       "7",
 			Name:     "Documentation",
-			Status:   "In Progress",
+			Status:   "🚧 under development",
 			Progress: 0.2,
 			Tags:     []string{"docs"},
 		},
