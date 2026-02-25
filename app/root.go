@@ -1,8 +1,9 @@
-package model
+package app
 
 import (
 	// ! temp, styling ui
 	// "fmt"
+	"notion-project-tui/components/milestonelist"
 	"notion-project-tui/notion"
 	"strings"
 	"time"
@@ -33,7 +34,7 @@ type ProjectModel struct {
 
 	client *notion.Client
 
-	milestones MilestoneListModel
+	milestones milestonelist.MilestoneListModel
 	// overview     views.PageContentModel
 	// projectNotes views.NotesListModel
 	// debugNotes   views.NotesListModel
@@ -46,7 +47,7 @@ func InitProjectModel() ProjectModel {
 		keys:       DefaultKeyMap,
 		help:       help.New(),
 		client:     notion.NewClient(),
-		milestones: NewMilestoneListModel(),
+		milestones: milestonelist.NewMilestoneListModel(),
 	}
 }
 

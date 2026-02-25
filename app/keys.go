@@ -1,14 +1,14 @@
-package model
+package app
 
 import "github.com/charmbracelet/bubbles/key"
 
 type KeyMap struct {
-	Up     key.Binding
-	Down   key.Binding
-	Select key.Binding
-	Back   key.Binding
-	Quit   key.Binding
-	Help   key.Binding
+	Up   key.Binding
+	Down key.Binding
+	// Select key.Binding
+	// Back   key.Binding
+	Quit key.Binding
+	Help key.Binding
 }
 
 var DefaultKeyMap = KeyMap{
