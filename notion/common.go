@@ -72,3 +72,15 @@ type SelectItem struct {
 	Name  string `json:"name"`
 	Color string `json:"color"`
 }
+
+// ------------------------------
+
+type SelectProperty struct {
+	ID     string     `json:"id"`
+	Select SelectItem `json:"select"`
+}
+
+type StatusProperty struct {
+	ID     string     `json:"id"`
+	Status SelectItem `json:"status"`
+}
