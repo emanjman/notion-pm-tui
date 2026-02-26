@@ -3,7 +3,8 @@ package app
 import (
 	// ! temp, styling ui
 	// "fmt"
-	"notion-project-tui/components/milestonelist"
+	"notion-project-tui/components/objective"
+	"notion-project-tui/keymap"
 	"notion-project-tui/notion"
 	"strings"
 	"time"
@@ -17,7 +18,7 @@ type Tab int
 
 // enum representation for better readability
 const (
-	MilestonesTab Tab = iota
+	ObjectiveTab = iota
 	OverviewTab
 	ProjectNotesTab
 	DebugNotesTab
@@ -27,14 +28,14 @@ type ProjectModel struct {
 	activeTab Tab
 
 	page *notion.ProjectPage
-	keys MergedKeyMap
+	keys KeyMap
 
 	help     help.Model
 	duration time.Duration
 
 	client *notion.Client
 
-	milestones milestonelist.MilestoneListModel
+	objective objective.ObjectiveModel
 	// overview     views.PageContentModel
 	// projectNotes views.NotesListModel
 	// debugNotes   views.NotesListModel
@@ -42,12 +43,12 @@ type ProjectModel struct {
 
 func InitProjectModel() ProjectModel {
 	return ProjectModel{
-		activeTab:  0,
-		page:       nil,
-		keys:       MergedKeyMap{curr: nil, global: RootKeyMap},
-		help:       help.New(),
-		client:     notion.NewClient(),
-		milestones: milestonelist.NewMilestoneListModel(),
+		activeTab: 0,
+		page:      nil,
+		keys:      RootKeyMap,
+		help:      help.New(),
+		client:    notion.NewClient(),
+		objective: objective.NewObjectiveModel(),
 	}
 }
 
@@ -62,9 +63,9 @@ func (m ProjectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch {
 
-		case key.Matches(msg, m.keys.global.Quit):
+		case key.Matches(msg, m.keys.Quit):
 			return m, tea.Quit
-		case key.Matches(msg, m.keys.global.Help):
+		case key.Matches(msg, m.keys.Help):
 			m.help.ShowAll = !m.help.ShowAll
 			return m, nil
 
@@ -74,8 +75,8 @@ func (m ProjectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			switch m.activeTab {
 
-			case MilestonesTab:
-				m.milestones, cmd = m.milestones.Update(msg)
+			case ObjectiveTab:
+				m.objective, cmd = m.objective.Update(msg)
 
 			}
 
@@ -85,7 +86,7 @@ func (m ProjectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	// send window size to the milestones model
 	case tea.WindowSizeMsg:
 		var cmd tea.Cmd
-		m.milestones, cmd = m.milestones.Update(msg)
+		m.objective, cmd = m.objective.Update(msg)
 		return m, cmd
 
 	case notion.ProjectMsg:
@@ -111,12 +112,14 @@ func (m ProjectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	// forward updated milestones model + cmd
 	case notion.MilestoneMsg:
 		var cmd tea.Cmd
-		m.milestones, cmd = m.milestones.Update(msg)
+		m.objective, cmd = m.objective.Update(msg)
 		return m, cmd
 
+	default:
+		var cmd tea.Cmd
+		m.objective, cmd = m.objective.Update(msg)
+		return m, cmd
 	}
-
-	return m, nil
 }
 
 func (m ProjectModel) View() string {
@@ -135,8 +138,8 @@ func (m ProjectModel) View() string {
 
 	switch m.activeTab {
 
-	case MilestonesTab:
-		view.WriteString(m.milestones.View())
+	case ObjectiveTab:
+		view.WriteString(m.objective.View())
 	case OverviewTab:
 		view.WriteString("Overview (coming soon)")
 	case ProjectNotesTab:
@@ -147,9 +150,9 @@ func (m ProjectModel) View() string {
 	}
 
 	view.WriteString("\n\n")
-	view.WriteString(m.help.View(MergedKeyMap{
-		curr:   m.getActiveKeyMap(),
-		global: RootKeyMap,
+	view.WriteString(m.help.View(keymap.JoinedKeyMap{
+		Primary:   RootKeyMap,
+		Secondary: m.getActiveKeyMap(),
 	}))
 
 	return view.String()
@@ -158,8 +161,8 @@ func (m ProjectModel) View() string {
 func (m ProjectModel) getActiveKeyMap() help.KeyMap {
 	switch m.activeTab {
 
-	case MilestonesTab:
-		return m.milestones.Keys
+	case ObjectiveTab:
+		return m.objective.KeyMap()
 
 	// todo... handle other tabs
 
