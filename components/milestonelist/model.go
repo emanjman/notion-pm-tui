@@ -1,19 +1,23 @@
 package milestonelist
 
 import (
+	"notion-project-tui/notion"
+	listutil "notion-project-tui/util/list"
+
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
-	"notion-project-tui/notion"
 )
 
 type MilestoneListModel struct {
 	list    list.Model
 	loading bool
-	grouped map[string][]MilestoneListItem // header to items
+	groups  map[string][]MilestoneListItem // header to items
 	hidden  map[string]bool                // hidden group
 	Keys    KeyMap
 }
+
+var statusOrder = []string{"🚧 under development", "😴 idle", "🎉 complete"}
 
 func NewMilestoneListModel() MilestoneListModel {
 	l := list.New([]list.Item{}, NewMilestoneListDelegate(), 0, 0)
@@ -23,11 +27,11 @@ func NewMilestoneListModel() MilestoneListModel {
 	m := MilestoneListModel{
 		list:    l,
 		loading: true,
-		grouped: groupByStatus(mockMilestoneItems()),
+		groups:  listutil.GroupByKey(mockMilestoneItems()),
 		hidden:  map[string]bool{},
 		Keys:    DefaultKeyMap,
 	}
-	m.list.SetItems(m.buildGroupedList())
+	m.list.SetItems(listutil.BuildGroupList(m.groups, m.hidden, statusOrder))
 
 	return m
 }
@@ -45,9 +49,9 @@ func (m MilestoneListModel) Update(msg tea.Msg) (MilestoneListModel, tea.Cmd) {
 		case key.Matches(msg, m.Keys.Select):
 			selected := m.list.SelectedItem()
 
-			if header, ok := selected.(MilestoneListItemHeader); ok {
-				m.hidden[header.Label] = !m.hidden[header.Label] // toggle
-				m.list.SetItems(m.buildGroupedList())            // rebuild list
+			if header, ok := selected.(listutil.ListItemGroupHeader); ok {
+				m.hidden[header.Label] = !m.hidden[header.Label]                          // toggle
+				m.list.SetItems(listutil.BuildGroupList(m.groups, m.hidden, statusOrder)) // rebuild list
 			}
 
 			return m, nil
@@ -64,8 +68,8 @@ func (m MilestoneListModel) Update(msg tea.Msg) (MilestoneListModel, tea.Cmd) {
 			tempItems[i] = NewMilestoneListItem(page)
 		}
 
-		m.grouped = groupByStatus(tempItems)
-		items := m.buildGroupedList()
+		m.groups = listutil.GroupByKey(tempItems)
+		items := listutil.BuildGroupList(m.groups, m.hidden, statusOrder)
 
 		m.list.SetItems(items)
 		m.loading = false

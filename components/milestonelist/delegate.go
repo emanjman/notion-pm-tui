@@ -3,6 +3,7 @@ package milestonelist
 import (
 	"fmt"
 	"io"
+	listutil "notion-project-tui/util/list"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/list"
@@ -62,7 +63,7 @@ func (d MilestoneListDelegate) Render(w io.Writer, m list.Model, index int, item
 	selected := index == m.Index()
 
 	switch item := item.(type) {
-	case MilestoneListItemHeader:
+	case listutil.ListItemGroupHeader:
 		chevron := "▼"
 		if item.Hidden {
 			chevron = "▶"
