@@ -4,8 +4,8 @@ import (
 	// ! temp, styling ui
 	// "fmt"
 	"notion-project-tui/components/objective"
-	"notion-project-tui/keymap"
 	"notion-project-tui/notion"
+	"notion-project-tui/util/keymap"
 	"strings"
 	"time"
 

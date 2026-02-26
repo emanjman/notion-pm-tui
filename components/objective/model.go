@@ -2,7 +2,7 @@ package objective
 
 import (
 	"notion-project-tui/components/milestonelist"
-	"notion-project-tui/keymap"
+	"notion-project-tui/util/keymap"
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
