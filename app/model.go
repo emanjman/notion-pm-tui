@@ -42,13 +42,14 @@ type ProjectModel struct {
 }
 
 func InitProjectModel() ProjectModel {
+	client := notion.NewClient()
 	return ProjectModel{
 		activeTab: 0,
 		page:      nil,
 		keys:      RootKeyMap,
 		help:      help.New(),
-		client:    notion.NewClient(),
-		objective: objective.NewObjectiveModel(),
+		client:    client,
+		objective: objective.NewObjectiveModel(client),
 	}
 }
 
