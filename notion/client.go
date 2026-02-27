@@ -71,13 +71,19 @@ func (c *Client) FetchProject() tea.Cmd {
 	}
 }
 
-type RelationIdsMsg struct {
+type TaskRelationIdsMsg struct {
 	IDs      []string
 	Err      error
 	Duration time.Duration
 }
 
-func (c *Client) FetchAllRelationIds(pageID string, propID string) tea.Cmd {
+type MilestoneRelationIdsMsg struct {
+	IDs      []string
+	Err      error
+	Duration time.Duration
+}
+
+func (c *Client) FetchMilestoneRelationIds(pageID string, propID string) tea.Cmd {
 	return func() tea.Msg {
 		start := time.Now()
 		ids := []string{}
@@ -91,12 +97,49 @@ func (c *Client) FetchAllRelationIds(pageID string, propID string) tea.Cmd {
 
 			req, err := http.NewRequest("GET", url, nil)
 			if err != nil {
-				return RelationIdsMsg{Err: err, Duration: time.Since(start)}
+				return MilestoneRelationIdsMsg{Err: err, Duration: time.Since(start)}
 			}
 
 			var res RelationListResponse
 			if err := c.do(req, &res); err != nil {
-				return RelationIdsMsg{Err: err, Duration: time.Since(start)}
+				return MilestoneRelationIdsMsg{Err: err, Duration: time.Since(start)}
+			}
+
+			for _, result := range res.Results {
+				ids = append(ids, result.Relation.ID)
+			}
+
+			if !res.HasMore || res.NextCursor == nil {
+				break
+			}
+
+			cursor = *res.NextCursor
+		}
+
+		return MilestoneRelationIdsMsg{IDs: ids, Duration: time.Since(start)}
+	}
+}
+
+func (c *Client) FetchTaskRelationIds(pageID string, propID string) tea.Cmd {
+	return func() tea.Msg {
+		start := time.Now()
+		ids := []string{}
+		cursor := ""
+
+		for {
+			url := baseUrl + "/pages/" + pageID + "/properties/" + propID + "?page_size=100"
+			if cursor != "" {
+				url += "&start_cursor=" + cursor
+			}
+
+			req, err := http.NewRequest("GET", url, nil)
+			if err != nil {
+				return TaskRelationIdsMsg{Err: err, Duration: time.Since(start)}
+			}
+
+			var res RelationListResponse
+			if err := c.do(req, &res); err != nil {
+				return TaskRelationIdsMsg{Err: err, Duration: time.Since(start)}
 			}
 
 			for _, result := range res.Results {
@@ -111,7 +154,7 @@ func (c *Client) FetchAllRelationIds(pageID string, propID string) tea.Cmd {
 			cursor = *res.NextCursor
 		}
 
-		return RelationIdsMsg{IDs: ids, Duration: time.Since(start)}
+		return TaskRelationIdsMsg{IDs: ids, Duration: time.Since(start)}
 	}
 }
 

@@ -66,9 +66,9 @@ func (m TaskListModel) Update(msg tea.Msg) (TaskListModel, tea.Cmd) {
 		m.Milestone.ID = msg.Milestone.ID
 		m.Milestone.TasksPropID = msg.Milestone.TasksPropID
 
-		return m, m.client.FetchAllRelationIds(m.Milestone.ID, m.Milestone.TasksPropID)
+		return m, m.client.FetchTaskRelationIds(m.Milestone.ID, m.Milestone.TasksPropID)
 
-	case notion.RelationIdsMsg:
+	case notion.TaskRelationIdsMsg:
 		if msg.Err != nil {
 			return m, nil
 		}
