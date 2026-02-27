@@ -2,6 +2,7 @@ package objective
 
 import (
 	"notion-project-tui/components/milestonelist"
+	"notion-project-tui/components/tasklist"
 	"notion-project-tui/util/keymap"
 
 	"github.com/charmbracelet/bubbles/help"
@@ -20,14 +21,18 @@ const (
 type ObjectiveModel struct {
 	focus      Panel
 	milestones milestonelist.MilestoneListModel
-	// tasks      tasklist.TaskListModel
-	keys KeyMap
+	tasks      tasklist.TaskListModel
+	keys       KeyMap
 }
 
 func NewObjectiveModel() ObjectiveModel {
+	milestones := milestonelist.NewMilestoneListModel()
+	tasks := tasklist.NewTaskListModel(milestones.SelectedMilestoneId())
+
 	return ObjectiveModel{
 		focus:      MilestonesPanel,
-		milestones: milestonelist.NewMilestoneListModel(),
+		milestones: milestones,
+		tasks:      tasks,
 		keys:       DefaultKeyMap,
 	}
 }
@@ -40,66 +45,61 @@ func (m ObjectiveModel) Update(msg tea.Msg) (ObjectiveModel, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch {
+
 		case key.Matches(msg, m.keys.LeftFocus):
+			m.tasks.SetMilestoneId(m.milestones.SelectedMilestoneId())
 			m.focus = MilestonesPanel
-			// todo: would need to tell tasks what milestone is selected
+			return m, nil
+
 		case key.Matches(msg, m.keys.RightFocus):
 			m.focus = TasksPanel
-		default:
-			// forward to active panel
-			var cmd tea.Cmd
-
-			switch m.focus {
-			case MilestonesPanel:
-				m.milestones, cmd = m.milestones.Update(msg)
-
-			case TasksPanel:
-				// m.tasks, cmd = m.tasks.Update(msg)
-
-				return m, cmd
-			}
+			return m, nil
 		}
 
 	case tea.WindowSizeMsg:
 		var cmd tea.Cmd
 		leftWidth := msg.Width * 40 / 100
-		// rightWidth := msg.Width - leftWidth
+		rightWidth := msg.Width - leftWidth
 
 		m.milestones, cmd = m.milestones.Update(tea.WindowSizeMsg{
 			Width:  leftWidth,
 			Height: msg.Height,
 		})
-
-		// todo: apply task width
-		// m.tasks, cmd = m.tasks.Update(tea.WindowSizeMsg{
-		// 	Width:  rightWidth,
-		// 	Height: msg.Height,
-		// })
+		m.tasks, cmd = m.tasks.Update(tea.WindowSizeMsg{
+			Width:  rightWidth,
+			Height: msg.Height,
+		})
 
 		return m, cmd
 	}
 
-	return m, nil
+	// forward to active panel
+	var cmd tea.Cmd
+
+	switch m.focus {
+
+	case MilestonesPanel:
+		m.milestones, cmd = m.milestones.Update(msg)
+	case TasksPanel:
+		m.tasks, cmd = m.tasks.Update(msg)
+	}
+
+	return m, cmd
+
 }
 
 func (m ObjectiveModel) View() string {
 	left := m.milestones.View()
-	// right := m.tasks.View()
-	right := ""
+	right := m.tasks.View()
 	return lg.JoinHorizontal(lg.Top, left, right)
 }
 
 func (m ObjectiveModel) KeyMap() help.KeyMap {
 	switch m.focus {
 	case MilestonesPanel:
-		// return m.milestones.Keys
 		return keymap.JoinedKeyMap{Primary: m.keys, Secondary: m.milestones.Keys}
-
 	case TasksPanel:
-		// return SharedKeyMap{shared: m.keys, focus: m.tasks.Keys}
-		// todo: use tasks keys
-		return keymap.JoinedKeyMap{Primary: m.keys, Secondary: m.milestones.Keys}
+		return keymap.JoinedKeyMap{Primary: m.keys, Secondary: m.tasks.Keys}
 	}
-
 	return nil
 }

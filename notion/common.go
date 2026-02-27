@@ -67,14 +67,6 @@ type MultiSelectProperty struct {
 	MultiSelect []SelectItem `json:"multi_select"`
 }
 
-type SelectItem struct {
-	ID    string `json:"id"`
-	Name  string `json:"name"`
-	Color string `json:"color"`
-}
-
-// ------------------------------
-
 type SelectProperty struct {
 	ID     string     `json:"id"`
 	Select SelectItem `json:"select"`
@@ -83,4 +75,10 @@ type SelectProperty struct {
 type StatusProperty struct {
 	ID     string     `json:"id"`
 	Status SelectItem `json:"status"`
+}
+
+type SelectItem struct {
+	ID    string `json:"id"`
+	Name  string `json:"name"`
+	Color string `json:"color"`
 }

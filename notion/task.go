@@ -14,8 +14,9 @@ type TaskPage struct {
 }
 
 type TaskProperties struct {
-	Title    TitleProperty  `json:"task"`
-	Status   StatusProperty `json:"status"`
-	Priority SelectProperty `json:"priority"`
-	Type     SelectProperty `json:"type"`
+	Title     TitleProperty    `json:"task"`
+	Status    StatusProperty   `json:"status"`
+	Priority  SelectProperty   `json:"priority"`
+	Type      SelectProperty   `json:"type"`
+	Milestone RelationProperty `json:"@milestone"`
 }

@@ -36,6 +36,10 @@ func NewMilestoneListModel() MilestoneListModel {
 	return m
 }
 
+type MilestoneSelectedMsg struct {
+	ID string
+}
+
 // just forward the list.Update(msg)
 // and forward its returned response
 func (m MilestoneListModel) Update(msg tea.Msg) (MilestoneListModel, tea.Cmd) {
@@ -52,9 +56,12 @@ func (m MilestoneListModel) Update(msg tea.Msg) (MilestoneListModel, tea.Cmd) {
 			if header, ok := selected.(listutil.ListItemGroupHeader); ok {
 				m.hidden[header.Label] = !m.hidden[header.Label]                          // toggle
 				m.list.SetItems(listutil.BuildGroupList(m.groups, m.hidden, statusOrder)) // rebuild list
+				return m, nil
+			} else {
+				return m, func() tea.Msg {
+					return MilestoneSelectedMsg{ID: m.SelectedMilestoneId()}
+				}
 			}
-
-			return m, nil
 		}
 
 	case notion.MilestoneMsg:
@@ -88,4 +95,19 @@ func (m MilestoneListModel) View() string {
 	// 	return "Loading milestones..."
 	// }
 	return m.list.View()
+}
+
+func (m MilestoneListModel) SelectedMilestoneId() string {
+	item := m.list.SelectedItem()
+
+	switch item := item.(type) {
+	// get first milestone id of this group
+	case listutil.ListItemGroupHeader:
+		return m.groups[item.Label][0].ID
+	// otherwise, on milestone, return its id
+	case MilestoneListItem:
+		return item.ID
+	}
+
+	return ""
 }
