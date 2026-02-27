@@ -48,7 +48,7 @@ func (m ObjectiveModel) Update(msg tea.Msg) (ObjectiveModel, tea.Cmd) {
 		switch {
 
 		case key.Matches(msg, m.keys.LeftFocus):
-			m.tasks.SetMilestone(m.milestones.SelectedMilestone())
+			m.tasks.Milestone = m.milestones.SelectedMilestone()
 			m.focus = MilestonesPanel
 			return m, nil
 

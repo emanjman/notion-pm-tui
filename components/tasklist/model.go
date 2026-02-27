@@ -108,6 +108,3 @@ func (m TaskListModel) View() string {
 	return m.list.View()
 }
 
-func (m TaskListModel) SetMilestone(milestone notion.SelectedMilestone) {
-	m.Milestone = milestone
-}
