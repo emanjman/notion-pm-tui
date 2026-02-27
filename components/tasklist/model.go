@@ -1,7 +1,6 @@
 package tasklist
 
 import (
-	"notion-project-tui/components/milestonelist"
 	"notion-project-tui/notion"
 	listutil "notion-project-tui/util/list"
 
@@ -63,7 +62,7 @@ func (m TaskListModel) Update(msg tea.Msg) (TaskListModel, tea.Cmd) {
 			return m, nil
 		}
 
-	case milestonelist.MilestoneSelectedMsg:
+	case notion.MilestoneSelectedMsg:
 		m.Milestone.ID = msg.Milestone.ID
 		m.Milestone.TasksPropID = msg.Milestone.TasksPropID
 

@@ -1,7 +1,6 @@
 package milestonelist
 
 import (
-	"notion-project-tui/components/tasklist"
 	"notion-project-tui/notion"
 	listutil "notion-project-tui/util/list"
 
@@ -37,9 +36,6 @@ func NewMilestoneListModel() MilestoneListModel {
 	return m
 }
 
-type MilestoneSelectedMsg struct {
-	Milestone MilestoneListItem
-}
 
 func (m MilestoneListModel) Update(msg tea.Msg) (MilestoneListModel, tea.Cmd) {
 	switch msg := msg.(type) {
@@ -62,7 +58,7 @@ func (m MilestoneListModel) Update(msg tea.Msg) (MilestoneListModel, tea.Cmd) {
 				// mark milestone as selected to get its tasks
 			case MilestoneListItem:
 				return m, func() tea.Msg {
-					return MilestoneSelectedMsg{Milestone: item}
+					return notion.MilestoneSelectedMsg{Milestone: notion.SelectedMilestone{ID: item.ID, TasksPropID: item.TasksPropID}}
 				}
 			}
 		}
@@ -100,24 +96,24 @@ func (m MilestoneListModel) View() string {
 	return m.list.View()
 }
 
-func (m MilestoneListModel) SelectedMilestone() tasklist.SelectedMilestone {
+func (m MilestoneListModel) SelectedMilestone() notion.SelectedMilestone {
 	item := m.list.SelectedItem()
 
 	switch item := item.(type) {
 	// get first milestone id of this group
 	case listutil.ListItemGroupHeader:
 		milestone := m.groups[item.Label][0]
-		return tasklist.SelectedMilestone{
+		return notion.SelectedMilestone{
 			ID:          milestone.ID,
 			TasksPropID: milestone.TasksPropID,
 		}
 	// otherwise, on milestone, return its id
 	case MilestoneListItem:
-		return tasklist.SelectedMilestone{
+		return notion.SelectedMilestone{
 			ID:          item.ID,
 			TasksPropID: item.TasksPropID,
 		}
 	}
 
-	return tasklist.SelectedMilestone{}
+	return notion.SelectedMilestone{}
 }

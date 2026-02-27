@@ -28,3 +28,7 @@ type SelectedMilestone struct {
 	ID          string
 	TasksPropID string
 }
+
+type MilestoneSelectedMsg struct {
+	Milestone SelectedMilestone
+}
