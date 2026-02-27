@@ -1,6 +1,7 @@
 package milestonelist
 
 import (
+	"notion-project-tui/components/tasklist"
 	"notion-project-tui/notion"
 	listutil "notion-project-tui/util/list"
 
@@ -37,11 +38,9 @@ func NewMilestoneListModel() MilestoneListModel {
 }
 
 type MilestoneSelectedMsg struct {
-	ID string
+	Milestone MilestoneListItem
 }
 
-// just forward the list.Update(msg)
-// and forward its returned response
 func (m MilestoneListModel) Update(msg tea.Msg) (MilestoneListModel, tea.Cmd) {
 	switch msg := msg.(type) {
 
@@ -53,13 +52,17 @@ func (m MilestoneListModel) Update(msg tea.Msg) (MilestoneListModel, tea.Cmd) {
 		case key.Matches(msg, m.Keys.Select):
 			selected := m.list.SelectedItem()
 
-			if header, ok := selected.(listutil.ListItemGroupHeader); ok {
-				m.hidden[header.Label] = !m.hidden[header.Label]                          // toggle
-				m.list.SetItems(listutil.BuildGroupList(m.groups, m.hidden, statusOrder)) // rebuild list
+			switch item := selected.(type) {
+			// toggle + rebuild list
+			case listutil.ListItemGroupHeader:
+				m.hidden[item.Label] = !m.hidden[item.Label]
+				m.list.SetItems(listutil.BuildGroupList(m.groups, m.hidden, statusOrder))
 				return m, nil
-			} else {
+
+				// mark milestone as selected to get its tasks
+			case MilestoneListItem:
 				return m, func() tea.Msg {
-					return MilestoneSelectedMsg{ID: m.SelectedMilestoneId()}
+					return MilestoneSelectedMsg{Milestone: item}
 				}
 			}
 		}
@@ -97,17 +100,24 @@ func (m MilestoneListModel) View() string {
 	return m.list.View()
 }
 
-func (m MilestoneListModel) SelectedMilestoneId() string {
+func (m MilestoneListModel) SelectedMilestone() tasklist.SelectedMilestone {
 	item := m.list.SelectedItem()
 
 	switch item := item.(type) {
 	// get first milestone id of this group
 	case listutil.ListItemGroupHeader:
-		return m.groups[item.Label][0].ID
+		milestone := m.groups[item.Label][0]
+		return tasklist.SelectedMilestone{
+			ID:          milestone.ID,
+			TasksPropID: milestone.TasksPropID,
+		}
 	// otherwise, on milestone, return its id
 	case MilestoneListItem:
-		return item.ID
+		return tasklist.SelectedMilestone{
+			ID:          item.ID,
+			TasksPropID: item.TasksPropID,
+		}
 	}
 
-	return ""
+	return tasklist.SelectedMilestone{}
 }

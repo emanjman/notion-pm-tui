@@ -12,29 +12,31 @@ import (
 
 // ? required structure for grouping (groups, hidden, ...) could be an interface
 type TaskListModel struct {
-	milestoneId string
-	list        list.Model
-	loading     bool
-	groups      map[string][]TaskListItem
-	hidden      map[string]bool
-	Keys        KeyMap
+	Milestone notion.SelectedMilestone
+	list      list.Model
+	loading   bool
+	groups    map[string][]TaskListItem
+	hidden    map[string]bool
+	Keys      KeyMap
+	client    *notion.Client
 	// todo: cached milestones
 }
 
 var statusOrder = []string{"dev", "idle", "done"}
 
-func NewTaskListModel(milestoneId string) TaskListModel {
+func NewTaskListModel(milestone notion.SelectedMilestone, c *notion.Client) TaskListModel {
 	l := list.New([]list.Item{}, NewTaskListDelegate(), 0, 0)
 	l.Title = "Tasks"
 	l.SetShowHelp(false)
 
 	m := TaskListModel{
-		milestoneId: milestoneId,
-		list:        l,
-		loading:     true,
-		groups:      listutil.GroupByKey(mockTaskItems()),
-		hidden:      map[string]bool{},
-		Keys:        DefaultKeyMap,
+		Milestone: milestone,
+		list:      l,
+		loading:   true,
+		groups:    listutil.GroupByKey(mockTaskItems()),
+		hidden:    map[string]bool{},
+		Keys:      DefaultKeyMap,
+		client:    c,
 	}
 	m.list.SetItems(listutil.BuildGroupList(m.groups, m.hidden, statusOrder))
 
@@ -61,6 +63,19 @@ func (m TaskListModel) Update(msg tea.Msg) (TaskListModel, tea.Cmd) {
 			return m, nil
 		}
 
+	case milestonelist.MilestoneSelectedMsg:
+		m.Milestone.ID = msg.Milestone.ID
+		m.Milestone.TasksPropID = msg.Milestone.TasksPropID
+
+		return m, m.client.FetchAllRelationIds(m.Milestone.ID, m.Milestone.TasksPropID)
+
+	case notion.RelationIdsMsg:
+		if msg.Err != nil {
+			return m, nil
+		}
+
+		return m, m.client.FetchTasks(msg.IDs)
+
 	case notion.TaskMsg:
 		if msg.Err != nil {
 			return m, nil
@@ -77,10 +92,6 @@ func (m TaskListModel) Update(msg tea.Msg) (TaskListModel, tea.Cmd) {
 
 		m.list.SetItems(items)
 		m.loading = false
-
-	case milestonelist.MilestoneSelectedMsg:
-		m.milestoneId = msg.ID
-		m.list.SetItems(listutil.BuildGroupList(m.groups, m.hidden, statusOrder))
 	}
 
 	// forward rest of commands to children models (list)
@@ -98,18 +109,6 @@ func (m TaskListModel) View() string {
 	return m.list.View()
 }
 
-func (m TaskListModel) SetMilestoneId(id string) {
-	m.milestoneId = id
+func (m TaskListModel) SetMilestone(milestone notion.SelectedMilestone) {
+	m.Milestone = milestone
 }
-
-// func (m TaskListModel) filterByMilestone(items []TaskListItem) []TaskListItem {
-// 	filtered := []TaskListItem{}
-//
-// 	for _, item := range items {
-// 		if item.MilestoneID == m.milestoneId {
-// 			filtered = append(filtered, item)
-// 		}
-// 	}
-//
-// 	return filtered
-// }

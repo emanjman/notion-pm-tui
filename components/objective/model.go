@@ -3,6 +3,7 @@ package objective
 import (
 	"notion-project-tui/components/milestonelist"
 	"notion-project-tui/components/tasklist"
+	"notion-project-tui/notion"
 	"notion-project-tui/util/keymap"
 
 	"github.com/charmbracelet/bubbles/help"
@@ -25,9 +26,9 @@ type ObjectiveModel struct {
 	keys       KeyMap
 }
 
-func NewObjectiveModel() ObjectiveModel {
+func NewObjectiveModel(c *notion.Client) ObjectiveModel {
 	milestones := milestonelist.NewMilestoneListModel()
-	tasks := tasklist.NewTaskListModel(milestones.SelectedMilestoneId())
+	tasks := tasklist.NewTaskListModel(milestones.SelectedMilestone(), c)
 
 	return ObjectiveModel{
 		focus:      MilestonesPanel,
@@ -47,7 +48,7 @@ func (m ObjectiveModel) Update(msg tea.Msg) (ObjectiveModel, tea.Cmd) {
 		switch {
 
 		case key.Matches(msg, m.keys.LeftFocus):
-			m.tasks.SetMilestoneId(m.milestones.SelectedMilestoneId())
+			m.tasks.SetMilestone(m.milestones.SelectedMilestone())
 			m.focus = MilestonesPanel
 			return m, nil
 

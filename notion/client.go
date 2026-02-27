@@ -77,24 +77,14 @@ type RelationIdsMsg struct {
 	Duration time.Duration
 }
 
-func (c *Client) FetchAllRelationIds(pageID string, prop RelationProperty) tea.Cmd {
+func (c *Client) FetchAllRelationIds(pageID string, propID string) tea.Cmd {
 	return func() tea.Msg {
 		start := time.Now()
-
-		// populate w/ the initial set of relations
-		ids := make([]string, len(prop.Relation))
-		for i, r := range prop.Relation {
-			ids[i] = r.ID
-		}
-
-		if !prop.HasMore {
-			return RelationIdsMsg{IDs: ids, Duration: time.Since(start)}
-		}
-
-		// add the rest of relations
+		ids := []string{}
 		cursor := ""
+
 		for {
-			url := baseUrl + "/pages/" + pageID + "/properties/" + prop.ID + "?page_size=100"
+			url := baseUrl + "/pages/" + pageID + "/properties/" + propID + "?page_size=100"
 			if cursor != "" {
 				url += "&start_cursor=" + cursor
 			}
@@ -146,5 +136,29 @@ func (c *Client) FetchMilestones(ids []string) tea.Cmd {
 		}
 
 		return MilestoneMsg{Data: milestones, Duration: time.Since(start)}
+	}
+}
+
+func (c *Client) FetchTasks(ids []string) tea.Cmd {
+	return func() tea.Msg {
+		start := time.Now()
+		tasks := make([]TaskPage, 0, len(ids))
+
+		for _, id := range ids {
+			url := baseUrl + "/pages/" + id
+			req, err := http.NewRequest("GET", url, nil)
+			if err != nil {
+				return TaskMsg{Err: err, Duration: time.Since(start)}
+			}
+
+			var task TaskPage
+			if err := c.do(req, &task); err != nil {
+				return TaskMsg{Err: err, Duration: time.Since(start)}
+			}
+
+			tasks = append(tasks, task)
+		}
+
+		return TaskMsg{Data: tasks, Duration: time.Since(start)}
 	}
 }

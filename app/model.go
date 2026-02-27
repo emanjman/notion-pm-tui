@@ -99,7 +99,7 @@ func (m ProjectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.page = &msg.Data
 		m.duration = msg.Duration
 
-		return m, m.client.FetchAllRelationIds(m.page.ID, m.page.Properties.Milestones)
+		return m, m.client.FetchAllRelationIds(m.page.ID, m.page.Properties.Milestones.ID)
 
 	case notion.RelationIdsMsg:
 		// if failed fetch, don't proceed w/ milestones fetch

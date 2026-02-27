@@ -8,6 +8,7 @@ import (
 // implementation for the `list.Item` interface
 type MilestoneListItem struct {
 	ID           string
+	TasksPropID  string
 	Name         string
 	Status       string
 	LastActivity time.Time
@@ -39,10 +40,11 @@ func NewMilestoneListItem(page notion.MilestonePage) MilestoneListItem {
 	}
 
 	return MilestoneListItem{
-		ID:       page.ID,
-		Name:     title,
-		Status:   status,
-		Progress: progress,
-		Tags:     tags,
+		ID:          page.ID,
+		TasksPropID: page.Properties.Tasks.ID,
+		Name:        title,
+		Status:      status,
+		Progress:    progress,
+		Tags:        tags,
 	}
 }
