@@ -74,18 +74,24 @@ func (m ObjectiveModel) Update(msg tea.Msg) (ObjectiveModel, tea.Cmd) {
 		return m, cmd
 	}
 
-	// forward to active panel
-	var cmd tea.Cmd
+	// key presses go to active panel only; data messages go to both
+	var milestoneCmd, taskCmd tea.Cmd
 
-	switch m.focus {
-
-	case MilestonesPanel:
-		m.milestones, cmd = m.milestones.Update(msg)
-	case TasksPanel:
-		m.tasks, cmd = m.tasks.Update(msg)
+	if _, isKey := msg.(tea.KeyMsg); isKey {
+		switch m.focus {
+		case MilestonesPanel:
+			m.milestones, milestoneCmd = m.milestones.Update(msg)
+			return m, milestoneCmd
+		case TasksPanel:
+			m.tasks, taskCmd = m.tasks.Update(msg)
+			return m, taskCmd
+		}
+	} else {
+		m.milestones, milestoneCmd = m.milestones.Update(msg)
+		m.tasks, taskCmd = m.tasks.Update(msg)
 	}
 
-	return m, cmd
+	return m, tea.Batch(milestoneCmd, taskCmd)
 
 }
 
