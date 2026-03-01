@@ -3,6 +3,7 @@ package milestonelist
 import (
 	"fmt"
 	"io"
+	"notion-project-tui/styles"
 	listutil "notion-project-tui/util/list"
 	"strings"
 
@@ -93,23 +94,12 @@ func (d MilestoneListDelegate) Render(w io.Writer, m list.Model, index int, item
 			style = d.milestone.selectedStyle
 		}
 
-		row1 = padBetween(name, status, m.Width(), style)
-		row2 = padBetween(tags, progress, m.Width(), style)
+		row1 = styles.PadBetween(name, status, m.Width(), style)
+		row2 = styles.PadBetween(tags, progress, m.Width(), style)
 		block := row1 + "\n" + row2
 
 		// write to `w`
 		fmt.Fprint(w, style.Width(m.Width()).Render(block))
 
 	}
-}
-
-func padBetween(left, right string, windowWidth int, style lg.Style) string {
-
-	// use lg.Width to only consider visible cells
-	padding := windowWidth - lg.Width(left) - lg.Width(right) - style.GetHorizontalPadding()
-	if padding < 0 {
-		padding = 0
-	}
-
-	return left + strings.Repeat(" ", padding) + right
 }
