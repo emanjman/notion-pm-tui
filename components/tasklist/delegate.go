@@ -12,10 +12,12 @@ import (
 	lg "github.com/charmbracelet/lipgloss"
 )
 
-type TaskListDelegate struct{}
+type TaskListDelegate struct {
+	focused bool
+}
 
-func NewTaskListDelegate() TaskListDelegate {
-	return TaskListDelegate{}
+func NewTaskListDelegate(flag bool) TaskListDelegate {
+	return TaskListDelegate{focused: flag}
 }
 
 func (d TaskListDelegate) Height() int                               { return 2 }
@@ -23,7 +25,7 @@ func (d TaskListDelegate) Spacing() int                              { return 0 
 func (d TaskListDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd { return nil }
 
 func (d TaskListDelegate) Render(w io.Writer, m list.Model, index int, item list.Item) {
-	selected := index == m.Index()
+	selected := index == m.Index() && d.focused
 
 	switch item := item.(type) {
 	case listutil.ListItemGroupHeader:

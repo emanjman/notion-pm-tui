@@ -24,7 +24,7 @@ type TaskListModel struct {
 var statusOrder = []string{"dev", "idle", "done"}
 
 func NewTaskListModel(milestone notion.SelectedMilestone, c *notion.Client) TaskListModel {
-	l := list.New([]list.Item{}, NewTaskListDelegate(), 0, 0)
+	l := list.New([]list.Item{}, NewTaskListDelegate(false), 0, 0)
 	l.Title = "Tasks"
 	l.SetShowHelp(false)
 
@@ -108,3 +108,6 @@ func (m TaskListModel) View() string {
 	return m.list.View()
 }
 
+func (m *TaskListModel) SetItemDelegate(d list.ItemDelegate) {
+	m.list.SetDelegate(d)
+}

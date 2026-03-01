@@ -50,10 +50,18 @@ func (m ObjectiveModel) Update(msg tea.Msg) (ObjectiveModel, tea.Cmd) {
 		case key.Matches(msg, m.keys.LeftFocus):
 			m.tasks.Milestone = m.milestones.SelectedMilestone()
 			m.focus = MilestonesPanel
+
+			m.tasks.SetItemDelegate(tasklist.NewTaskListDelegate(false))
+			m.milestones.SetItemDelegate(milestonelist.NewMilestoneListDelegate(true))
+
 			return m, nil
 
 		case key.Matches(msg, m.keys.RightFocus):
 			m.focus = TasksPanel
+
+			m.tasks.SetItemDelegate(tasklist.NewTaskListDelegate(true))
+			m.milestones.SetItemDelegate(milestonelist.NewMilestoneListDelegate(false))
+
 			return m, nil
 		}
 

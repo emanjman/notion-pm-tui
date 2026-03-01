@@ -20,7 +20,7 @@ type MilestoneListModel struct {
 var statusOrder = []string{"🚧 under development", "😴 idle", "🎉 complete"}
 
 func NewMilestoneListModel() MilestoneListModel {
-	l := list.New([]list.Item{}, NewMilestoneListDelegate(), 0, 0)
+	l := list.New([]list.Item{}, NewMilestoneListDelegate(true), 0, 0)
 	l.Title = "Milestones"
 	l.SetShowHelp(false)
 
@@ -35,7 +35,6 @@ func NewMilestoneListModel() MilestoneListModel {
 
 	return m
 }
-
 
 func (m MilestoneListModel) Update(msg tea.Msg) (MilestoneListModel, tea.Cmd) {
 	switch msg := msg.(type) {
@@ -116,4 +115,8 @@ func (m MilestoneListModel) SelectedMilestone() notion.SelectedMilestone {
 	}
 
 	return notion.SelectedMilestone{}
+}
+
+func (m *MilestoneListModel) SetItemDelegate(d list.ItemDelegate) {
+	m.list.SetDelegate(d)
 }

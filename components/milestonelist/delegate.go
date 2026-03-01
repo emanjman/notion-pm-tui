@@ -21,9 +21,11 @@ type delegateStyle struct {
 type MilestoneListDelegate struct {
 	milestone delegateStyle
 	header    delegateStyle
+
+	focused bool
 }
 
-func NewMilestoneListDelegate() MilestoneListDelegate {
+func NewMilestoneListDelegate(focused bool) MilestoneListDelegate {
 	milestoneBase := lg.NewStyle().
 		Border(lg.NormalBorder(), false, false, true, false).
 		BorderForeground(lg.Color("236")).
@@ -48,6 +50,8 @@ func NewMilestoneListDelegate() MilestoneListDelegate {
 			selectedStyle: headerBase.
 				Foreground(lg.Color("205")),
 		},
+
+		focused: focused,
 	}
 }
 
@@ -61,7 +65,7 @@ func (d MilestoneListDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd {
 func (d MilestoneListDelegate) Render(w io.Writer, m list.Model, index int, item list.Item) {
 	row1 := ""
 	row2 := ""
-	selected := index == m.Index()
+	selected := index == m.Index() && d.focused
 
 	switch item := item.(type) {
 	case listutil.ListItemGroupHeader:
