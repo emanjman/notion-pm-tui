@@ -7,6 +7,7 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
+	lg "github.com/charmbracelet/lipgloss"
 )
 
 // ? required structure for grouping (groups, hidden, ...) could be an interface
@@ -106,7 +107,12 @@ func (m TaskListModel) View() string {
 	// 	return "Loading tasks..."
 	// }
 
-	return m.list.View()
+	px := 1
+
+	containerStyle := lg.NewStyle().
+		PaddingLeft(px).
+		PaddingRight(px)
+	return containerStyle.Render(m.list.View())
 }
 
 func (m *TaskListModel) SetItemDelegate(d list.ItemDelegate) {

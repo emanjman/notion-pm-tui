@@ -29,13 +29,16 @@ type MilestoneListDelegate struct {
 }
 
 func NewMilestoneListDelegate(focused bool) MilestoneListDelegate {
+	borderDistance := 2
+	leftEdgeDistance := 1
+
 	// item container style
 	var (
 		icbase = lg.NewStyle().
 			Border(lg.NormalBorder(), false, false, true, false).
 			BorderForeground(styles.BorderForeground).
-			PaddingLeft(4).
-			PaddingRight(4)
+			PaddingLeft(leftEdgeDistance + 2).
+			PaddingRight(borderDistance)
 		icsel = icbase.
 			Background(styles.SelectedBackground)
 	)
@@ -51,9 +54,9 @@ func NewMilestoneListDelegate(focused bool) MilestoneListDelegate {
 	var (
 		hbase = lg.NewStyle().
 			PaddingBottom(1).
-			PaddingLeft(2).
-			PaddingRight(2).
-			Foreground(styles.MutedForeground)
+			Foreground(styles.MutedForeground).
+			PaddingLeft(leftEdgeDistance).
+			PaddingRight(borderDistance)
 		hsel = hbase.
 			Foreground(styles.PrimaryForeground).
 			Underline(true)
@@ -103,10 +106,16 @@ func (d MilestoneListDelegate) Render(w io.Writer, m list.Model, index int, item
 		}
 
 		var (
-			name     = segStyle.Foreground(styles.PrimaryForeground).Render(item.Name)
-			tags     = segStyle.Foreground(styles.MutedForeground).Render(strings.Join(item.Tags, " · "))
-			progress = segStyle.Render(fmt.Sprintf("%.0f%%", item.Progress*100))
-			bar      = segStyle.Render(progressBar(item.Progress, int(m.Width())/3))
+			name = segStyle.
+				Foreground(styles.PrimaryForeground).
+				Render(item.Name)
+			tags = segStyle.
+				Foreground(styles.MutedForeground).
+				Render(strings.Join(item.Tags, " · "))
+			progress = segStyle.
+					Render(fmt.Sprintf("%.0f%%", item.Progress*100))
+			bar = segStyle.
+				Render(progressBar(item.Progress, int(m.Width())/3))
 		)
 
 		style := d.style.itemContainer.base

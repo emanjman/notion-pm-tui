@@ -27,13 +27,16 @@ type TaskListDelegate struct {
 }
 
 func NewTaskListDelegate(focused bool) TaskListDelegate {
+	borderDistance := 0
+	rightEdgeDistance := 4
+
 	// item container style
 	var (
 		icbase = lg.NewStyle().
 			Border(lg.NormalBorder(), false, false, true, false).
 			BorderForeground(styles.BorderForeground).
-			PaddingLeft(4).
-			PaddingRight(4)
+			PaddingLeft(borderDistance + 2).
+			PaddingRight(rightEdgeDistance)
 		icsel = icbase.
 			Background(styles.SelectedBackground)
 	)
@@ -49,9 +52,9 @@ func NewTaskListDelegate(focused bool) TaskListDelegate {
 	var (
 		hbase = lg.NewStyle().
 			PaddingBottom(1).
-			PaddingLeft(2).
-			PaddingRight(2).
-			Foreground(styles.MutedForeground)
+			Foreground(styles.MutedForeground).
+			PaddingLeft(borderDistance).
+			PaddingRight(rightEdgeDistance)
 		hsel = hbase.
 			Foreground(styles.PrimaryForeground).
 			Underline(true)

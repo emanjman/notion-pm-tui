@@ -5,6 +5,7 @@ import (
 	// "fmt"
 	"notion-project-tui/components/objective"
 	"notion-project-tui/notion"
+	"notion-project-tui/styles"
 	"notion-project-tui/util/keymap"
 	"strings"
 	"time"
@@ -12,6 +13,7 @@ import (
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
+	lg "github.com/charmbracelet/lipgloss"
 )
 
 type Tab int
@@ -150,11 +152,19 @@ func (m ProjectModel) View() string {
 
 	}
 
-	view.WriteString("\n\n")
-	view.WriteString(m.help.View(keymap.JoinedKeyMap{
+	view.WriteString("\n")
+
+	help := m.help.View(keymap.JoinedKeyMap{
 		Primary:   RootKeyMap,
 		Secondary: m.getActiveKeyMap(),
-	}))
+	})
+
+	view.WriteString(
+		lg.NewStyle().
+			BorderTop(true).
+			BorderStyle(lg.NormalBorder()).
+			BorderForeground(styles.BorderForeground).
+			Render(help))
 
 	return view.String()
 }

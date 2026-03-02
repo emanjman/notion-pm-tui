@@ -7,6 +7,7 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
+	lg "github.com/charmbracelet/lipgloss"
 )
 
 type MilestoneListModel struct {
@@ -93,7 +94,13 @@ func (m MilestoneListModel) View() string {
 	// if m.loading {
 	// 	return "Loading milestones..."
 	// }
-	return m.list.View()
+
+	px := 1
+
+	containerStyle := lg.NewStyle().
+		PaddingLeft(px).
+		PaddingRight(px)
+	return containerStyle.Render(m.list.View())
 }
 
 func (m MilestoneListModel) SelectedMilestone() notion.SelectedMilestone {
