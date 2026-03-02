@@ -109,10 +109,11 @@ func (d TaskListDelegate) headerStyle(selected bool) lg.Style {
 	base := lg.NewStyle().
 		PaddingBottom(1).
 		PaddingLeft(2).
-		PaddingRight(2)
+		PaddingRight(2).
+		Foreground(styles.MutedForeground)
 
 	if selected {
-		return base.Underline(true)
+		return base.Foreground(styles.PrimaryForeground).Underline(true)
 	}
 	return base
 }
