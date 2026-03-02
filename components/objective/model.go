@@ -4,6 +4,7 @@ import (
 	"notion-project-tui/components/milestonelist"
 	"notion-project-tui/components/tasklist"
 	"notion-project-tui/notion"
+	"notion-project-tui/styles"
 	"notion-project-tui/util/keymap"
 
 	"github.com/charmbracelet/bubbles/help"
@@ -104,7 +105,11 @@ func (m ObjectiveModel) Update(msg tea.Msg) (ObjectiveModel, tea.Cmd) {
 }
 
 func (m ObjectiveModel) View() string {
-	left := m.milestones.View()
+	left := lg.NewStyle().
+		BorderRight(true).
+		BorderStyle(lg.NormalBorder()).
+		BorderForeground(styles.BorderForeground).
+		Render(m.milestones.View())
 	right := m.tasks.View()
 	return lg.JoinHorizontal(lg.Top, left, right)
 }
