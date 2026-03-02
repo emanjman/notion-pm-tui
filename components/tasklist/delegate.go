@@ -2,22 +2,69 @@ package tasklist
 
 import (
 	"fmt"
-	"io"
-	"notion-project-tui/styles"
-	listutil "notion-project-tui/util/list"
-	"strings"
-
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	lg "github.com/charmbracelet/lipgloss"
+	"io"
+	"notion-project-tui/styles"
+	listutil "notion-project-tui/util/list"
 )
+
+type variantStyle struct {
+	base     lg.Style
+	selected lg.Style
+}
+
+type style struct {
+	itemContainer variantStyle
+	itemSegment   variantStyle
+	header        variantStyle
+}
 
 type TaskListDelegate struct {
 	focused bool
+	style   style
 }
 
-func NewTaskListDelegate(flag bool) TaskListDelegate {
-	return TaskListDelegate{focused: flag}
+func NewTaskListDelegate(focused bool) TaskListDelegate {
+	// item container style
+	var (
+		icbase = lg.NewStyle().
+			Border(lg.NormalBorder(), false, false, true, false).
+			BorderForeground(styles.BorderForeground).
+			PaddingLeft(4).
+			PaddingRight(4)
+		icsel = icbase.
+			Background(styles.SelectedBackground)
+	)
+
+	// item segment style
+	var (
+		isbase = lg.NewStyle()
+		issel  = isbase.
+			Background(styles.SelectedBackground)
+	)
+
+	// header style
+	var (
+		hbase = lg.NewStyle().
+			PaddingBottom(1).
+			PaddingLeft(2).
+			PaddingRight(2).
+			Foreground(styles.MutedForeground)
+		hsel = hbase.
+			Foreground(styles.PrimaryForeground).
+			Underline(true)
+	)
+
+	return TaskListDelegate{
+		focused: focused,
+		style: style{
+			itemContainer: variantStyle{base: icbase, selected: icsel},
+			itemSegment:   variantStyle{base: isbase, selected: issel},
+			header:        variantStyle{base: hbase, selected: hsel},
+		},
+	}
 }
 
 func (d TaskListDelegate) Height() int                               { return 2 }
@@ -29,6 +76,11 @@ func (d TaskListDelegate) Render(w io.Writer, m list.Model, index int, item list
 
 	switch item := item.(type) {
 	case listutil.ListItemGroupHeader:
+		style := d.style.header.base
+		if selected {
+			style = d.style.header.selected
+		}
+
 		chevron := "▼"
 		if item.Hidden {
 			chevron = "▶"
@@ -36,15 +88,19 @@ func (d TaskListDelegate) Render(w io.Writer, m list.Model, index int, item list
 
 		content := fmt.Sprintf("%s %s (%d)", chevron, item.Label, item.Count)
 
-		style := d.headerStyle(selected).Width(m.Width())
-		fmt.Fprint(w, style.Render(content))
+		fmt.Fprint(w, style.Width(m.Width()).Render(content))
 
 	case TaskListItem:
-		baseStyle := d.taskBaseStyle(selected)
+		segStyle := d.style.itemSegment.base
+		contStyle := d.style.itemContainer.base
+		if selected {
+			segStyle = d.style.itemSegment.selected
+			contStyle = d.style.itemContainer.selected
+		}
 
-		typ := baseStyle.Foreground(styles.MutedForeground).Render(item.Type)
-		space := baseStyle.Render(" ")
-		task := baseStyle.Foreground(styles.PrimaryForeground).Render(item.Task)
+		typ := segStyle.Foreground(styles.MutedForeground).Render(item.Type)
+		space := segStyle.Render(" ")
+		task := segStyle.Foreground(styles.PrimaryForeground).Render(item.Task)
 
 		priorityColors := []lg.Color{
 			styles.MutedForeground, // p0 - none/gray
@@ -59,60 +115,13 @@ func (d TaskListDelegate) Render(w io.Writer, m list.Model, index int, item list
 			p = 0
 		}
 
-		primaryContent := typ + space + task
-		secondaryContent := baseStyle.Foreground(priorityColors[p]).Render(fmt.Sprintf("%d", p))
+		left := typ + space + task
+		right := segStyle.Foreground(priorityColors[p]).Render(fmt.Sprintf("[%d]", p))
 
-		// padding width (account for task style's horizontal padding)
-		frameStyle := d.taskFrameStyle(selected)
-		availableWidth := m.Width() - frameStyle.GetHorizontalPadding()
-		paddingWidth := availableWidth - lg.Width(primaryContent) - lg.Width(secondaryContent)
-		if paddingWidth < 0 {
-			paddingWidth = 0
-		}
-
-		// build full content with background applied to all segments
-		padding := baseStyle.Render(strings.Repeat(" ", paddingWidth))
-		content := primaryContent + padding + secondaryContent
+		px := styles.GetPaddingBetween(left, right, m.Width(), contStyle)
+		content := left + styles.RenderPadding(segStyle, px) + right
 
 		// wrap with frame style (border, outer padding, background if selected)
-		fmt.Fprint(w, frameStyle.Width(m.Width()).Render(content))
+		fmt.Fprint(w, contStyle.Width(m.Width()).Render(content))
 	}
-}
-
-// -- styling
-
-// finishing touches that applies borders/padding + additional highlights
-func (d TaskListDelegate) taskFrameStyle(selected bool) lg.Style {
-	s := lg.NewStyle().
-		Border(lg.NormalBorder(), false, false, true, false).
-		BorderForeground(styles.BorderForeground).
-		PaddingLeft(4).
-		PaddingRight(4)
-
-	if selected {
-		return s.Background(styles.SelectedBackground)
-	}
-	return s
-}
-
-// set base style that must apply to inner content
-func (d TaskListDelegate) taskBaseStyle(selected bool) lg.Style {
-	s := lg.NewStyle()
-	if selected {
-		return s.Background(styles.SelectedBackground)
-	}
-	return s
-}
-
-func (d TaskListDelegate) headerStyle(selected bool) lg.Style {
-	s := lg.NewStyle().
-		PaddingBottom(1).
-		PaddingLeft(2).
-		PaddingRight(2).
-		Foreground(styles.MutedForeground)
-
-	if selected {
-		return s.Foreground(styles.PrimaryForeground).Underline(true)
-	}
-	return s
 }

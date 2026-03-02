@@ -23,12 +23,17 @@ var (
 )
 
 // util
-func PadBetween(left, right string, windowWidth int, extStyle lg.Style) string {
-	// use lg.Width to only consider visible cells
-	padding := windowWidth - lg.Width(left) - lg.Width(right) - extStyle.GetHorizontalPadding()
-	if padding < 0 {
-		padding = 0
+func GetPaddingBetween(left string, right string, windowWidth int, externalStyle lg.Style) int {
+	availWidth := windowWidth - externalStyle.GetHorizontalPadding()
+
+	padWidth := availWidth - lg.Width(left) - lg.Width(right)
+	if padWidth < 0 {
+		padWidth = 0
 	}
 
-	return left + strings.Repeat(" ", padding) + right
+	return padWidth
+}
+
+func RenderPadding(segmentStyle lg.Style, width int) string {
+	return segmentStyle.Render(strings.Repeat(" ", width))
 }
