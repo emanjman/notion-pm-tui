@@ -27,6 +27,7 @@ func NewTaskListModel(milestone notion.SelectedMilestone, c *notion.Client) Task
 	l := list.New([]list.Item{}, NewTaskListDelegate(false), 0, 0)
 	l.Title = "Tasks"
 	l.SetShowHelp(false)
+	l.SetShowStatusBar(false)
 
 	m := TaskListModel{
 		Milestone: milestone,

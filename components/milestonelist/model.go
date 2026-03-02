@@ -23,6 +23,7 @@ func NewMilestoneListModel() MilestoneListModel {
 	l := list.New([]list.Item{}, NewMilestoneListDelegate(true), 0, 0)
 	l.Title = "Milestones"
 	l.SetShowHelp(false)
+	l.SetShowStatusBar(false)
 
 	m := MilestoneListModel{
 		list:    l,
