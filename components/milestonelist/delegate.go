@@ -29,7 +29,7 @@ type MilestoneListDelegate struct {
 }
 
 func NewMilestoneListDelegate(focused bool) MilestoneListDelegate {
-	borderDistance := 2
+	borderDistance := 1
 	leftEdgeDistance := 1
 
 	// item container style

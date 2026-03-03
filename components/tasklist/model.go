@@ -29,6 +29,7 @@ func NewTaskListModel(milestone notion.SelectedMilestone, c *notion.Client) Task
 	l.Title = "Tasks"
 	l.SetShowHelp(false)
 	l.SetShowStatusBar(false)
+	l.SetShowTitle(false)
 
 	m := TaskListModel{
 		Milestone: milestone,
@@ -107,11 +108,7 @@ func (m TaskListModel) View() string {
 	// 	return "Loading tasks..."
 	// }
 
-	px := 1
-
-	containerStyle := lg.NewStyle().
-		PaddingLeft(px).
-		PaddingRight(px)
+	containerStyle := lg.NewStyle().PaddingLeft(1)
 	return containerStyle.Render(m.list.View())
 }
 

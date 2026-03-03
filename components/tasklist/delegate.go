@@ -28,7 +28,7 @@ type TaskListDelegate struct {
 
 func NewTaskListDelegate(focused bool) TaskListDelegate {
 	borderDistance := 0
-	rightEdgeDistance := 4
+	rightEdgeDistance := 3
 
 	// item container style
 	var (

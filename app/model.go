@@ -25,12 +25,18 @@ const (
 	ProjectNotesTab
 	DebugNotesTab
 )
+const tabCount = 4
+
+var labels = []string{"Objective (n, m)", "Overview", "Project Notes (n)", "Debug Notes (n)"}
 
 type ProjectModel struct {
 	activeTab Tab
 
 	page *notion.ProjectPage
 	keys KeyMap
+
+	width  int
+	height int
 
 	help     help.Model
 	duration time.Duration
@@ -46,7 +52,7 @@ type ProjectModel struct {
 func InitProjectModel() ProjectModel {
 	client := notion.NewClient()
 	return ProjectModel{
-		activeTab: 0,
+		activeTab: ObjectiveTab,
 		page:      nil,
 		keys:      RootKeyMap,
 		help:      help.New(),
@@ -71,6 +77,16 @@ func (m ProjectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keys.Help):
 			m.help.ShowAll = !m.help.ShowAll
 			return m, nil
+		case key.Matches(msg, m.keys.Next):
+			m.activeTab = (m.activeTab + 1) % tabCount
+			return m, nil
+		case key.Matches(msg, m.keys.Prev):
+			if m.activeTab == 0 {
+				m.activeTab = tabCount - 1
+			} else {
+				m.activeTab = (m.activeTab - 1) % tabCount
+			}
+			return m, nil
 
 		// send other keymaps to the active tab
 		default:
@@ -88,8 +104,14 @@ func (m ProjectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	// send window size to the milestones model
 	case tea.WindowSizeMsg:
+		m.width = msg.Width
+		m.height = msg.Height
+
 		var cmd tea.Cmd
-		m.objective, cmd = m.objective.Update(msg)
+		m.objective, cmd = m.objective.Update(tea.WindowSizeMsg{
+			Width:  msg.Width,
+			Height: msg.Height - 5, // header row, help bar, spacing
+		})
 		return m, cmd
 
 	case notion.ProjectMsg:
@@ -131,7 +153,7 @@ func (m ProjectModel) View() string {
 	// 	return "Loading project..."
 	// }
 
-	var view strings.Builder
+	var s strings.Builder
 
 	// ! temp, styling ui
 	// view.WriteString(fmt.Sprintf("Project ID: %s", m.page.ID))
@@ -139,34 +161,67 @@ func (m ProjectModel) View() string {
 	// view.WriteString(fmt.Sprintf("Fetched in %dms", m.duration.Milliseconds()))
 	// view.WriteString("\n\n")
 
+	lg.JoinHorizontal(lg.Top)
+	headers := make([]string, len(labels))
+
+	for i := range labels {
+		base := lg.NewStyle().Padding(0, 2)
+
+		tabStyle := base.Foreground(styles.MutedForeground)
+		if int(m.activeTab) == i {
+			tabStyle = base.
+				Foreground(styles.PrimaryForeground).
+				Background(styles.SelectedBackground)
+		}
+		headers[i] = tabStyle.Render(labels[i])
+	}
+	main := ""
+
 	switch m.activeTab {
 
 	case ObjectiveTab:
-		view.WriteString(m.objective.View())
+		main = m.objective.View() // * this might be overriding the full view?
 	case OverviewTab:
-		view.WriteString("Overview (coming soon)")
+		main = "Overview (coming soon)"
 	case ProjectNotesTab:
-		view.WriteString("Project notes (coming soon)")
+		main = "Project notes (coming soon)"
 	case DebugNotesTab:
-		view.WriteString("Debug notes (coming soon)")
+		main = "Debug notes (coming soon)"
 
 	}
 
-	view.WriteString("\n")
+	tabDivider := lg.NewStyle().
+		Foreground(styles.BorderForeground).
+		SetString("|")
+
+	s.WriteString(
+		lg.NewStyle().
+			PaddingLeft(2).
+			PaddingTop(1).
+			BorderBottom(true).
+			BorderStyle(lg.ThickBorder()).
+			BorderForeground(styles.BorderForeground).
+			Width(m.width).
+			Render(strings.Join(headers, tabDivider.String())))
+
+	s.WriteString("\n")
+	s.WriteString(main)
+	s.WriteString("\n")
 
 	help := m.help.View(keymap.JoinedKeyMap{
 		Primary:   RootKeyMap,
 		Secondary: m.getActiveKeyMap(),
 	})
 
-	view.WriteString(
+	s.WriteString(
 		lg.NewStyle().
 			BorderTop(true).
 			BorderStyle(lg.NormalBorder()).
 			BorderForeground(styles.BorderForeground).
+			Width(m.width).
 			Render(help))
 
-	return view.String()
+	return s.String()
 }
 
 func (m ProjectModel) getActiveKeyMap() help.KeyMap {
@@ -175,10 +230,17 @@ func (m ProjectModel) getActiveKeyMap() help.KeyMap {
 	case ObjectiveTab:
 		return m.objective.KeyMap()
 
-	// todo... handle other tabs
+	// todo: handle other tabs
+	case OverviewTab:
+		return m.objective.KeyMap()
+	case ProjectNotesTab:
+		return m.objective.KeyMap()
+	case DebugNotesTab:
+		return m.objective.KeyMap()
 
 	default:
-		return nil
+		// return nil
+		return m.objective.KeyMap()
 
 	}
 

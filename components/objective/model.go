@@ -68,7 +68,7 @@ func (m ObjectiveModel) Update(msg tea.Msg) (ObjectiveModel, tea.Cmd) {
 
 	case tea.WindowSizeMsg:
 		var cmd tea.Cmd
-		leftWidth := msg.Width * 40 / 100
+		leftWidth := msg.Width * 30 / 100
 		rightWidth := msg.Width - leftWidth - 1 // account for dividing border
 
 		m.milestones, cmd = m.milestones.Update(tea.WindowSizeMsg{

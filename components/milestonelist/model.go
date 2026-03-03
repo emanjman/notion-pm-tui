@@ -25,6 +25,7 @@ func NewMilestoneListModel() MilestoneListModel {
 	l.Title = "Milestones"
 	l.SetShowHelp(false)
 	l.SetShowStatusBar(false)
+	l.SetShowTitle(false)
 
 	m := MilestoneListModel{
 		list:    l,
@@ -95,11 +96,7 @@ func (m MilestoneListModel) View() string {
 	// 	return "Loading milestones..."
 	// }
 
-	px := 1
-
-	containerStyle := lg.NewStyle().
-		PaddingLeft(px).
-		PaddingRight(px)
+	containerStyle := lg.NewStyle().PaddingRight(1)
 	return containerStyle.Render(m.list.View())
 }
 
