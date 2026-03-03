@@ -2,18 +2,17 @@ package milestonelist
 
 import (
 	"notion-project-tui/notion"
-	"time"
 )
 
 // implementation for the `list.Item` interface
 type MilestoneListItem struct {
-	ID           string
-	TasksPropID  string
-	Name         string
-	Status       string
-	LastActivity time.Time
-	Progress     float64
-	Tags         []string
+	ID                  string
+	TasksPropID         string
+	Name                string
+	Status              string
+	LatestActivityLabel string
+	Progress            float64
+	Tags                []string
 }
 
 // func (m MilestoneListItem) Title() string       { return m.Name }
@@ -39,12 +38,18 @@ func NewMilestoneListItem(page notion.MilestonePage) MilestoneListItem {
 		tags[i] = tag.Name
 	}
 
+	label := ""
+	if page.Properties.LatestActivityLabel.Formula.String != nil {
+		label = *page.Properties.LatestActivityLabel.Formula.String
+	}
+
 	return MilestoneListItem{
-		ID:          page.ID,
-		TasksPropID: page.Properties.Tasks.ID,
-		Name:        title,
-		Status:      status,
-		Progress:    progress,
-		Tags:        tags,
+		ID:                  page.ID,
+		TasksPropID:         page.Properties.Tasks.ID,
+		Name:                title,
+		Status:              status,
+		LatestActivityLabel: label,
+		Progress:            progress,
+		Tags:                tags,
 	}
 }

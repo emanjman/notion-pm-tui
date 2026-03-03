@@ -116,6 +116,8 @@ func (d MilestoneListDelegate) Render(w io.Writer, m list.Model, index int, item
 					Render(fmt.Sprintf("%.0f%%", item.Progress*100))
 			bar = segStyle.
 				Render(progressBar(item.Progress, int(m.Width())/3))
+			activity = segStyle.
+					Render(item.LatestActivityLabel)
 		)
 
 		style := d.style.itemContainer.base
@@ -123,10 +125,12 @@ func (d MilestoneListDelegate) Render(w io.Writer, m list.Model, index int, item
 			style = d.style.itemContainer.selected
 		}
 
-		r1px := styles.GetPaddingBetween(name, progress, m.Width(), contStyle)
-		r2px := styles.GetPaddingBetween(tags, bar, m.Width(), contStyle)
-		r1 := name + styles.RenderPadding(segStyle, r1px) + progress
-		r2 := tags + styles.RenderPadding(segStyle, r2px) + bar
+		progressBar := progress + segStyle.Render(" ") + bar
+
+		r1px := styles.GetPaddingBetween(name, activity, m.Width(), contStyle)
+		r2px := styles.GetPaddingBetween(tags, progressBar, m.Width(), contStyle)
+		r1 := name + styles.RenderPadding(segStyle, r1px) + activity
+		r2 := tags + styles.RenderPadding(segStyle, r2px) + progressBar
 
 		fmt.Fprint(w, style.Width(m.Width()).Render(r1+"\n"+r2))
 	}
