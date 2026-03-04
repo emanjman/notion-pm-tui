@@ -20,3 +20,6 @@ type TaskProperties struct {
 	Type      SelectProperty   `json:"type"`
 	Milestone RelationProperty `json:"@milestone"`
 }
+
+var PrioritySelectValues = []int{1, 2, 3, 4, 5}
+var TypeSelectValues = []string{"chore", "feat", "fix", "refactor", "style"}

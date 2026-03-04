@@ -24,9 +24,11 @@ type style struct {
 type TaskListDelegate struct {
 	focused bool
 	style   style
+
+	editState *EditState
 }
 
-func NewTaskListDelegate(focused bool) TaskListDelegate {
+func NewTaskListDelegate(focused bool, edit *EditState) TaskListDelegate {
 	borderDistance := 0
 	rightEdgeDistance := 3
 
@@ -67,6 +69,7 @@ func NewTaskListDelegate(focused bool) TaskListDelegate {
 			itemSegment:   variantStyle{base: isbase, selected: issel},
 			header:        variantStyle{base: hbase, selected: hsel},
 		},
+		editState: edit,
 	}
 }
 
@@ -97,13 +100,12 @@ func (d TaskListDelegate) Render(w io.Writer, m list.Model, index int, item list
 		segStyle := d.style.itemSegment.base
 		contStyle := d.style.itemContainer.base
 		if selected {
-			segStyle = d.style.itemSegment.selected
+			// dont highlight entire row if active edit (instead, highlight by segment)
+			if !d.editState.active {
+				segStyle = d.style.itemSegment.selected
+			}
 			contStyle = d.style.itemContainer.selected
 		}
-
-		typ := segStyle.Foreground(styles.MutedForeground).Render(item.Type)
-		space := segStyle.Render(" ")
-		task := segStyle.Foreground(styles.PrimaryForeground).Render(item.Task)
 
 		priorityColors := []lg.Color{
 			styles.MutedForeground, // p0 - none/gray
@@ -118,10 +120,33 @@ func (d TaskListDelegate) Render(w io.Writer, m list.Model, index int, item list
 			p = 0
 		}
 
-		left := typ + space + task
-		right := segStyle.Foreground(priorityColors[p]).Render(fmt.Sprintf("[%d]", p))
+		typStyle := segStyle.Foreground(styles.MutedForeground)
+		taskStyle := segStyle.Foreground(styles.PrimaryForeground)
+		priorityStyle := segStyle.Foreground(priorityColors[p])
 
-		px := styles.GetPaddingBetween(left, right, m.Width(), contStyle)
+		if d.editState.active {
+			editStyle := segStyle.
+				Foreground(styles.PrimaryForeground).
+				Background(styles.SelectedBackground)
+			switch d.editState.field {
+			case TypeField:
+				typStyle = editStyle
+			case TaskField:
+				taskStyle = editStyle
+			case PriorityField:
+				priorityStyle = priorityStyle.Background(styles.SelectedBackground)
+			}
+		}
+
+		typ := typStyle.Render(item.Type)
+		space := segStyle.Render(" ")
+		task := taskStyle.Render(item.Task)
+		priority := priorityStyle.Render(fmt.Sprintf("[%d]", p))
+
+		left := typ + space + task
+		right := priority
+
+		px := styles.GetPaddingBetween(typ+space+task, priority, m.Width(), contStyle)
 		content := left + styles.RenderPadding(segStyle, px) + right
 
 		// wrap with frame style (border, outer padding, background if selected)

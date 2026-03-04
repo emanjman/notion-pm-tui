@@ -33,3 +33,33 @@ func (k KeyMap) FullHelp() [][]key.Binding {
 		{},
 	}
 }
+
+// ----
+
+// ? might have to rename the above keymap for disambiguity
+
+type EditKeyMap struct {
+	PrevField  key.Binding
+	NextField  key.Binding
+	EnableEdit key.Binding
+	Exit       key.Binding
+}
+
+var DefaultEditKeyMap = EditKeyMap{
+	PrevField: key.NewBinding(
+		key.WithKeys("left", "h"),
+		key.WithHelp("<-/h", "prev field"),
+	),
+	NextField: key.NewBinding(
+		key.WithKeys("right", "l"),
+		key.WithHelp("->/l", "right field"),
+	),
+	EnableEdit: key.NewBinding(
+		key.WithKeys("enter"),
+		key.WithHelp("enter", "enter edit mode"),
+	),
+	Exit: key.NewBinding(
+		key.WithKeys("esc"),
+		key.WithHelp("esc", "save + exit"),
+	),
+}

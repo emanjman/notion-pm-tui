@@ -10,6 +10,21 @@ import (
 	lg "github.com/charmbracelet/lipgloss"
 )
 
+type EditState struct {
+	active bool
+	taskID string
+	field  FieldIndex
+}
+
+type FieldIndex int
+
+const (
+	TypeField = iota
+	TaskField
+	PriorityField
+)
+const fieldCnt = 3
+
 // ? required structure for grouping (groups, hidden, ...) could be an interface
 type TaskListModel struct {
 	Milestone notion.SelectedMilestone
@@ -18,14 +33,18 @@ type TaskListModel struct {
 	groups    map[string][]TaskListItem
 	hidden    map[string]bool
 	Keys      KeyMap
+	EditKeys  EditKeyMap
 	client    *notion.Client
+	EditState EditState
 	// todo: cached milestones
 }
 
 var statusOrder = []string{"dev", "idle", "done"}
 
 func NewTaskListModel(milestone notion.SelectedMilestone, c *notion.Client) TaskListModel {
-	l := list.New([]list.Item{}, NewTaskListDelegate(false), 0, 0)
+	edit := EditState{}
+
+	l := list.New([]list.Item{}, NewTaskListDelegate(false, &edit), 0, 0)
 	l.Title = "Tasks"
 	l.SetShowHelp(false)
 	l.SetShowStatusBar(false)
@@ -38,7 +57,9 @@ func NewTaskListModel(milestone notion.SelectedMilestone, c *notion.Client) Task
 		groups:    listutil.GroupByKey(mockTaskItems()),
 		hidden:    map[string]bool{},
 		Keys:      DefaultKeyMap,
+		EditKeys:  DefaultEditKeyMap,
 		client:    c,
+		EditState: edit,
 	}
 	m.list.SetItems(listutil.BuildGroupList(m.groups, m.hidden, statusOrder))
 
@@ -52,17 +73,50 @@ func (m TaskListModel) Update(msg tea.Msg) (TaskListModel, tea.Cmd) {
 		m.list.SetSize(msg.Width, msg.Height)
 
 	case tea.KeyMsg:
-		switch {
-		case key.Matches(msg, m.Keys.Select):
-			selected := m.list.SelectedItem()
+		if m.EditState.active {
+			switch {
 
-			// if selected item is header, toggle + rebuild list
-			if header, ok := selected.(listutil.ListItemGroupHeader); ok {
-				m.hidden[header.Label] = !m.hidden[header.Label]
-				m.list.SetItems(listutil.BuildGroupList(m.groups, m.hidden, statusOrder))
+			case key.Matches(msg, m.EditKeys.Exit):
+				m.EditState.active = false
+				// todo: send some command to save notion changes
+				return m, nil
+
+			case key.Matches(msg, m.EditKeys.PrevField):
+				if m.EditState.field == TypeField {
+					m.EditState.field = fieldCnt - 1
+				} else {
+					m.EditState.field = (m.EditState.field - 1) % fieldCnt
+				}
+				return m, nil
+
+			case key.Matches(msg, m.EditKeys.NextField):
+				m.EditState.field = (m.EditState.field + 1) % fieldCnt
+				return m, nil
+
+			case key.Matches(msg, m.EditKeys.EnableEdit):
+				// todo: enter 2-deep edit mode
+
 			}
 
+			// consume all keys, don't forward to list navigations
 			return m, nil
+
+		} else {
+			switch {
+			case key.Matches(msg, m.Keys.Select):
+				selected := m.list.SelectedItem()
+
+				// if selected item is header, toggle + rebuild list
+				if header, ok := selected.(listutil.ListItemGroupHeader); ok {
+					m.hidden[header.Label] = !m.hidden[header.Label]
+					m.list.SetItems(listutil.BuildGroupList(m.groups, m.hidden, statusOrder))
+				} else if task, ok := selected.(TaskListItem); ok {
+					m.EditState.taskID = task.ID
+					m.EditState.active = true
+					m.EditState.field = TaskField
+				}
+				return m, nil
+			}
 		}
 
 	case notion.MilestoneSelectedMsg:

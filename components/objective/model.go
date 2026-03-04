@@ -46,13 +46,14 @@ func (m ObjectiveModel) Init() tea.Cmd {
 func (m ObjectiveModel) Update(msg tea.Msg) (ObjectiveModel, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
+
 		switch {
 
 		case key.Matches(msg, m.keys.LeftFocus):
 			m.tasks.Milestone = m.milestones.SelectedMilestone()
 			m.focus = MilestonesPanel
 
-			m.tasks.SetItemDelegate(tasklist.NewTaskListDelegate(false))
+			m.tasks.SetItemDelegate(tasklist.NewTaskListDelegate(false, &m.tasks.EditState))
 			m.milestones.SetItemDelegate(milestonelist.NewMilestoneListDelegate(true))
 
 			return m, nil
@@ -60,7 +61,7 @@ func (m ObjectiveModel) Update(msg tea.Msg) (ObjectiveModel, tea.Cmd) {
 		case key.Matches(msg, m.keys.RightFocus):
 			m.focus = TasksPanel
 
-			m.tasks.SetItemDelegate(tasklist.NewTaskListDelegate(true))
+			m.tasks.SetItemDelegate(tasklist.NewTaskListDelegate(true, &m.tasks.EditState))
 			m.milestones.SetItemDelegate(milestonelist.NewMilestoneListDelegate(false))
 
 			return m, nil
