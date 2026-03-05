@@ -5,15 +5,15 @@ import "github.com/charmbracelet/bubbles/textinput"
 type FocusMode int
 
 const (
-	NeutralMode   = iota
-	SelectingMode // selecting field of a task
-	WritingMode   // editing field; reserve all keys
+	NeutralMode   FocusMode = iota
+	SelectingMode           // selecting field of a task
+	WritingMode             // editing field; reserve all keys
 )
 
 type SelectedField int
 
 const (
-	TaskType = iota
+	TaskType SelectedField = iota
 	TaskTitle
 	TaskPriority
 )

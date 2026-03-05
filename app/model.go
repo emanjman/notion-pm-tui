@@ -20,7 +20,7 @@ type Tab int
 
 // enum representation for better readability
 const (
-	ObjectiveTab = iota
+	ObjectiveTab Tab = iota
 	OverviewTab
 	ProjectNotesTab
 	DebugNotesTab
