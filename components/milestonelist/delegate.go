@@ -84,57 +84,15 @@ func (d MilestoneListDelegate) Render(w io.Writer, m list.Model, index int, item
 
 	switch item := item.(type) {
 	case listutil.ListItemGroupHeader:
-		style := d.style.header.base
-		if selected {
-			style = d.style.header.selected
-		}
-
-		chevron := "▼"
-		if item.Hidden {
-			chevron = "▶"
-		}
-
-		content := fmt.Sprintf("%s %s (%d)", chevron, item.Label, item.Count)
+		content, style := formatListItemGroupHeader(d, item, selected)
 		fmt.Fprint(w, style.Width(m.Width()).Render(content))
-
 	case MilestoneListItem:
-		segStyle := d.style.itemSegment.base
-		contStyle := d.style.itemContainer.base
-		if selected {
-			segStyle = d.style.itemSegment.selected
-			contStyle = d.style.itemContainer.selected
-		}
-
-		var (
-			name = segStyle.
-				Foreground(styles.PrimaryForeground).
-				Render(item.Name)
-			tags = segStyle.
-				Foreground(styles.MutedForeground).
-				Render(strings.Join(item.Tags, " · "))
-			progress = segStyle.
-					Render(fmt.Sprintf("%.0f%%", item.Progress*100))
-			bar = segStyle.
-				Render(progressBar(item.Progress, int(m.Width())/3))
-			activity = segStyle.
-					Render(item.LatestActivityLabel)
-		)
-
-		style := d.style.itemContainer.base
-		if selected {
-			style = d.style.itemContainer.selected
-		}
-
-		progressBar := progress + segStyle.Render(" ") + bar
-
-		r1px := styles.GetPaddingBetween(name, activity, m.Width(), contStyle)
-		r2px := styles.GetPaddingBetween(tags, progressBar, m.Width(), contStyle)
-		r1 := name + styles.RenderPadding(segStyle, r1px) + activity
-		r2 := tags + styles.RenderPadding(segStyle, r2px) + progressBar
-
-		fmt.Fprint(w, style.Width(m.Width()).Render(r1+"\n"+r2))
+		content, style := formatMilestoneListItem(d, item, selected, m.Width())
+		fmt.Fprint(w, style.Width(m.Width()).Render(content))
 	}
 }
+
+// -- helper funcs
 
 func progressBar(progress float64, width int) string {
 	s := lg.NewStyle()
@@ -147,4 +105,54 @@ func progressBar(progress float64, width int) string {
 
 	return s.Foreground(styles.PrimaryForeground).Render(filled) +
 		s.Foreground(styles.MutedForeground).Render(empty)
+}
+
+func formatListItemGroupHeader(d MilestoneListDelegate, item listutil.ListItemGroupHeader, selected bool) (string, lg.Style) {
+	style := d.style.header.base
+	if selected {
+		style = d.style.header.selected
+	}
+
+	chevron := "▼"
+	if item.Hidden {
+		chevron = "▶"
+	}
+
+	content := fmt.Sprintf("%s %s (%d)", chevron, item.Label, item.Count)
+
+	return content, style
+}
+
+func formatMilestoneListItem(d MilestoneListDelegate, item MilestoneListItem, selected bool, windowWidth int) (string, lg.Style) {
+	segStyle := d.style.itemSegment.base
+	contStyle := d.style.itemContainer.base
+	if selected {
+		segStyle = d.style.itemSegment.selected
+		contStyle = d.style.itemContainer.selected
+	}
+
+	var (
+		name = segStyle.
+			Foreground(styles.PrimaryForeground).
+			Render(item.Name)
+		tags = segStyle.
+			Foreground(styles.MutedForeground).
+			Render(strings.Join(item.Tags, " · "))
+		progress = segStyle.
+				Render(fmt.Sprintf("%.0f%%", item.Progress*100))
+		bar = segStyle.
+			Render(progressBar(item.Progress, windowWidth/3))
+		activity = segStyle.
+				Render(item.LatestActivityLabel)
+	)
+
+	progressBar := progress + segStyle.Render(" ") + bar
+
+	r1px := styles.GetPaddingBetween(name, activity, windowWidth, contStyle)
+	r2px := styles.GetPaddingBetween(tags, progressBar, windowWidth, contStyle)
+	r1 := name + styles.RenderPadding(segStyle, r1px) + activity
+	r2 := tags + styles.RenderPadding(segStyle, r2px) + progressBar
+
+	return r1 + "\n" + r2, contStyle
+
 }

@@ -82,74 +82,84 @@ func (d TaskListDelegate) Render(w io.Writer, m list.Model, index int, item list
 
 	switch item := item.(type) {
 	case listutil.ListItemGroupHeader:
-		style := d.style.header.base
-		if selected {
-			style = d.style.header.selected
-		}
-
-		chevron := "▼"
-		if item.Hidden {
-			chevron = "▶"
-		}
-
-		content := fmt.Sprintf("%s %s (%d)", chevron, item.Label, item.Count)
-
+		content, style := formatListItemGroupHeader(d, item, selected)
 		fmt.Fprint(w, style.Width(m.Width()).Render(content))
-
 	case TaskListItem:
-		segStyle := d.style.itemSegment.base
-		contStyle := d.style.itemContainer.base
-		if selected {
-			// dont highlight entire row if active edit (instead, highlight by segment)
-			if d.focus.Mode != NeutralMode {
-				segStyle = d.style.itemSegment.selected
-			}
-			contStyle = d.style.itemContainer.selected
-		}
-
-		priorityColors := []lg.Color{
-			styles.MutedForeground, // p0 - none/gray
-			lg.Color("#7aa2f7"),    // p1 - blue (low, calm)
-			lg.Color("#9ece6a"),    // p2 - green (medium-low)
-			lg.Color("#e0af68"),    // p3 - yellow (medium, caution)
-			lg.Color("#ff9e64"),    // p4 - orange (high, warning)
-			lg.Color("#f7768e"),    // p5 - red (critical, urgent)
-		}
-		p := item.Priority
-		if p < 0 || p >= len(priorityColors) {
-			p = 0
-		}
-
-		typStyle := segStyle.Foreground(styles.MutedForeground)
-		taskStyle := segStyle.Foreground(styles.PrimaryForeground)
-		priorityStyle := segStyle.Foreground(priorityColors[p])
-
-		if d.focus.Mode != NeutralMode {
-			editStyle := segStyle.
-				Foreground(styles.PrimaryForeground).
-				Background(styles.SelectedBackground)
-			switch d.focus.field {
-			case TaskType:
-				typStyle = editStyle
-			case TaskTitle:
-				taskStyle = editStyle
-			case TaskPriority:
-				priorityStyle = priorityStyle.Background(styles.SelectedBackground)
-			}
-		}
-
-		typ := typStyle.Render(item.Type)
-		space := segStyle.Render(" ")
-		task := taskStyle.Render(item.Task)
-		priority := priorityStyle.Render(fmt.Sprintf("[%d]", p))
-
-		left := typ + space + task
-		right := priority
-
-		px := styles.GetPaddingBetween(typ+space+task, priority, m.Width(), contStyle)
-		content := left + styles.RenderPadding(segStyle, px) + right
-
-		// wrap with frame style (border, outer padding, background if selected)
-		fmt.Fprint(w, contStyle.Width(m.Width()).Render(content))
+		content, style := formatTaskListItem(d, item, selected, m.Width())
+		fmt.Fprint(w, style.Width(m.Width()).Render(content))
 	}
+}
+
+// -- helper funcs
+
+func formatListItemGroupHeader(d TaskListDelegate, item listutil.ListItemGroupHeader, selected bool) (string, lg.Style) {
+	style := d.style.header.base
+	if selected {
+		style = d.style.header.selected
+	}
+
+	chevron := "▼"
+	if item.Hidden {
+		chevron = "▶"
+	}
+
+	content := fmt.Sprintf("%s %s (%d)", chevron, item.Label, item.Count)
+
+	return content, style
+}
+
+func formatTaskListItem(d TaskListDelegate, item TaskListItem, selected bool, windowWidth int) (string, lg.Style) {
+	segStyle := d.style.itemSegment.base
+	contStyle := d.style.itemContainer.base
+	if selected {
+		// dont highlight entire row if active edit (instead, highlight by segment)
+		if d.focus.Mode != NeutralMode {
+			segStyle = d.style.itemSegment.selected
+		}
+		contStyle = d.style.itemContainer.selected
+	}
+
+	priorityColors := []lg.Color{
+		styles.MutedForeground, // p0 - none/gray
+		lg.Color("#7aa2f7"),    // p1 - blue (low, calm)
+		lg.Color("#9ece6a"),    // p2 - green (medium-low)
+		lg.Color("#e0af68"),    // p3 - yellow (medium, caution)
+		lg.Color("#ff9e64"),    // p4 - orange (high, warning)
+		lg.Color("#f7768e"),    // p5 - red (critical, urgent)
+	}
+	p := item.Priority
+	if p < 0 || p >= len(priorityColors) {
+		p = 0
+	}
+
+	typStyle := segStyle.Foreground(styles.MutedForeground)
+	titleStyle := segStyle.Foreground(styles.PrimaryForeground)
+	priorityStyle := segStyle.Foreground(priorityColors[p])
+
+	if d.focus.Mode != NeutralMode {
+		editStyle := segStyle.
+			Foreground(styles.PrimaryForeground).
+			Background(styles.SelectedBackground)
+		switch d.focus.field {
+		case TaskType:
+			typStyle = editStyle
+		case TaskTitle:
+			titleStyle = editStyle
+		case TaskPriority:
+			priorityStyle = priorityStyle.Background(styles.SelectedBackground)
+		}
+	}
+
+	typ := typStyle.Render(item.Type)
+	space := segStyle.Render(" ")
+	task := titleStyle.Render(item.Task)
+	priority := priorityStyle.Render(fmt.Sprintf("[%d]", p))
+
+	left := typ + space + task
+	right := priority
+
+	px := styles.GetPaddingBetween(typ+space+task, priority, windowWidth, contStyle)
+	content := left + styles.RenderPadding(segStyle, px) + right
+
+	return content, contStyle
 }
