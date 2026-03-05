@@ -25,10 +25,10 @@ type TaskListDelegate struct {
 	focused bool
 	style   style
 
-	editState *EditState
+	focus *FocusState
 }
 
-func NewTaskListDelegate(focused bool, edit *EditState) TaskListDelegate {
+func NewTaskListDelegate(focused bool, focus *FocusState) TaskListDelegate {
 	borderDistance := 0
 	rightEdgeDistance := 3
 
@@ -69,7 +69,7 @@ func NewTaskListDelegate(focused bool, edit *EditState) TaskListDelegate {
 			itemSegment:   variantStyle{base: isbase, selected: issel},
 			header:        variantStyle{base: hbase, selected: hsel},
 		},
-		editState: edit,
+		focus: focus,
 	}
 }
 
@@ -101,7 +101,7 @@ func (d TaskListDelegate) Render(w io.Writer, m list.Model, index int, item list
 		contStyle := d.style.itemContainer.base
 		if selected {
 			// dont highlight entire row if active edit (instead, highlight by segment)
-			if !d.editState.active {
+			if d.focus.Mode != NeutralMode {
 				segStyle = d.style.itemSegment.selected
 			}
 			contStyle = d.style.itemContainer.selected
@@ -124,16 +124,16 @@ func (d TaskListDelegate) Render(w io.Writer, m list.Model, index int, item list
 		taskStyle := segStyle.Foreground(styles.PrimaryForeground)
 		priorityStyle := segStyle.Foreground(priorityColors[p])
 
-		if d.editState.active {
+		if d.focus.Mode != NeutralMode {
 			editStyle := segStyle.
 				Foreground(styles.PrimaryForeground).
 				Background(styles.SelectedBackground)
-			switch d.editState.field {
-			case TypeField:
+			switch d.focus.field {
+			case TaskType:
 				typStyle = editStyle
-			case TaskField:
+			case TaskTitle:
 				taskStyle = editStyle
-			case PriorityField:
+			case TaskPriority:
 				priorityStyle = priorityStyle.Background(styles.SelectedBackground)
 			}
 		}

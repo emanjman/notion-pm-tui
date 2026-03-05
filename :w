@@ -127,6 +127,7 @@ func (m TaskListModel) Update(msg tea.Msg) (TaskListModel, tea.Cmd) {
 		if m.Focus.Mode == NeutralMode {
 			switch {
 			case key.Matches(msg, m.neutralKeyMap.Select):
+				m.ActiveKeyMap = SelectingKeyMapper
 				selected := m.list.SelectedItem()
 
 				// if selected item is header, toggle + rebuild list
@@ -134,14 +135,10 @@ func (m TaskListModel) Update(msg tea.Msg) (TaskListModel, tea.Cmd) {
 					m.hidden[header.Label] = !m.hidden[header.Label]
 					m.list.SetItems(listutil.BuildGroupList(m.groups, m.hidden, statusOrder))
 				} else if task, ok := selected.(TaskListItem); ok {
-					// initialize the focus state
 					m.Focus.taskID = task.ID
-					m.Focus.taskIdx = m.list.Index()
 					m.Focus.Mode = SelectingMode
-					m.Focus.field = TaskTitle // default field
+					m.EditState.field = TaskField
 				}
-
-				m.ActiveKeyMap = SelectingKeyMapper
 				return m, nil
 			}
 		}

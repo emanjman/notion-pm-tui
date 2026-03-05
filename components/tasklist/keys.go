@@ -2,13 +2,13 @@ package tasklist
 
 import "github.com/charmbracelet/bubbles/key"
 
-type KeyMap struct {
+type NeutralKeyMap struct {
 	Up     key.Binding
 	Down   key.Binding
-	Select key.Binding
+	Select key.Binding // enter focus (select) mode
 }
 
-var DefaultKeyMap = KeyMap{
+var NeutralKeyMapper = NeutralKeyMap{
 	Up: key.NewBinding(
 		key.WithKeys("up", "k"),
 		key.WithHelp("↑/k", "up"),
@@ -23,38 +23,36 @@ var DefaultKeyMap = KeyMap{
 	),
 }
 
-func (k KeyMap) ShortHelp() []key.Binding {
+func (k NeutralKeyMap) ShortHelp() []key.Binding {
 	return []key.Binding{k.Up, k.Down, k.Select}
 }
 
-func (k KeyMap) FullHelp() [][]key.Binding {
+func (k NeutralKeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
 		{k.Up, k.Down, k.Select},
 		{},
 	}
 }
 
-// ----
+// ---
 
-// ? might have to rename the above keymap for disambiguity
-
-type EditKeyMap struct {
-	PrevField  key.Binding
-	NextField  key.Binding
-	EnableEdit key.Binding
-	Exit       key.Binding
+type SelectingKeyMap struct {
+	Left   key.Binding // prev field
+	Right  key.Binding // next field
+	Select key.Binding // cycle select-options or enter rewrite mode
+	Exit   key.Binding // send off changes to notion (server)
 }
 
-var DefaultEditKeyMap = EditKeyMap{
-	PrevField: key.NewBinding(
+var SelectingKeyMapper = SelectingKeyMap{
+	Left: key.NewBinding(
 		key.WithKeys("left", "h"),
 		key.WithHelp("<-/h", "prev field"),
 	),
-	NextField: key.NewBinding(
+	Right: key.NewBinding(
 		key.WithKeys("right", "l"),
 		key.WithHelp("->/l", "right field"),
 	),
-	EnableEdit: key.NewBinding(
+	Select: key.NewBinding(
 		key.WithKeys("enter"),
 		key.WithHelp("enter", "enter edit mode"),
 	),
@@ -62,4 +60,39 @@ var DefaultEditKeyMap = EditKeyMap{
 		key.WithKeys("esc"),
 		key.WithHelp("esc", "save + exit"),
 	),
+}
+
+func (k SelectingKeyMap) ShortHelp() []key.Binding {
+	return []key.Binding{k.Left, k.Right, k.Select}
+}
+
+func (k SelectingKeyMap) FullHelp() [][]key.Binding {
+	return [][]key.Binding{
+		{k.Left, k.Right, k.Select},
+		{k.Exit},
+	}
+}
+
+// ---
+
+type WritingKeyMap struct {
+	Save key.Binding // update list item (client)
+}
+
+var WritingKeyMapper = WritingKeyMap{
+	Save: key.NewBinding(
+		key.WithKeys("enter", "esc"),
+		key.WithHelp("enter/esc", "save changes"),
+	),
+}
+
+func (k WritingKeyMap) ShortHelp() []key.Binding {
+	return []key.Binding{k.Save}
+}
+
+func (k WritingKeyMap) FullHelp() [][]key.Binding {
+	return [][]key.Binding{
+		{k.Save},
+		{},
+	}
 }
