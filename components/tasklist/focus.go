@@ -1,6 +1,11 @@
 package tasklist
 
-import "github.com/charmbracelet/bubbles/textinput"
+import (
+	"notion-project-tui/styles"
+
+	"github.com/charmbracelet/bubbles/textinput"
+	lg "github.com/charmbracelet/lipgloss"
+)
 
 type FocusMode int
 
@@ -54,4 +59,20 @@ func cycleTypeField(curr string, delta int) string {
 func cyclePriorityField(curr, delta int) int {
 	const n = 6
 	return ((curr+delta)%n + n) % n // todo: vet logic
+}
+
+func initTempTitle(item TaskListItem) textinput.Model {
+	ti := textinput.New()
+	ti.SetValue(item.Task)
+	ti.CursorEnd()
+	ti.Focus() // active
+	ti.Placeholder = "Enter task..."
+
+	// todo: ti.Width ???
+	ti.TextStyle = lg.NewStyle().Foreground(styles.PrimaryForeground)
+	ti.PlaceholderStyle = lg.NewStyle().Foreground(styles.MutedForeground)
+	ti.Prompt = ""
+
+	return ti
+
 }

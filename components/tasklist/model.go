@@ -77,10 +77,19 @@ func (m TaskListModel) Update(msg tea.Msg) (TaskListModel, tea.Cmd) {
 				m.ActiveKeyMap = SelectingKeyMapper
 				m.Focus.Mode = SelectingMode
 
-				// todo: enter text input rewriting
+				// update item in list
+				if task, ok := m.list.SelectedItem().(TaskListItem); ok {
+					task.Task = m.Focus.tempTitle.Value()
+					m.list.SetItem(m.list.Index(), task)
+				}
 
 				return m, nil
 
+			// forward all keys into the textinput model
+			default:
+				var cmd tea.Cmd
+				m.Focus.tempTitle, cmd = m.Focus.tempTitle.Update(msg)
+				return m, cmd
 			}
 		}
 
@@ -120,8 +129,9 @@ func (m TaskListModel) Update(msg tea.Msg) (TaskListModel, tea.Cmd) {
 						m.Focus.Mode = WritingMode
 						m.ActiveKeyMap = WritingKeyMapper
 
-						// todo: might have to send msg?
-						// todo: enter rewriting mode to catch all keys until completed
+						if item, ok := m.list.SelectedItem().(TaskListItem); ok {
+							m.Focus.tempTitle = initTempTitle(item)
+						}
 					}
 
 					m.list.SetItem(m.Focus.taskIdx, task)

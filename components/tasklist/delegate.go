@@ -156,10 +156,15 @@ func renderTaskListItem(d TaskListDelegate, item TaskListItem, selected bool, wi
 	// render each field
 	typ := typStyle.Render(item.Type)
 	space := segStyle.Render(" ")
-	task := titleStyle.Render(item.Task)
+	title := titleStyle.Render(item.Task)
 	priority := priorityStyle.Render(fmt.Sprintf("[%d]", safePriorityIdx))
 
-	left := typ + space + task
+	// use textinput component in writing mode
+	if selected && d.focus.Mode == WritingMode {
+		title = d.focus.tempTitle.View() // or .Value() ?
+	}
+
+	left := typ + space + title
 	right := priority
 
 	px := styles.GetPaddingBetween(left, right, windowWidth, contStyle)
