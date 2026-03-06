@@ -14,7 +14,7 @@ var (
 
 // background
 var (
-	SelectedBackground = lg.Color("#1d1d1f")
+	SelectedBackground = lg.Color("#2e2e32")
 )
 
 // borders

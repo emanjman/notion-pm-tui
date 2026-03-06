@@ -2,12 +2,13 @@ package tasklist
 
 import (
 	"fmt"
-	"github.com/charmbracelet/bubbles/list"
-	tea "github.com/charmbracelet/bubbletea"
-	lg "github.com/charmbracelet/lipgloss"
 	"io"
 	"notion-project-tui/styles"
 	listutil "notion-project-tui/util/list"
+
+	"github.com/charmbracelet/bubbles/list"
+	tea "github.com/charmbracelet/bubbletea"
+	lg "github.com/charmbracelet/lipgloss"
 )
 
 type variantStyle struct {
@@ -101,7 +102,7 @@ func (d TaskListDelegate) Render(w io.Writer, m list.Model, index int, item list
 		contStyle := d.style.itemContainer.base
 		if selected {
 			// dont highlight entire row if active edit (instead, highlight by segment)
-			if !d.editState.active {
+			if !d.editState.active || item.ID != d.editState.taskID {
 				segStyle = d.style.itemSegment.selected
 			}
 			contStyle = d.style.itemContainer.selected
@@ -124,24 +125,44 @@ func (d TaskListDelegate) Render(w io.Writer, m list.Model, index int, item list
 		taskStyle := segStyle.Foreground(styles.PrimaryForeground)
 		priorityStyle := segStyle.Foreground(priorityColors[p])
 
-		if d.editState.active {
-			editStyle := segStyle.
-				Foreground(styles.PrimaryForeground).
-				Background(styles.SelectedBackground)
-			switch d.editState.field {
-			case TypeField:
-				typStyle = editStyle
-			case TaskField:
-				taskStyle = editStyle
-			case PriorityField:
-				priorityStyle = priorityStyle.Background(styles.SelectedBackground)
-			}
-		}
-
 		typ := typStyle.Render(item.Type)
 		space := segStyle.Render(" ")
 		task := taskStyle.Render(item.Task)
 		priority := priorityStyle.Render(fmt.Sprintf("[%d]", p))
+
+		if d.editState.active && item.ID == d.editState.taskID {
+			editStyle := segStyle.
+				Foreground(styles.PrimaryForeground).
+				Background(styles.SelectedBackground)
+
+			if d.editState.subActive {
+				cycleStyle := segStyle.
+					Foreground(lg.Color("#ffffff")).
+					Background(styles.SelectedBackground)
+
+				switch d.editState.field {
+				case TypeField:
+					typ = cycleStyle.Render("‹ " + d.editState.TempType + " ›")
+				case TaskField:
+					task = d.editState.TextInput.View()
+				case PriorityField:
+					cp := d.editState.TempPriority
+					if cp < 0 || cp >= len(priorityColors) {
+						cp = 0
+					}
+					priority = cycleStyle.Render(fmt.Sprintf("‹ [%d] ›", cp))
+				}
+			} else {
+				switch d.editState.field {
+				case TypeField:
+					typ = editStyle.Render(item.Type)
+				case TaskField:
+					task = editStyle.Render(item.Task)
+				case PriorityField:
+					priority = priorityStyle.Background(styles.SelectedBackground).Render(fmt.Sprintf("[%d]", p))
+				}
+			}
+		}
 
 		left := typ + space + task
 		right := priority

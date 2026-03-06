@@ -6,14 +6,21 @@ import (
 
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
+	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	lg "github.com/charmbracelet/lipgloss"
 )
 
 type EditState struct {
-	active bool
-	taskID string
-	field  FieldIndex
+	active    bool
+	taskID    string
+	taskIndex int
+	field     FieldIndex
+	subActive bool
+
+	TextInput    textinput.Model
+	TempType     string
+	TempPriority int
 }
 
 type FieldIndex int
@@ -25,6 +32,40 @@ const (
 )
 const fieldCnt = 3
 
+func cycleType(current string, delta int) string {
+	opts := notion.TypeSelectValues
+	for i, t := range opts {
+		if t == current {
+			n := len(opts)
+			return opts[((i+delta)%n+n)%n]
+		}
+	}
+	return opts[0]
+}
+
+func cyclePriority(current, delta int) int {
+	const n = 6
+	return ((current+delta)%n + n) % n
+}
+
+func commitSubEdit(m TaskListModel) TaskListModel {
+	items := m.list.Items()
+	item, ok := items[m.EditState.taskIndex].(TaskListItem)
+	if !ok {
+		return m
+	}
+	switch m.EditState.field {
+	case TypeField:
+		item.Type = m.EditState.TempType
+	case PriorityField:
+		item.Priority = m.EditState.TempPriority
+	case TaskField:
+		item.Task = m.EditState.TextInput.Value()
+	}
+	m.list.SetItem(m.EditState.taskIndex, item)
+	return m
+}
+
 // ? required structure for grouping (groups, hidden, ...) could be an interface
 type TaskListModel struct {
 	Milestone notion.SelectedMilestone
@@ -35,16 +76,16 @@ type TaskListModel struct {
 	Keys      KeyMap
 	EditKeys  EditKeyMap
 	client    *notion.Client
-	EditState EditState
+	EditState *EditState
 	// todo: cached milestones
 }
 
 var statusOrder = []string{"dev", "idle", "done"}
 
 func NewTaskListModel(milestone notion.SelectedMilestone, c *notion.Client) TaskListModel {
-	edit := EditState{}
+	edit := &EditState{}
 
-	l := list.New([]list.Item{}, NewTaskListDelegate(false, &edit), 0, 0)
+	l := list.New([]list.Item{}, NewTaskListDelegate(false, edit), 0, 0)
 	l.Title = "Tasks"
 	l.SetShowHelp(false)
 	l.SetShowStatusBar(false)
@@ -66,6 +107,10 @@ func NewTaskListModel(milestone notion.SelectedMilestone, c *notion.Client) Task
 	return m
 }
 
+func (m TaskListModel) IsCapturingTextInput() bool {
+	return m.EditState.active && m.EditState.subActive && m.EditState.field == TaskField
+}
+
 func (m TaskListModel) Update(msg tea.Msg) (TaskListModel, tea.Cmd) {
 	switch msg := msg.(type) {
 
@@ -74,6 +119,48 @@ func (m TaskListModel) Update(msg tea.Msg) (TaskListModel, tea.Cmd) {
 
 	case tea.KeyMsg:
 		if m.EditState.active {
+
+			// --- Level 2: sub-edit engaged ---
+			if m.EditState.subActive {
+				switch m.EditState.field {
+
+				case TypeField:
+					switch {
+					case key.Matches(msg, m.EditKeys.PrevField):
+						m.EditState.TempType = cycleType(m.EditState.TempType, -1)
+					case key.Matches(msg, m.EditKeys.NextField):
+						m.EditState.TempType = cycleType(m.EditState.TempType, +1)
+					case key.Matches(msg, m.EditKeys.EnableEdit), key.Matches(msg, m.EditKeys.Exit):
+						m = commitSubEdit(m)
+						m.EditState.subActive = false
+					}
+
+				case PriorityField:
+					switch {
+					case key.Matches(msg, m.EditKeys.PrevField):
+						m.EditState.TempPriority = cyclePriority(m.EditState.TempPriority, -1)
+					case key.Matches(msg, m.EditKeys.NextField):
+						m.EditState.TempPriority = cyclePriority(m.EditState.TempPriority, +1)
+					case key.Matches(msg, m.EditKeys.EnableEdit), key.Matches(msg, m.EditKeys.Exit):
+						m = commitSubEdit(m)
+						m.EditState.subActive = false
+					}
+
+				case TaskField:
+					if key.Matches(msg, m.EditKeys.EnableEdit) || key.Matches(msg, m.EditKeys.Exit) {
+						m = commitSubEdit(m)
+						m.EditState.subActive = false
+					} else {
+						var cmd tea.Cmd
+						m.EditState.TextInput, cmd = m.EditState.TextInput.Update(msg)
+						return m, cmd
+					}
+				}
+
+				return m, nil
+			}
+
+			// --- Level 1: field selection ---
 			switch {
 
 			case key.Matches(msg, m.EditKeys.Exit):
@@ -94,11 +181,31 @@ func (m TaskListModel) Update(msg tea.Msg) (TaskListModel, tea.Cmd) {
 				return m, nil
 
 			case key.Matches(msg, m.EditKeys.EnableEdit):
-				// todo: enter 2-deep edit mode
+				item, ok := m.list.Items()[m.list.Index()].(TaskListItem)
+				if !ok {
+					return m, nil
+				}
+				m.EditState.taskIndex = m.list.Index()
 
+				switch m.EditState.field {
+				case TypeField:
+					m.EditState.TempType = item.Type
+				case PriorityField:
+					m.EditState.TempPriority = item.Priority
+				case TaskField:
+					ti := textinput.New()
+					ti.SetValue(item.Task)
+					ti.CursorEnd()
+					ti.Width = m.list.Width() - lg.Width(item.Type) - 1 - 3 - 7
+					ti.Focus()
+					m.EditState.TextInput = ti
+				}
+
+				m.EditState.subActive = true
+				return m, nil
 			}
 
-			// consume all keys, don't forward to list navigations
+			// consume all keys, don't forward to list navigation
 			return m, nil
 
 		} else {
