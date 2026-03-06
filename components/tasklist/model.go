@@ -74,14 +74,14 @@ func (m TaskListModel) Update(msg tea.Msg) (TaskListModel, tea.Cmd) {
 		if m.Focus.Mode == WritingMode {
 			switch {
 			case key.Matches(msg, m.writingKeyMap.Save):
-				m.ActiveKeyMap = SelectingKeyMapper
-				m.Focus.Mode = SelectingMode
-
 				// update item in list
 				if task, ok := m.list.SelectedItem().(TaskListItem); ok {
 					task.Task = m.Focus.tempTitle.Value()
 					m.list.SetItem(m.list.Index(), task)
 				}
+
+				m.ActiveKeyMap = NeutralKeyMapper
+				m.Focus.Mode = NeutralMode
 
 				return m, nil
 
