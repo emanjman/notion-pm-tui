@@ -159,9 +159,23 @@ func renderTaskListItem(d TaskListDelegate, item TaskListItem, selected bool, wi
 	title := titleStyle.Render(item.Task)
 	priority := priorityStyle.Render(fmt.Sprintf("[%d]", safePriorityIdx))
 
-	// use textinput component in writing mode
+	// calculate max title width
+	leftOffset, rightOffset, fieldSpacing := 3, 2, 2
+	offset := leftOffset + rightOffset + fieldSpacing
+	titleMaxWidth := windowWidth - lg.Width(typ) - lg.Width(priority) - (offset)
+
 	if selected && d.focus.Mode == WritingMode {
-		title = d.focus.tempTitle.View() // or .Value() ?
+		// use textinput component in writing mode
+		d.focus.tempTitle.Width = titleMaxWidth
+		title = d.focus.tempTitle.View()
+	} else if lg.Width(title) > titleMaxWidth {
+		// if past the max width, truncate until valid
+		t := item.Task
+		for lg.Width(t+"...") > titleMaxWidth && len(t) > 0 {
+			t = t[:len(t)-1]
+		}
+		t = t + "..."
+		title = titleStyle.Render(t)
 	}
 
 	left := typ + space + title

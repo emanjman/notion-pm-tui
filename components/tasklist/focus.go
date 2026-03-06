@@ -68,7 +68,6 @@ func initTempTitle(item TaskListItem) textinput.Model {
 	ti.Focus() // active
 	ti.Placeholder = "Enter task..."
 
-	// todo: ti.Width ???
 	ti.TextStyle = lg.NewStyle().Foreground(styles.PrimaryForeground)
 	ti.PlaceholderStyle = lg.NewStyle().Foreground(styles.MutedForeground)
 	ti.Prompt = ""
