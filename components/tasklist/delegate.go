@@ -118,45 +118,52 @@ var priorityColors = []lg.Color{
 }
 
 func formatTaskListItem(d TaskListDelegate, item TaskListItem, selected bool, windowWidth int) (string, lg.Style) {
-	segStyle := d.style.itemSegment.base
 	contStyle := d.style.itemContainer.base
+	segStyle := d.style.itemSegment.base
+	typStyle, titleStyle, priorityStyle := lg.Style{}, lg.Style{}, lg.Style{}
 
-	// apply row-wide select styling on neutral mode
-	if selected && d.focus.Mode == NeutralMode {
-		segStyle = d.style.itemSegment.selected
-		contStyle = d.style.itemContainer.selected
-	}
+	// handle field highlighting by mode
+	if selected {
+		if d.focus.Mode == NeutralMode {
+			segStyle = d.style.itemSegment.selected
+			contStyle = d.style.itemContainer.selected
 
-	p := item.Priority
-	if p < 0 || p >= len(priorityColors) {
-		p = 0
-	}
-
-	typStyle := segStyle.Foreground(styles.MutedForeground)
-	titleStyle := segStyle.Foreground(styles.PrimaryForeground)
-	priorityStyle := segStyle.Foreground(priorityColors[p])
-
-	// apply highlighting by segment if focused
-	if selected && d.focus.Mode != NeutralMode {
-		switch d.focus.field {
-		case TaskType:
-			typStyle = typStyle.Inherit(d.style.itemSegment.selected)
-		case TaskTitle:
-			titleStyle = titleStyle.Inherit(d.style.itemSegment.selected)
-		case TaskPriority:
-			priorityStyle = priorityStyle.Inherit(d.style.itemSegment.selected)
+			// apply select highlight row-wide
+			typStyle, titleStyle, priorityStyle = segStyle, segStyle, segStyle
+		} else {
+			// apply select highlight by field
+			switch d.focus.field {
+			case TaskType:
+				typStyle = typStyle.Inherit(d.style.itemSegment.selected)
+			case TaskTitle:
+				titleStyle = titleStyle.Inherit(d.style.itemSegment.selected)
+			case TaskPriority:
+				priorityStyle = priorityStyle.Inherit(d.style.itemSegment.selected)
+			}
 		}
 	}
 
+	// guard against unhandled priority values
+	safePriorityIdx := item.Priority
+	if safePriorityIdx < 0 || safePriorityIdx >= len(priorityColors) {
+		safePriorityIdx = 0
+	}
+
+	// apply final field-specific styles
+	typStyle = typStyle.Foreground(styles.MutedForeground)
+	titleStyle = titleStyle.Foreground(styles.PrimaryForeground)
+	priorityStyle = priorityStyle.Foreground(priorityColors[safePriorityIdx])
+
+	// render each field
 	typ := typStyle.Render(item.Type)
 	space := segStyle.Render(" ")
 	task := titleStyle.Render(item.Task)
-	priority := priorityStyle.Render(fmt.Sprintf("[%d]", p))
+	priority := priorityStyle.Render(fmt.Sprintf("[%d]", safePriorityIdx))
 
 	left := typ + space + task
 	right := priority
 
-	px := styles.GetPaddingBetween(typ+space+task, priority, windowWidth, contStyle)
+	px := styles.GetPaddingBetween(left, right, windowWidth, contStyle)
 	content := left + styles.RenderPadding(segStyle, px) + right
 
 	return content, contStyle
