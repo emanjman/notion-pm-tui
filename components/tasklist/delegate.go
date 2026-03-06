@@ -82,17 +82,17 @@ func (d TaskListDelegate) Render(w io.Writer, m list.Model, index int, item list
 
 	switch item := item.(type) {
 	case listutil.ListItemGroupHeader:
-		content, style := formatListItemGroupHeader(d, item, selected)
-		fmt.Fprint(w, style.Width(m.Width()).Render(content))
+		header := renderListItemGroupHeader(d, item, selected, m.Width())
+		fmt.Fprint(w, header)
 	case TaskListItem:
-		content, style := formatTaskListItem(d, item, selected, m.Width())
-		fmt.Fprint(w, style.Width(m.Width()).Render(content))
+		task := renderTaskListItem(d, item, selected, m.Width())
+		fmt.Fprint(w, task)
 	}
 }
 
 // -- helper funcs
 
-func formatListItemGroupHeader(d TaskListDelegate, item listutil.ListItemGroupHeader, selected bool) (string, lg.Style) {
+func renderListItemGroupHeader(d TaskListDelegate, item listutil.ListItemGroupHeader, selected bool, windowWidth int) string {
 	style := d.style.header.base
 	if selected {
 		style = d.style.header.selected
@@ -104,8 +104,7 @@ func formatListItemGroupHeader(d TaskListDelegate, item listutil.ListItemGroupHe
 	}
 
 	content := fmt.Sprintf("%s %s (%d)", chevron, item.Label, item.Count)
-
-	return content, style
+	return style.Width(windowWidth).Render(content)
 }
 
 var priorityColors = []lg.Color{
@@ -117,7 +116,7 @@ var priorityColors = []lg.Color{
 	lg.Color("#f7768e"),    // p5 - red (critical, urgent)
 }
 
-func formatTaskListItem(d TaskListDelegate, item TaskListItem, selected bool, windowWidth int) (string, lg.Style) {
+func renderTaskListItem(d TaskListDelegate, item TaskListItem, selected bool, windowWidth int) string {
 	contStyle := d.style.itemContainer.base
 	segStyle := d.style.itemSegment.base
 	typStyle, titleStyle, priorityStyle := lg.Style{}, lg.Style{}, lg.Style{}
@@ -166,5 +165,5 @@ func formatTaskListItem(d TaskListDelegate, item TaskListItem, selected bool, wi
 	px := styles.GetPaddingBetween(left, right, windowWidth, contStyle)
 	content := left + styles.RenderPadding(segStyle, px) + right
 
-	return content, contStyle
+	return contStyle.Width(windowWidth).Render(content)
 }

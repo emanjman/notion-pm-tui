@@ -84,11 +84,11 @@ func (d MilestoneListDelegate) Render(w io.Writer, m list.Model, index int, item
 
 	switch item := item.(type) {
 	case listutil.ListItemGroupHeader:
-		content, style := formatListItemGroupHeader(d, item, selected)
-		fmt.Fprint(w, style.Width(m.Width()).Render(content))
+		header := renderListItemGroupHeader(d, item, selected, m.Width())
+		fmt.Fprint(w, header)
 	case MilestoneListItem:
-		content, style := formatMilestoneListItem(d, item, selected, m.Width())
-		fmt.Fprint(w, style.Width(m.Width()).Render(content))
+		milestone := renderMilestoneListItem(d, item, selected, m.Width())
+		fmt.Fprint(w, milestone)
 	}
 }
 
@@ -107,7 +107,7 @@ func progressBar(progress float64, width int) string {
 		s.Foreground(styles.MutedForeground).Render(empty)
 }
 
-func formatListItemGroupHeader(d MilestoneListDelegate, item listutil.ListItemGroupHeader, selected bool) (string, lg.Style) {
+func renderListItemGroupHeader(d MilestoneListDelegate, item listutil.ListItemGroupHeader, selected bool, windowWidth int) string {
 	style := d.style.header.base
 	if selected {
 		style = d.style.header.selected
@@ -119,11 +119,10 @@ func formatListItemGroupHeader(d MilestoneListDelegate, item listutil.ListItemGr
 	}
 
 	content := fmt.Sprintf("%s %s (%d)", chevron, item.Label, item.Count)
-
-	return content, style
+	return style.Width(windowWidth).Render(content)
 }
 
-func formatMilestoneListItem(d MilestoneListDelegate, item MilestoneListItem, selected bool, windowWidth int) (string, lg.Style) {
+func renderMilestoneListItem(d MilestoneListDelegate, item MilestoneListItem, selected bool, windowWidth int) string {
 	segStyle := d.style.itemSegment.base
 	contStyle := d.style.itemContainer.base
 	if selected {
@@ -153,6 +152,5 @@ func formatMilestoneListItem(d MilestoneListDelegate, item MilestoneListItem, se
 	r1 := name + styles.RenderPadding(segStyle, r1px) + activity
 	r2 := tags + styles.RenderPadding(segStyle, r2px) + progressBar
 
-	return r1 + "\n" + r2, contStyle
-
+	return contStyle.Width(windowWidth).Render(r1 + "\n" + r2)
 }
