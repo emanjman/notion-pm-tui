@@ -138,15 +138,13 @@ func formatTaskListItem(d TaskListDelegate, item TaskListItem, selected bool, wi
 
 	// apply highlighting by segment if focused
 	if selected && d.focus.Mode != NeutralMode {
-		editStyle := segStyle.Background(styles.SelectedBackground)
-
 		switch d.focus.field {
 		case TaskType:
-			typStyle = editStyle
+			typStyle = typStyle.Inherit(d.style.itemSegment.selected)
 		case TaskTitle:
-			titleStyle = editStyle
+			titleStyle = titleStyle.Inherit(d.style.itemSegment.selected)
 		case TaskPriority:
-			priorityStyle = editStyle
+			priorityStyle = priorityStyle.Inherit(d.style.itemSegment.selected)
 		}
 	}
 
