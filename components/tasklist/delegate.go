@@ -108,25 +108,25 @@ func formatListItemGroupHeader(d TaskListDelegate, item listutil.ListItemGroupHe
 	return content, style
 }
 
+var priorityColors = []lg.Color{
+	styles.MutedForeground, // p0 - none/gray
+	lg.Color("#7aa2f7"),    // p1 - blue (low, calm)
+	lg.Color("#9ece6a"),    // p2 - green (medium-low)
+	lg.Color("#e0af68"),    // p3 - yellow (medium, caution)
+	lg.Color("#ff9e64"),    // p4 - orange (high, warning)
+	lg.Color("#f7768e"),    // p5 - red (critical, urgent)
+}
+
 func formatTaskListItem(d TaskListDelegate, item TaskListItem, selected bool, windowWidth int) (string, lg.Style) {
 	segStyle := d.style.itemSegment.base
 	contStyle := d.style.itemContainer.base
-	if selected {
-		// dont highlight entire row if active edit (instead, highlight by segment)
-		if d.focus.Mode != NeutralMode {
-			segStyle = d.style.itemSegment.selected
-		}
+
+	// apply row-wide select styling on neutral mode
+	if selected && d.focus.Mode == NeutralMode {
+		segStyle = d.style.itemSegment.selected
 		contStyle = d.style.itemContainer.selected
 	}
 
-	priorityColors := []lg.Color{
-		styles.MutedForeground, // p0 - none/gray
-		lg.Color("#7aa2f7"),    // p1 - blue (low, calm)
-		lg.Color("#9ece6a"),    // p2 - green (medium-low)
-		lg.Color("#e0af68"),    // p3 - yellow (medium, caution)
-		lg.Color("#ff9e64"),    // p4 - orange (high, warning)
-		lg.Color("#f7768e"),    // p5 - red (critical, urgent)
-	}
 	p := item.Priority
 	if p < 0 || p >= len(priorityColors) {
 		p = 0
@@ -136,17 +136,17 @@ func formatTaskListItem(d TaskListDelegate, item TaskListItem, selected bool, wi
 	titleStyle := segStyle.Foreground(styles.PrimaryForeground)
 	priorityStyle := segStyle.Foreground(priorityColors[p])
 
-	if d.focus.Mode != NeutralMode {
-		editStyle := segStyle.
-			Foreground(styles.PrimaryForeground).
-			Background(styles.SelectedBackground)
+	// apply highlighting by segment if focused
+	if selected && d.focus.Mode != NeutralMode {
+		editStyle := segStyle.Background(styles.SelectedBackground)
+
 		switch d.focus.field {
 		case TaskType:
 			typStyle = editStyle
 		case TaskTitle:
 			titleStyle = editStyle
 		case TaskPriority:
-			priorityStyle = priorityStyle.Background(styles.SelectedBackground)
+			priorityStyle = editStyle
 		}
 	}
 

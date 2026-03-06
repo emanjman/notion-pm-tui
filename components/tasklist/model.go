@@ -25,7 +25,7 @@ type TaskListModel struct {
 	selectingKeyMap SelectingKeyMap
 	writingKeyMap   WritingKeyMap
 
-	Focus FocusState
+	Focus *FocusState
 
 	// todo: cached milestones
 }
@@ -55,7 +55,7 @@ func NewTaskListModel(mstone notion.SelectedMilestone, clt *notion.Client) TaskL
 		selectingKeyMap: SelectingKeyMapper,
 		writingKeyMap:   WritingKeyMapper,
 
-		Focus: f,
+		Focus: &f,
 	}
 
 	m.list.SetItems(listutil.BuildGroupList(m.groups, m.hidden, statusOrder))
@@ -72,11 +72,16 @@ func (m TaskListModel) Update(msg tea.Msg) (TaskListModel, tea.Cmd) {
 	case tea.KeyMsg:
 		// handle edits by field
 		if m.Focus.Mode == WritingMode {
-			m.ActiveKeyMap = NeutralKeyMapper
+			switch {
+			case key.Matches(msg, m.writingKeyMap.Save):
+				m.ActiveKeyMap = SelectingKeyMapper
+				m.Focus.Mode = SelectingMode
 
-			// todo: enter text input rewriting
+				// todo: enter text input rewriting
 
-			return m, nil
+				return m, nil
+
+			}
 		}
 
 		if m.Focus.Mode == SelectingMode {
@@ -85,6 +90,8 @@ func (m TaskListModel) Update(msg tea.Msg) (TaskListModel, tea.Cmd) {
 			// on exit, save updates via notion api
 			case key.Matches(msg, m.selectingKeyMap.Exit):
 				m.Focus.Mode = NeutralMode
+				m.ActiveKeyMap = NeutralKeyMapper
+
 				// todo: send command to update task changes in notion
 				return m, nil
 
@@ -111,12 +118,14 @@ func (m TaskListModel) Update(msg tea.Msg) (TaskListModel, tea.Cmd) {
 						task.Priority = cyclePriorityField(task.Priority, 1)
 					case TaskTitle:
 						m.Focus.Mode = WritingMode
+						m.ActiveKeyMap = WritingKeyMapper
 
 						// todo: might have to send msg?
 						// todo: enter rewriting mode to catch all keys until completed
 					}
 
 					m.list.SetItem(m.Focus.taskIdx, task)
+					return m, nil
 				}
 			}
 
@@ -137,11 +146,12 @@ func (m TaskListModel) Update(msg tea.Msg) (TaskListModel, tea.Cmd) {
 					// initialize the focus state
 					m.Focus.taskID = task.ID
 					m.Focus.taskIdx = m.list.Index()
-					m.Focus.Mode = SelectingMode
 					m.Focus.field = TaskTitle // default field
+
+					m.ActiveKeyMap = SelectingKeyMapper
+					m.Focus.Mode = SelectingMode
 				}
 
-				m.ActiveKeyMap = SelectingKeyMapper
 				return m, nil
 			}
 		}

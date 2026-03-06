@@ -44,7 +44,7 @@ func cycleTypeField(curr string, delta int) string {
 
 	for i, typ := range typeFieldOptions {
 		if typ == curr {
-			return typeFieldOptions[((i+delta)%n+n)%n]
+			return typeFieldOptions[((i+delta)%n+n)%n] // todo: vet logic
 		}
 	}
 
@@ -53,5 +53,5 @@ func cycleTypeField(curr string, delta int) string {
 
 func cyclePriorityField(curr, delta int) int {
 	const n = 6
-	return ((curr+delta)%n + n) % n
+	return ((curr+delta)%n + n) % n // todo: vet logic
 }
