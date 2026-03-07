@@ -3,9 +3,11 @@ package tasklist
 import "github.com/charmbracelet/bubbles/key"
 
 type NeutralKeyMap struct {
-	Up     key.Binding
-	Down   key.Binding
-	Select key.Binding // enter focus (select) mode
+	Up         key.Binding
+	Down       key.Binding
+	Select     key.Binding // enter focus (select) mode
+	StatusPrev key.Binding // cycle status backward
+	StatusNext key.Binding // cycle status forward
 }
 
 var NeutralKeyMapper = NeutralKeyMap{
@@ -21,6 +23,14 @@ var NeutralKeyMapper = NeutralKeyMap{
 		key.WithKeys("enter"),
 		key.WithHelp("enter", "select task"),
 	),
+	StatusPrev: key.NewBinding(
+		key.WithKeys("<", "shift+,"),
+		key.WithHelp("<", "prev status"),
+	),
+	StatusNext: key.NewBinding(
+		key.WithKeys(">", "shift+."),
+		key.WithHelp(">", "next status"),
+	),
 }
 
 func (k NeutralKeyMap) ShortHelp() []key.Binding {
@@ -30,7 +40,7 @@ func (k NeutralKeyMap) ShortHelp() []key.Binding {
 func (k NeutralKeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
 		{k.Up, k.Down, k.Select},
-		{},
+		{k.StatusPrev, k.StatusNext},
 	}
 }
 

@@ -61,6 +61,27 @@ func cyclePriorityField(curr, delta int) int {
 	return ((curr+delta)%n + n) % n // todo: vet logic
 }
 
+func cycleStatus(curr string, delta int) string {
+	progression := []string{"idle", "dev", "done"} // workflow order
+
+	for i, status := range progression {
+		if status == curr {
+			newIdx := i + delta
+
+			// clamp at boundaries (don't wrap around)
+			if newIdx < 0 {
+				return curr // stay at idle
+			}
+			if newIdx >= len(progression) {
+				return curr // stay at done
+			}
+
+			return progression[newIdx]
+		}
+	}
+	return "idle" // default
+}
+
 func initTempTitle(item TaskListItem) textinput.Model {
 	ti := textinput.New()
 	ti.SetValue(item.Task)

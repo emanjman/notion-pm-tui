@@ -27,7 +27,7 @@ const (
 )
 const tabCount = 4
 
-var labels = []string{"Objective (n, m)", "Overview", "Project Notes (n)", "Debug Notes (n)"}
+var labels = []string{"Objective (n%)", "Overview", "Project Notes (n)", "Debug Notes (n)"}
 
 type ProjectModel struct {
 	activeTab Tab

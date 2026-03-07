@@ -164,6 +164,20 @@ func (m TaskListModel) Update(msg tea.Msg) (TaskListModel, tea.Cmd) {
 				}
 
 				return m, nil
+
+			case key.Matches(msg, m.neutralKeyMap.StatusPrev):
+				if task, ok := m.list.SelectedItem().(TaskListItem); ok {
+					m = m.changeTaskStatus(task, -1)
+					// todo: send command to update status in notion
+				}
+				return m, nil
+
+			case key.Matches(msg, m.neutralKeyMap.StatusNext):
+				if task, ok := m.list.SelectedItem().(TaskListItem); ok {
+					m = m.changeTaskStatus(task, +1)
+					// todo: send command to update status in notion
+				}
+				return m, nil
 			}
 		}
 
@@ -202,6 +216,31 @@ func (m TaskListModel) Update(msg tea.Msg) (TaskListModel, tea.Cmd) {
 	var cmd tea.Cmd
 	m.list, cmd = m.list.Update(msg) // handles up/down nav
 	return m, cmd
+}
+
+func (m TaskListModel) changeTaskStatus(task TaskListItem, delta int) TaskListModel {
+	newStatus := cycleStatus(task.Status, delta)
+	if newStatus == task.Status {
+		return m // no change
+	}
+
+	// Remove from old group
+	oldGroup := m.groups[task.Status]
+	for i, t := range oldGroup {
+		if t.ID == task.ID {
+			m.groups[task.Status] = append(oldGroup[:i], oldGroup[i+1:]...)
+			break
+		}
+	}
+
+	// Update task status and add to new group
+	task.Status = newStatus
+	m.groups[newStatus] = append(m.groups[newStatus], task)
+
+	// Rebuild list
+	m.list.SetItems(listutil.BuildGroupList(m.groups, m.hidden, statusOrder))
+
+	return m
 }
 
 func (m TaskListModel) View() string {
