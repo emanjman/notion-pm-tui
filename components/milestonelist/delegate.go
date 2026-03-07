@@ -138,10 +138,12 @@ func renderMilestoneListItem(d MilestoneListDelegate, item MilestoneListItem, se
 			Foreground(styles.MutedForeground).
 			Render(strings.Join(item.Tags, " · "))
 		progress = segStyle.
+				Foreground(styles.MutedForeground).
 				Render(fmt.Sprintf("%.0f%%", item.Progress*100))
 		bar = segStyle.
 			Render(progressBar(item.Progress, windowWidth/3))
 		activity = segStyle.
+				Foreground(styles.MutedForeground).
 				Render(item.LatestActivityLabel)
 	)
 

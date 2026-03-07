@@ -83,6 +83,7 @@ func (m TaskListModel) Update(msg tea.Msg) (TaskListModel, tea.Cmd) {
 				m.ActiveKeyMap = NeutralKeyMapper
 				m.Focus.Mode = NeutralMode
 
+				// todo: send command to update task title in notion
 				return m, nil
 
 			// forward all keys into the textinput model
@@ -101,7 +102,7 @@ func (m TaskListModel) Update(msg tea.Msg) (TaskListModel, tea.Cmd) {
 				m.Focus.Mode = NeutralMode
 				m.ActiveKeyMap = NeutralKeyMapper
 
-				// todo: send command to update task changes in notion
+				// todo: send command to update task changes (type/priority) in notion
 				return m, nil
 
 			// switch between fields
