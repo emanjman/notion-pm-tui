@@ -97,7 +97,7 @@ func (d MilestoneListDelegate) Render(w io.Writer, m list.Model, index int, item
 
 // -- helper funcs
 
-func progressBar(progress float64, width int) string {
+func createProgressBar(progress float64, width int) string {
 	s := lg.NewStyle()
 
 	wfilled := int(progress * float64(width))
@@ -156,14 +156,20 @@ func renderMilestoneListItem(d MilestoneListDelegate, item MilestoneListItem, se
 	// render each field
 	name := nameStyle.Render(item.Name)
 	tag := tagStyle.Render(item.Tag)
-	progress := segStyle.
-		Foreground(styles.MutedForeground).
-		Render(fmt.Sprintf("%.0f%%", item.Progress*100))
-	bar := segStyle.
-		Render(progressBar(item.Progress, windowWidth/3))
 	activity := segStyle.
 		Foreground(styles.MutedForeground).
 		Render(item.LatestActivityLabel)
+
+	// hide progress bar for completed milestones
+	var progress string
+	if item.Status != "🎉 complete" {
+		completion := segStyle.
+			Foreground(styles.MutedForeground).
+			Render(fmt.Sprintf("%.0f%%", item.Progress*100))
+		pbar := segStyle.
+			Render(createProgressBar(item.Progress, windowWidth/3))
+		progress = completion + segStyle.Render(" ") + pbar
+	}
 
 	// calculate max title width
 	leftOffset, rightOffset := 3, 2
@@ -184,12 +190,10 @@ func renderMilestoneListItem(d MilestoneListDelegate, item MilestoneListItem, se
 		name = nameStyle.Render(n)
 	}
 
-	progressBar := progress + segStyle.Render(" ") + bar
-
 	r1px := styles.GetPaddingBetween(name, activity, windowWidth, contStyle)
-	r2px := styles.GetPaddingBetween(tag, progressBar, windowWidth, contStyle)
+	r2px := styles.GetPaddingBetween(tag, progress, windowWidth, contStyle)
 	r1 := name + styles.RenderPadding(segStyle, r1px) + activity
-	r2 := tag + styles.RenderPadding(segStyle, r2px) + progressBar
+	r2 := tag + styles.RenderPadding(segStyle, r2px) + progress
 
 	return contStyle.Width(windowWidth).Render(r1 + "\n" + r2)
 }
