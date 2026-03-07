@@ -26,9 +26,11 @@ type style struct {
 type MilestoneListDelegate struct {
 	focused bool
 	style   style
+
+	focus *FocusState
 }
 
-func NewMilestoneListDelegate(focused bool) MilestoneListDelegate {
+func NewMilestoneListDelegate(focused bool, focus *FocusState) MilestoneListDelegate {
 	borderDistance := 1
 	leftEdgeDistance := 1
 
@@ -69,6 +71,7 @@ func NewMilestoneListDelegate(focused bool) MilestoneListDelegate {
 			itemSegment:   variantStyle{base: isbase, selected: issel},
 			header:        variantStyle{base: hbase, selected: hsel},
 		},
+		focus: focus,
 	}
 }
 
@@ -123,29 +126,63 @@ func renderListItemGroupHeader(d MilestoneListDelegate, item listutil.ListItemGr
 }
 
 func renderMilestoneListItem(d MilestoneListDelegate, item MilestoneListItem, selected bool, windowWidth int) string {
-	segStyle := d.style.itemSegment.base
 	contStyle := d.style.itemContainer.base
+	segStyle := d.style.itemSegment.base
+	nameStyle, tagStyle := lg.Style{}, lg.Style{}
+
+	// handle field highlighting by mode
 	if selected {
-		segStyle = d.style.itemSegment.selected
-		contStyle = d.style.itemContainer.selected
+		if d.focus.Mode == NeutralMode {
+			segStyle = d.style.itemSegment.selected
+			contStyle = d.style.itemContainer.selected
+
+			// apply select highlight row-wide
+			nameStyle, tagStyle = segStyle, segStyle
+		} else {
+			// apply select highlight by field
+			switch d.focus.field {
+			case MilestoneTitle:
+				nameStyle = nameStyle.Inherit(d.style.itemSegment.selected)
+			case MilestoneTag:
+				tagStyle = tagStyle.Inherit(d.style.itemSegment.selected)
+			}
+		}
 	}
 
-	var (
-		name = segStyle.
-			Foreground(styles.PrimaryForeground).
-			Render(item.Name)
-		tag = segStyle.
-			Foreground(styles.MutedForeground).
-			Render(item.Tag)
-		progress = segStyle.
-				Foreground(styles.MutedForeground).
-				Render(fmt.Sprintf("%.0f%%", item.Progress*100))
-		bar = segStyle.
-			Render(progressBar(item.Progress, windowWidth/3))
-		activity = segStyle.
-				Foreground(styles.MutedForeground).
-				Render(item.LatestActivityLabel)
-	)
+	// apply final field-specific styles
+	nameStyle = nameStyle.Foreground(styles.PrimaryForeground)
+	tagStyle = tagStyle.Foreground(styles.MutedForeground)
+
+	// render each field
+	name := nameStyle.Render(item.Name)
+	tag := tagStyle.Render(item.Tag)
+	progress := segStyle.
+		Foreground(styles.MutedForeground).
+		Render(fmt.Sprintf("%.0f%%", item.Progress*100))
+	bar := segStyle.
+		Render(progressBar(item.Progress, windowWidth/3))
+	activity := segStyle.
+		Foreground(styles.MutedForeground).
+		Render(item.LatestActivityLabel)
+
+	// calculate max title width
+	leftOffset, rightOffset := 3, 2
+	offset := leftOffset + rightOffset
+	nameMaxWidth := windowWidth - lg.Width(activity) - offset
+
+	if selected && d.focus.Mode == WritingMode {
+		// use textinput component in writing mode
+		d.focus.tempTitle.Width = nameMaxWidth
+		name = d.focus.tempTitle.View()
+	} else if lg.Width(name) > nameMaxWidth {
+		// if past the max width, truncate until valid
+		n := item.Name
+		for lg.Width(n+"...") > nameMaxWidth && len(n) > 0 {
+			n = n[:len(n)-1]
+		}
+		n = n + "..."
+		name = nameStyle.Render(n)
+	}
 
 	progressBar := progress + segStyle.Render(" ") + bar
 

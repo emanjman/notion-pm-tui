@@ -58,7 +58,7 @@ func (m ObjectiveModel) Update(msg tea.Msg) (ObjectiveModel, tea.Cmd) {
 				m.focus = MilestonesPanel
 
 				m.tasks.SetItemDelegate(tasklist.NewTaskListDelegate(false, m.tasks.Focus))
-				m.milestones.SetItemDelegate(milestonelist.NewMilestoneListDelegate(true))
+				m.milestones.SetItemDelegate(milestonelist.NewMilestoneListDelegate(true, m.milestones.Focus))
 
 				return m, nil
 
@@ -66,7 +66,7 @@ func (m ObjectiveModel) Update(msg tea.Msg) (ObjectiveModel, tea.Cmd) {
 				m.focus = TasksPanel
 
 				m.tasks.SetItemDelegate(tasklist.NewTaskListDelegate(true, m.tasks.Focus))
-				m.milestones.SetItemDelegate(milestonelist.NewMilestoneListDelegate(false))
+				m.milestones.SetItemDelegate(milestonelist.NewMilestoneListDelegate(false, m.milestones.Focus))
 
 				return m, nil
 			}
@@ -123,7 +123,7 @@ func (m ObjectiveModel) View() string {
 func (m ObjectiveModel) KeyMap() help.KeyMap {
 	switch m.focus {
 	case MilestonesPanel:
-		return keymap.JoinedKeyMap{Primary: m.keys, Secondary: m.milestones.Keys}
+		return keymap.JoinedKeyMap{Primary: m.keys, Secondary: m.milestones.ActiveKeyMap}
 	case TasksPanel:
 		return keymap.JoinedKeyMap{Primary: m.keys, Secondary: m.tasks.ActiveKeyMap}
 	}

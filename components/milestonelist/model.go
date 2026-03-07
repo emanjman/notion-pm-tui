@@ -4,6 +4,7 @@ import (
 	"notion-project-tui/notion"
 	listutil "notion-project-tui/util/list"
 
+	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
@@ -15,13 +16,21 @@ type MilestoneListModel struct {
 	loading bool
 	groups  map[string][]MilestoneListItem // header to items
 	hidden  map[string]bool                // hidden group
-	Keys    KeyMap
+
+	ActiveKeyMap    help.KeyMap // for help focus view
+	neutralKeyMap   NeutralKeyMap
+	selectingKeyMap SelectingKeyMap
+	writingKeyMap   WritingKeyMap
+
+	Focus *FocusState
 }
 
 var statusOrder = []string{"🚧 under development", "😴 idle", "🎉 complete"}
 
 func NewMilestoneListModel() MilestoneListModel {
-	l := list.New([]list.Item{}, NewMilestoneListDelegate(true), 0, 0)
+	f := FocusState{}
+
+	l := list.New([]list.Item{}, NewMilestoneListDelegate(true, &f), 0, 0)
 	l.Title = "Milestones"
 	l.SetShowHelp(false)
 	l.SetShowStatusBar(false)
@@ -32,7 +41,13 @@ func NewMilestoneListModel() MilestoneListModel {
 		loading: true,
 		groups:  listutil.GroupByKey(mockMilestoneItems()),
 		hidden:  map[string]bool{},
-		Keys:    DefaultKeyMap,
+
+		ActiveKeyMap:    NeutralKeyMapper, // default map view
+		neutralKeyMap:   NeutralKeyMapper,
+		selectingKeyMap: SelectingKeyMapper,
+		writingKeyMap:   WritingKeyMapper,
+
+		Focus: &f,
 	}
 	m.list.SetItems(listutil.BuildGroupList(m.groups, m.hidden, statusOrder))
 
@@ -46,22 +61,100 @@ func (m MilestoneListModel) Update(msg tea.Msg) (MilestoneListModel, tea.Cmd) {
 		m.list.SetSize(msg.Width, msg.Height)
 
 	case tea.KeyMsg:
-		switch {
-		case key.Matches(msg, m.Keys.Select):
-			selected := m.list.SelectedItem()
+		// handle title editing (writing mode)
+		if m.Focus.Mode == WritingMode {
+			switch {
+			case key.Matches(msg, m.writingKeyMap.Save):
+				// update item in list
+				if milestone, ok := m.list.SelectedItem().(MilestoneListItem); ok {
+					milestone.Name = m.Focus.tempTitle.Value()
+					m.list.SetItem(m.list.Index(), milestone)
+				}
 
-			switch item := selected.(type) {
-			// toggle + rebuild list
-			case listutil.ListItemGroupHeader:
-				m.hidden[item.Label] = !m.hidden[item.Label]
-				m.list.SetItems(listutil.BuildGroupList(m.groups, m.hidden, statusOrder))
+				m.ActiveKeyMap = NeutralKeyMapper
+				m.Focus.Mode = NeutralMode
+
+				// todo: send command to update milestone title in notion
 				return m, nil
 
-				// mark milestone as selected to get its tasks
-			case MilestoneListItem:
-				return m, func() tea.Msg {
-					return notion.MilestoneSelectedMsg{Milestone: notion.SelectedMilestone{ID: item.ID, TasksPropID: item.TasksPropID}}
+			// forward all keys into the textinput model
+			default:
+				var cmd tea.Cmd
+				m.Focus.tempTitle, cmd = m.Focus.tempTitle.Update(msg)
+				return m, cmd
+			}
+		}
+
+		if m.Focus.Mode == SelectingMode {
+			switch {
+
+			// on exit, save updates via notion api
+			case key.Matches(msg, m.selectingKeyMap.Exit):
+				m.Focus.Mode = NeutralMode
+				m.ActiveKeyMap = NeutralKeyMapper
+
+				// todo: send command to update milestone changes in notion
+				return m, nil
+
+			// switch between fields (vertical navigation)
+			case key.Matches(msg, m.selectingKeyMap.Up):
+				if m.Focus.field == MilestoneTitle {
+					m.Focus.field = fieldCnt - 1
+				} else {
+					m.Focus.field = (m.Focus.field - 1) % fieldCnt
 				}
+				return m, nil
+			case key.Matches(msg, m.selectingKeyMap.Down):
+				m.Focus.field = (m.Focus.field + 1) % fieldCnt
+				return m, nil
+
+			// enter field: cycle select or enter writing mode
+			case key.Matches(msg, m.selectingKeyMap.Select):
+				selected := m.list.SelectedItem()
+				if milestone, ok := selected.(MilestoneListItem); ok {
+					switch m.Focus.field {
+					case MilestoneTag:
+						// cycle tag, stay in selecting mode
+						milestone.Tag = cycleTagField(milestone.Tag, 1)
+						m.list.SetItem(m.Focus.milestoneIdx, milestone)
+					case MilestoneTitle:
+						// enter writing mode for title
+						m.Focus.Mode = WritingMode
+						m.ActiveKeyMap = WritingKeyMapper
+
+						if item, ok := m.list.SelectedItem().(MilestoneListItem); ok {
+							m.Focus.tempTitle = initTempTitle(item)
+						}
+					}
+
+					return m, nil
+				}
+			}
+
+			// consume all keys, don't forward to list navigations
+			return m, nil
+		}
+
+		if m.Focus.Mode == NeutralMode {
+			switch {
+			case key.Matches(msg, m.neutralKeyMap.Select):
+				selected := m.list.SelectedItem()
+
+				// if selected item is header, toggle + rebuild list
+				if header, ok := selected.(listutil.ListItemGroupHeader); ok {
+					m.hidden[header.Label] = !m.hidden[header.Label]
+					m.list.SetItems(listutil.BuildGroupList(m.groups, m.hidden, statusOrder))
+				} else if milestone, ok := selected.(MilestoneListItem); ok {
+					// initialize the focus state
+					m.Focus.milestoneID = milestone.ID
+					m.Focus.milestoneIdx = m.list.Index()
+					m.Focus.field = MilestoneTitle // default field
+
+					m.ActiveKeyMap = SelectingKeyMapper
+					m.Focus.Mode = SelectingMode
+				}
+
+				return m, nil
 			}
 		}
 
