@@ -8,7 +8,7 @@ func mockMilestoneItems() []MilestoneListItem {
 			Status:              "🎉 complete",
 			Progress:            1.0,
 			Tag:                 "backend",
-			LatestActivityLabel: "n/a",
+			LatestActivityLabel: "12/8/25",
 		},
 		MilestoneListItem{
 			ID:                  "2",
@@ -16,7 +16,7 @@ func mockMilestoneItems() []MilestoneListItem {
 			Status:              "🚧 under development",
 			Progress:            0.75,
 			Tag:                 "backend",
-			LatestActivityLabel: "n/a",
+			LatestActivityLabel: "today",
 		},
 		MilestoneListItem{
 			ID:                  "3",
@@ -24,7 +24,7 @@ func mockMilestoneItems() []MilestoneListItem {
 			Status:              "🚧 under development",
 			Progress:            0.4,
 			Tag:                 "frontend",
-			LatestActivityLabel: "n/a",
+			LatestActivityLabel: "3d ago",
 		},
 		MilestoneListItem{
 			ID:                  "4",
@@ -32,7 +32,7 @@ func mockMilestoneItems() []MilestoneListItem {
 			Status:              "😴 idle",
 			Progress:            0.0,
 			Tag:                 "backend",
-			LatestActivityLabel: "n/a",
+			LatestActivityLabel: "no activity",
 		},
 		MilestoneListItem{
 			ID:                  "5",
@@ -40,7 +40,7 @@ func mockMilestoneItems() []MilestoneListItem {
 			Status:              "😴 idle",
 			Progress:            0.0,
 			Tag:                 "backend",
-			LatestActivityLabel: "n/a",
+			LatestActivityLabel: "no activity",
 		},
 		MilestoneListItem{
 			ID:                  "6",
@@ -48,7 +48,7 @@ func mockMilestoneItems() []MilestoneListItem {
 			Status:              "😴 idle",
 			Progress:            0.0,
 			Tag:                 "testing",
-			LatestActivityLabel: "n/a",
+			LatestActivityLabel: "no activity",
 		},
 		MilestoneListItem{
 			ID:                  "7",
@@ -56,7 +56,7 @@ func mockMilestoneItems() []MilestoneListItem {
 			Status:              "🚧 under development",
 			Progress:            0.2,
 			Tag:                 "docs",
-			LatestActivityLabel: "n/a",
+			LatestActivityLabel: "3d ago",
 		},
 	}
 }
