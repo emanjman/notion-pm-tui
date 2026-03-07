@@ -84,6 +84,9 @@ func (d TaskListDelegate) Render(w io.Writer, m list.Model, index int, item list
 	case listutil.ListItemGroupHeader:
 		header := renderListItemGroupHeader(d, item, selected, m.Width())
 		fmt.Fprint(w, header)
+	case listutil.AddTaskButton:
+		button := renderAddTaskButton(d, item, selected, m.Width())
+		fmt.Fprint(w, button)
 	case TaskListItem:
 		task := renderTaskListItem(d, item, selected, m.Width())
 		fmt.Fprint(w, task)
@@ -104,6 +107,16 @@ func renderListItemGroupHeader(d TaskListDelegate, item listutil.ListItemGroupHe
 	}
 
 	content := fmt.Sprintf("%s %s (%d)", chevron, item.Label, item.Count)
+	return style.Width(windowWidth).Render(content)
+}
+
+func renderAddTaskButton(d TaskListDelegate, item listutil.AddTaskButton, selected bool, windowWidth int) string {
+	style := d.style.header.base
+	if selected {
+		style = d.style.header.selected
+	}
+
+	content := "+ New task"
 	return style.Width(windowWidth).Render(content)
 }
 
@@ -142,6 +155,16 @@ func renderTaskListItem(d TaskListDelegate, item TaskListItem, selected bool, wi
 		}
 	}
 
+	// override with red background if pending deletion
+	if selected && d.focus.pendingDelete && d.focus.taskID == item.ID {
+		deleteBackground := lg.Color("#2d1a1a") // dark red matching select highlight tone
+		contStyle = contStyle.Background(deleteBackground)
+		segStyle = segStyle.Background(deleteBackground)
+		typStyle = typStyle.Background(deleteBackground)
+		titleStyle = titleStyle.Background(deleteBackground)
+		priorityStyle = priorityStyle.Background(deleteBackground)
+	}
+
 	// guard against unhandled priority values
 	safePriorityIdx := item.Priority
 	if safePriorityIdx < 0 || safePriorityIdx >= len(priorityColors) {
@@ -156,7 +179,14 @@ func renderTaskListItem(d TaskListDelegate, item TaskListItem, selected bool, wi
 	// render each field
 	typ := typStyle.Render(item.Type)
 	space := segStyle.Render(" ")
-	title := titleStyle.Render(item.Task)
+
+	// handle empty title with placeholder
+	taskText := item.Task
+	if taskText == "" {
+		taskText = "Enter task..."
+		titleStyle = titleStyle.Foreground(styles.MutedForeground)
+	}
+	title := titleStyle.Render(taskText)
 	priority := priorityStyle.Render(fmt.Sprintf("[%d]", safePriorityIdx))
 
 	// calculate max title width
@@ -170,7 +200,7 @@ func renderTaskListItem(d TaskListDelegate, item TaskListItem, selected bool, wi
 		title = d.focus.tempTitle.View()
 	} else if lg.Width(title) > titleMaxWidth {
 		// if past the max width, truncate until valid
-		t := item.Task
+		t := taskText
 		for lg.Width(t+"...") > titleMaxWidth && len(t) > 0 {
 			t = t[:len(t)-1]
 		}

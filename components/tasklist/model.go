@@ -1,6 +1,7 @@
 package tasklist
 
 import (
+	"fmt"
 	"notion-project-tui/notion"
 	listutil "notion-project-tui/util/list"
 
@@ -26,6 +27,8 @@ type TaskListModel struct {
 	writingKeyMap   WritingKeyMap
 
 	Focus *FocusState
+
+	tempIDCounter int // for generating temp IDs for new tasks
 
 	// todo: cached milestones
 }
@@ -145,6 +148,13 @@ func (m TaskListModel) Update(msg tea.Msg) (TaskListModel, tea.Cmd) {
 		}
 
 		if m.Focus.Mode == NeutralMode {
+			// Cancel pending delete if any key other than Delete is pressed
+			if m.Focus.pendingDelete && !key.Matches(msg, m.neutralKeyMap.Delete) {
+				m.Focus.pendingDelete = false
+				// Consume the key event to prevent it from being forwarded
+				return m, nil
+			}
+
 			switch {
 			case key.Matches(msg, m.neutralKeyMap.Select):
 				selected := m.list.SelectedItem()
@@ -153,6 +163,9 @@ func (m TaskListModel) Update(msg tea.Msg) (TaskListModel, tea.Cmd) {
 				if header, ok := selected.(listutil.ListItemGroupHeader); ok {
 					m.hidden[header.Label] = !m.hidden[header.Label]
 					m.list.SetItems(listutil.BuildGroupList(m.groups, m.hidden, statusOrder))
+				} else if button, ok := selected.(listutil.AddTaskButton); ok {
+					// add task to the button's group
+					m = m.addTask(button.Status)
 				} else if task, ok := selected.(TaskListItem); ok {
 					// initialize the focus state
 					m.Focus.taskID = task.ID
@@ -163,6 +176,11 @@ func (m TaskListModel) Update(msg tea.Msg) (TaskListModel, tea.Cmd) {
 					m.Focus.Mode = SelectingMode
 				}
 
+				return m, nil
+
+			case key.Matches(msg, m.neutralKeyMap.AddTask):
+				// always add to idle group
+				m = m.addTask("idle")
 				return m, nil
 
 			case key.Matches(msg, m.neutralKeyMap.StatusPrev):
@@ -176,6 +194,20 @@ func (m TaskListModel) Update(msg tea.Msg) (TaskListModel, tea.Cmd) {
 				if task, ok := m.list.SelectedItem().(TaskListItem); ok {
 					m = m.changeTaskStatus(task, +1)
 					// todo: send command to update status in notion
+				}
+				return m, nil
+
+			case key.Matches(msg, m.neutralKeyMap.Delete):
+				if task, ok := m.list.SelectedItem().(TaskListItem); ok {
+					if m.Focus.pendingDelete && m.Focus.taskID == task.ID {
+						// Second press: actually delete
+						m = m.deleteTask(task)
+					} else {
+						// First press: set pending delete
+						m.Focus.pendingDelete = true
+						m.Focus.taskID = task.ID
+						m.Focus.taskIdx = m.list.Index()
+					}
 				}
 				return m, nil
 			}
@@ -239,6 +271,71 @@ func (m TaskListModel) changeTaskStatus(task TaskListItem, delta int) TaskListMo
 
 	// Rebuild list
 	m.list.SetItems(listutil.BuildGroupList(m.groups, m.hidden, statusOrder))
+
+	return m
+}
+
+func (m TaskListModel) addTask(status string) TaskListModel {
+	// Generate temp ID
+	m.tempIDCounter++
+	tempID := fmt.Sprintf("temp-%d", m.tempIDCounter)
+
+	// Create new task with defaults
+	newTask := TaskListItem{
+		ID:       tempID,
+		Task:     "",
+		Status:   status,
+		Priority: 0, // p0
+		Type:     "feat",
+	}
+
+	// Add to group
+	m.groups[status] = append(m.groups[status], newTask)
+
+	// Rebuild list
+	items := listutil.BuildGroupList(m.groups, m.hidden, statusOrder)
+	m.list.SetItems(items)
+
+	// Find the new task's index in the rebuilt list
+	for i, item := range items {
+		if task, ok := item.(TaskListItem); ok && task.ID == tempID {
+			// Select the new task
+			m.list.Select(i)
+
+			// Initialize focus state
+			m.Focus.taskID = tempID
+			m.Focus.taskIdx = i
+			m.Focus.field = TaskTitle
+
+			// Initialize text input and enter writing mode
+			m.Focus.tempTitle = initTempTitle(newTask)
+			m.Focus.Mode = WritingMode
+			m.ActiveKeyMap = m.writingKeyMap
+
+			break
+		}
+	}
+
+	return m
+}
+
+func (m TaskListModel) deleteTask(task TaskListItem) TaskListModel {
+	// Remove from group
+	group := m.groups[task.Status]
+	for i, t := range group {
+		if t.ID == task.ID {
+			m.groups[task.Status] = append(group[:i], group[i+1:]...)
+			break
+		}
+	}
+
+	// Rebuild list
+	m.list.SetItems(listutil.BuildGroupList(m.groups, m.hidden, statusOrder))
+
+	// Clear pending delete state
+	m.Focus.pendingDelete = false
+
+	// todo: send command to delete task in notion
 
 	return m
 }

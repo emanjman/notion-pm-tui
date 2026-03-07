@@ -10,6 +10,12 @@ type ListItemGroupHeader struct {
 
 func (h ListItemGroupHeader) FilterValue() string { return "" }
 
+type AddTaskButton struct {
+	Status string // which group this button adds tasks to
+}
+
+func (a AddTaskButton) FilterValue() string { return "" }
+
 // -------
 
 // to conform, implement list.Item + GroupKey()
@@ -56,6 +62,8 @@ func BuildGroupList[T Groupable](
 			for _, item := range group {
 				items = append(items, item)
 			}
+			// add button to create new task in this group
+			items = append(items, AddTaskButton{Status: key})
 		}
 	}
 

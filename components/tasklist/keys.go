@@ -8,6 +8,8 @@ type NeutralKeyMap struct {
 	Select     key.Binding // enter focus (select) mode
 	StatusPrev key.Binding // cycle status backward
 	StatusNext key.Binding // cycle status forward
+	AddTask    key.Binding // add new task to idle group
+	Delete     key.Binding // delete task (requires confirmation)
 }
 
 var NeutralKeyMapper = NeutralKeyMap{
@@ -31,6 +33,14 @@ var NeutralKeyMapper = NeutralKeyMap{
 		key.WithKeys(">", "shift+."),
 		key.WithHelp(">", "next status"),
 	),
+	AddTask: key.NewBinding(
+		key.WithKeys("a"),
+		key.WithHelp("a", "add task"),
+	),
+	Delete: key.NewBinding(
+		key.WithKeys("d"),
+		key.WithHelp("d", "delete task"),
+	),
 }
 
 func (k NeutralKeyMap) ShortHelp() []key.Binding {
@@ -40,7 +50,7 @@ func (k NeutralKeyMap) ShortHelp() []key.Binding {
 func (k NeutralKeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
 		{k.Up, k.Down, k.Select},
-		{k.StatusPrev, k.StatusNext},
+		{k.StatusPrev, k.StatusNext, k.AddTask, k.Delete},
 	}
 }
 
