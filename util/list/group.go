@@ -40,7 +40,7 @@ func BuildGroupList[T Groupable](
 	// build list using the group order
 	for _, key := range order {
 		group, ok := groups[key]
-		if !ok {
+		if !ok || len(group) == 0 {
 			continue
 		}
 
