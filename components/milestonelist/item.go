@@ -12,7 +12,7 @@ type MilestoneListItem struct {
 	Status              string
 	LatestActivityLabel string
 	Progress            float64
-	Tags                []string
+	Tag                 string
 }
 
 // func (m MilestoneListItem) Title() string       { return m.Name }
@@ -33,10 +33,7 @@ func NewMilestoneListItem(page notion.MilestonePage) MilestoneListItem {
 		progress = *page.Properties.Progress.Formula.Number
 	}
 
-	tags := make([]string, len(page.Properties.Tags.MultiSelect))
-	for i, tag := range page.Properties.Tags.MultiSelect {
-		tags[i] = tag.Name
-	}
+	tag := page.Properties.Tags.Select.Name
 
 	label := ""
 	if page.Properties.LatestActivityLabel.Formula.String != nil {
@@ -50,6 +47,6 @@ func NewMilestoneListItem(page notion.MilestonePage) MilestoneListItem {
 		Status:              status,
 		LatestActivityLabel: label,
 		Progress:            progress,
-		Tags:                tags,
+		Tag:                 tag,
 	}
 }

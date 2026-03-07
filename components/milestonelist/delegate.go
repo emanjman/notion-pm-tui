@@ -134,9 +134,9 @@ func renderMilestoneListItem(d MilestoneListDelegate, item MilestoneListItem, se
 		name = segStyle.
 			Foreground(styles.PrimaryForeground).
 			Render(item.Name)
-		tags = segStyle.
+		tag = segStyle.
 			Foreground(styles.MutedForeground).
-			Render(strings.Join(item.Tags, " · "))
+			Render(item.Tag)
 		progress = segStyle.
 				Foreground(styles.MutedForeground).
 				Render(fmt.Sprintf("%.0f%%", item.Progress*100))
@@ -150,9 +150,9 @@ func renderMilestoneListItem(d MilestoneListDelegate, item MilestoneListItem, se
 	progressBar := progress + segStyle.Render(" ") + bar
 
 	r1px := styles.GetPaddingBetween(name, activity, windowWidth, contStyle)
-	r2px := styles.GetPaddingBetween(tags, progressBar, windowWidth, contStyle)
+	r2px := styles.GetPaddingBetween(tag, progressBar, windowWidth, contStyle)
 	r1 := name + styles.RenderPadding(segStyle, r1px) + activity
-	r2 := tags + styles.RenderPadding(segStyle, r2px) + progressBar
+	r2 := tag + styles.RenderPadding(segStyle, r2px) + progressBar
 
 	return contStyle.Width(windowWidth).Render(r1 + "\n" + r2)
 }

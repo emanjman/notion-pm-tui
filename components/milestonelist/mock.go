@@ -7,7 +7,7 @@ func mockMilestoneItems() []MilestoneListItem {
 			Name:                "Setup Project Structure",
 			Status:              "🎉 complete",
 			Progress:            1.0,
-			Tags:                []string{"backend", "setup"},
+			Tag:                 "backend",
 			LatestActivityLabel: "n/a",
 		},
 		MilestoneListItem{
@@ -15,7 +15,7 @@ func mockMilestoneItems() []MilestoneListItem {
 			Name:                "Implement Notion API",
 			Status:              "🚧 under development",
 			Progress:            0.75,
-			Tags:                []string{"backend", "api"},
+			Tag:                 "backend",
 			LatestActivityLabel: "n/a",
 		},
 		MilestoneListItem{
@@ -23,7 +23,7 @@ func mockMilestoneItems() []MilestoneListItem {
 			Name:                "Build TUI Dashboard",
 			Status:              "🚧 under development",
 			Progress:            0.4,
-			Tags:                []string{"frontend", "tui"},
+			Tag:                 "frontend",
 			LatestActivityLabel: "n/a",
 		},
 		MilestoneListItem{
@@ -31,7 +31,7 @@ func mockMilestoneItems() []MilestoneListItem {
 			Name:                "Authentication System",
 			Status:              "😴 idle",
 			Progress:            0.0,
-			Tags:                []string{"backend", "auth"},
+			Tag:                 "backend",
 			LatestActivityLabel: "n/a",
 		},
 		MilestoneListItem{
@@ -39,7 +39,7 @@ func mockMilestoneItems() []MilestoneListItem {
 			Name:                "Data Persistence Layer",
 			Status:              "😴 idle",
 			Progress:            0.0,
-			Tags:                []string{"backend", "database"},
+			Tag:                 "backend",
 			LatestActivityLabel: "n/a",
 		},
 		MilestoneListItem{
@@ -47,7 +47,7 @@ func mockMilestoneItems() []MilestoneListItem {
 			Name:                "Testing & QA",
 			Status:              "😴 idle",
 			Progress:            0.0,
-			Tags:                []string{"testing"},
+			Tag:                 "testing",
 			LatestActivityLabel: "n/a",
 		},
 		MilestoneListItem{
@@ -55,7 +55,7 @@ func mockMilestoneItems() []MilestoneListItem {
 			Name:                "Documentation",
 			Status:              "🚧 under development",
 			Progress:            0.2,
-			Tags:                []string{"docs"},
+			Tag:                 "docs",
 			LatestActivityLabel: "n/a",
 		},
 	}
