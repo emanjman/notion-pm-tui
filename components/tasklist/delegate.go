@@ -84,9 +84,6 @@ func (d TaskListDelegate) Render(w io.Writer, m list.Model, index int, item list
 	case listutil.ListItemGroupHeader:
 		header := renderListItemGroupHeader(d, item, selected, m.Width())
 		fmt.Fprint(w, header)
-	case listutil.AddTaskButton:
-		button := renderAddTaskButton(d, item, selected, m.Width())
-		fmt.Fprint(w, button)
 	case TaskListItem:
 		task := renderTaskListItem(d, item, selected, m.Width())
 		fmt.Fprint(w, task)
@@ -107,16 +104,6 @@ func renderListItemGroupHeader(d TaskListDelegate, item listutil.ListItemGroupHe
 	}
 
 	content := fmt.Sprintf("%s %s (%d)", chevron, item.Label, item.Count)
-	return style.Width(windowWidth).Render(content)
-}
-
-func renderAddTaskButton(d TaskListDelegate, item listutil.AddTaskButton, selected bool, windowWidth int) string {
-	style := d.style.header.base
-	if selected {
-		style = d.style.header.selected
-	}
-
-	content := "+ New task"
 	return style.Width(windowWidth).Render(content)
 }
 

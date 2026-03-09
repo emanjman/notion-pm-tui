@@ -165,9 +165,6 @@ func (m TaskListModel) Update(msg tea.Msg) (TaskListModel, tea.Cmd) {
 				if header, ok := selected.(listutil.ListItemGroupHeader); ok {
 					m.hidden[header.Label] = !m.hidden[header.Label]
 					m.list.SetItems(listutil.BuildGroupList(m.groups, m.hidden, statusOrder))
-				} else if button, ok := selected.(listutil.AddTaskButton); ok {
-					// add task to the button's group
-					m = m.addTask(button.Status)
 				} else if task, ok := selected.(TaskListItem); ok {
 					// initialize the focus state
 					m.Focus.taskID = task.ID
@@ -182,7 +179,7 @@ func (m TaskListModel) Update(msg tea.Msg) (TaskListModel, tea.Cmd) {
 
 			case key.Matches(msg, m.neutralKeyMap.AddTask):
 				// always add to idle group
-				m = m.addTask("idle")
+				m = m.addTask()
 				return m, nil
 
 			case key.Matches(msg, m.neutralKeyMap.StatusPrev):
@@ -305,7 +302,9 @@ func (m TaskListModel) updateTaskInGroups(updated TaskListItem) TaskListModel {
 	return m
 }
 
-func (m TaskListModel) addTask(status string) TaskListModel {
+func (m TaskListModel) addTask() TaskListModel {
+	defaultStatus := "idle"
+
 	m.tempIDCounter++
 	tempID := fmt.Sprintf("temp-%d", m.tempIDCounter)
 
@@ -313,13 +312,13 @@ func (m TaskListModel) addTask(status string) TaskListModel {
 	newTask := TaskListItem{
 		ID:       tempID,
 		Task:     "",
-		Status:   status,
+		Status:   "idle",
 		Priority: 0, // p0
 		Type:     "feat",
 	}
 
 	// Add to group
-	m.groups[status] = append(m.groups[status], newTask)
+	m.groups[defaultStatus] = append(m.groups[defaultStatus], newTask)
 
 	// Rebuild list
 	items := listutil.BuildGroupList(m.groups, m.hidden, statusOrder)
