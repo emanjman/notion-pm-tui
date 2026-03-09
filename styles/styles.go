@@ -15,6 +15,7 @@ var (
 // background
 var (
 	SelectedBackground = lg.Color("#1d1d1f")
+	ErrorBackground    = lg.Color("#2d1a1a")
 )
 
 // borders

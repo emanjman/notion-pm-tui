@@ -153,16 +153,15 @@ func renderTaskListItem(d TaskListDelegate, item TaskListItem, selected bool, wi
 				priorityStyle = priorityStyle.Inherit(d.style.itemSegment.selected)
 			}
 		}
-	}
 
-	// override with red background if pending deletion
-	if selected && d.focus.pendingDelete && d.focus.taskID == item.ID {
-		deleteBackground := lg.Color("#2d1a1a") // dark red matching select highlight tone
-		contStyle = contStyle.Background(deleteBackground)
-		segStyle = segStyle.Background(deleteBackground)
-		typStyle = typStyle.Background(deleteBackground)
-		titleStyle = titleStyle.Background(deleteBackground)
-		priorityStyle = priorityStyle.Background(deleteBackground)
+		// if deleting curr item, override w/ red bg
+		if d.focus.pendingDelete && d.focus.taskID == item.ID {
+			contStyle = contStyle.Background(styles.ErrorBackground)
+			segStyle = segStyle.Background(styles.ErrorBackground)
+			typStyle = typStyle.Background(styles.ErrorBackground)
+			titleStyle = titleStyle.Background(styles.ErrorBackground)
+			priorityStyle = priorityStyle.Background(styles.ErrorBackground)
+		}
 	}
 
 	// guard against unhandled priority values
@@ -181,12 +180,12 @@ func renderTaskListItem(d TaskListDelegate, item TaskListItem, selected bool, wi
 	space := segStyle.Render(" ")
 
 	// handle empty title with placeholder
-	taskText := item.Task
-	if taskText == "" {
-		taskText = "Enter task..."
+	renderedTitle := item.Task
+	if renderedTitle == "" {
+		renderedTitle = "Enter task..."
 		titleStyle = titleStyle.Foreground(styles.MutedForeground)
 	}
-	title := titleStyle.Render(taskText)
+	title := titleStyle.Render(renderedTitle)
 	priority := priorityStyle.Render(fmt.Sprintf("[%d]", safePriorityIdx))
 
 	// calculate max title width
@@ -200,7 +199,7 @@ func renderTaskListItem(d TaskListDelegate, item TaskListItem, selected bool, wi
 		title = d.focus.tempTitle.View()
 	} else if lg.Width(title) > titleMaxWidth {
 		// if past the max width, truncate until valid
-		t := taskText
+		t := renderedTitle
 		for lg.Width(t+"...") > titleMaxWidth && len(t) > 0 {
 			t = t[:len(t)-1]
 		}
