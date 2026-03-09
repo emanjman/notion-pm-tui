@@ -80,7 +80,8 @@ func (m TaskListModel) Update(msg tea.Msg) (TaskListModel, tea.Cmd) {
 				// update item in list
 				if task, ok := m.list.SelectedItem().(TaskListItem); ok {
 					task.Task = m.Focus.tempTitle.Value()
-					m.list.SetItem(m.list.Index(), task)
+					m.list.SetItem(m.Focus.taskIdx, task)
+					m.updateTaskInGroups(task)
 				}
 
 				m.ActiveKeyMap = NeutralKeyMapper
@@ -139,6 +140,7 @@ func (m TaskListModel) Update(msg tea.Msg) (TaskListModel, tea.Cmd) {
 					}
 
 					m.list.SetItem(m.Focus.taskIdx, task)
+					m.updateTaskInGroups(task)
 					return m, nil
 				}
 			}
@@ -250,13 +252,25 @@ func (m TaskListModel) Update(msg tea.Msg) (TaskListModel, tea.Cmd) {
 	return m, cmd
 }
 
+func (m TaskListModel) View() string {
+	// ! temp, styling
+	// if m.loading {
+	// 	return "Loading tasks..."
+	// }
+
+	containerStyle := lg.NewStyle().PaddingLeft(1)
+	return containerStyle.Render(m.list.View())
+}
+
+// --- helpers
+
 func (m TaskListModel) changeTaskStatus(task TaskListItem, delta int) TaskListModel {
 	newStatus := cycleStatus(task.Status, delta)
 	if newStatus == task.Status {
 		return m // no change
 	}
 
-	// Remove from old group
+	// remove from old group
 	oldGroup := m.groups[task.Status]
 	for i, t := range oldGroup {
 		if t.ID == task.ID {
@@ -265,22 +279,37 @@ func (m TaskListModel) changeTaskStatus(task TaskListItem, delta int) TaskListMo
 		}
 	}
 
-	// Update task status and add to new group
+	// update task status and add to new group
 	task.Status = newStatus
 	m.groups[newStatus] = append(m.groups[newStatus], task)
 
-	// Rebuild list
+	// rebuild list to show change
 	m.list.SetItems(listutil.BuildGroupList(m.groups, m.hidden, statusOrder))
 
 	return m
 }
 
+func (m TaskListModel) updateTaskInGroups(updated TaskListItem) TaskListModel {
+	group := m.groups[updated.Status]
+
+	// overwrite task in m.groups
+	for i, t := range group {
+		if t.ID == updated.ID {
+			m.groups[updated.Status][i] = updated
+			break
+		}
+	}
+
+	// then rebuild item list
+	m.list.SetItems(listutil.BuildGroupList(m.groups, m.hidden, statusOrder))
+	return m
+}
+
 func (m TaskListModel) addTask(status string) TaskListModel {
-	// Generate temp ID
 	m.tempIDCounter++
 	tempID := fmt.Sprintf("temp-%d", m.tempIDCounter)
 
-	// Create new task with defaults
+	// new task with defaults
 	newTask := TaskListItem{
 		ID:       tempID,
 		Task:     "",
@@ -338,16 +367,6 @@ func (m TaskListModel) deleteTask(task TaskListItem) TaskListModel {
 	// todo: send command to delete task in notion
 
 	return m
-}
-
-func (m TaskListModel) View() string {
-	// ! temp, styling
-	// if m.loading {
-	// 	return "Loading tasks..."
-	// }
-
-	containerStyle := lg.NewStyle().PaddingLeft(1)
-	return containerStyle.Render(m.list.View())
 }
 
 func (m *TaskListModel) SetItemDelegate(d list.ItemDelegate) {
