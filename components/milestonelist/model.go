@@ -69,6 +69,7 @@ func (m MilestoneListModel) Update(msg tea.Msg) (MilestoneListModel, tea.Cmd) {
 				if milestone, ok := m.list.SelectedItem().(MilestoneListItem); ok {
 					milestone.Name = m.Focus.tempTitle.Value()
 					m.list.SetItem(m.list.Index(), milestone)
+					m.updateMilestoneInGroups(milestone)
 				}
 
 				m.ActiveKeyMap = NeutralKeyMapper
@@ -117,6 +118,7 @@ func (m MilestoneListModel) Update(msg tea.Msg) (MilestoneListModel, tea.Cmd) {
 						// cycle tag, stay in selecting mode
 						milestone.Tag = cycleTagField(milestone.Tag, 1)
 						m.list.SetItem(m.Focus.milestoneIdx, milestone)
+						m.updateMilestoneInGroups(milestone)
 					case MilestoneTitle:
 						// enter writing mode for title
 						m.Focus.Mode = WritingMode
@@ -217,4 +219,20 @@ func (m MilestoneListModel) SelectedMilestone() notion.SelectedMilestone {
 
 func (m *MilestoneListModel) SetItemDelegate(d list.ItemDelegate) {
 	m.list.SetDelegate(d)
+}
+
+func (m MilestoneListModel) updateMilestoneInGroups(updated MilestoneListItem) MilestoneListModel {
+	group := m.groups[updated.Status]
+
+	// overwrite task in m.groups
+	for i, t := range group {
+		if t.ID == updated.ID {
+			m.groups[updated.Status][i] = updated
+			break
+		}
+	}
+
+	// then rebuild item list
+	m.list.SetItems(listutil.BuildGroupList(m.groups, m.hidden, statusOrder))
+	return m
 }
