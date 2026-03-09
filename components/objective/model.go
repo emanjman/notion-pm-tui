@@ -47,9 +47,13 @@ func (m ObjectiveModel) Update(msg tea.Msg) (ObjectiveModel, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 
-		if m.tasks.Focus.Mode != tasklist.NeutralMode {
+		if m.InFocusMode() {
 			var cmd tea.Cmd
-			m.tasks, cmd = m.tasks.Update(msg)
+			if m.focus == MilestonesPanel {
+				m.milestones, cmd = m.milestones.Update(msg)
+			} else if m.focus == TasksPanel {
+				m.tasks, cmd = m.tasks.Update(msg)
+			}
 			return m, cmd
 		} else {
 			switch {
@@ -128,4 +132,8 @@ func (m ObjectiveModel) KeyMap() help.KeyMap {
 		return keymap.JoinedKeyMap{Primary: m.keys, Secondary: m.tasks.ActiveKeyMap}
 	}
 	return nil
+}
+
+func (m ObjectiveModel) InFocusMode() bool {
+	return m.milestones.Focus.Mode > 0 || m.tasks.Focus.Mode > 0
 }

@@ -43,6 +43,7 @@ func NewTaskListModel(mstone notion.SelectedMilestone, clt *notion.Client) TaskL
 	l.SetShowHelp(false)
 	l.SetShowStatusBar(false)
 	l.SetShowTitle(false)
+	l.DisableQuitKeybindings()
 
 	m := TaskListModel{
 		Milestone: mstone,

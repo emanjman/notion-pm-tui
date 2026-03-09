@@ -35,6 +35,7 @@ func NewMilestoneListModel() MilestoneListModel {
 	l.SetShowHelp(false)
 	l.SetShowStatusBar(false)
 	l.SetShowTitle(false)
+	l.DisableQuitKeybindings()
 
 	m := MilestoneListModel{
 		list:    l,

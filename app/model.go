@@ -70,36 +70,43 @@ func (m ProjectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 
 	case tea.KeyMsg:
-		switch {
-
-		case key.Matches(msg, m.keys.Quit):
-			return m, tea.Quit
-		case key.Matches(msg, m.keys.Help):
-			m.help.ShowAll = !m.help.ShowAll
-			return m, nil
-		case key.Matches(msg, m.keys.Next):
-			m.activeTab = (m.activeTab + 1) % tabCount
-			return m, nil
-		case key.Matches(msg, m.keys.Prev):
-			if m.activeTab == 0 {
-				m.activeTab = tabCount - 1
-			} else {
-				m.activeTab = (m.activeTab - 1) % tabCount
-			}
-			return m, nil
-
-		// send other keymaps to the active tab
-		default:
+		if m.objective.InFocusMode() {
+			// forward all keys if in writing mode
 			var cmd tea.Cmd
-
-			switch m.activeTab {
-
-			case ObjectiveTab:
-				m.objective, cmd = m.objective.Update(msg)
-
-			}
-
+			m.objective, cmd = m.objective.Update(msg)
 			return m, cmd
+		} else {
+			switch {
+
+			case key.Matches(msg, m.keys.Quit):
+				return m, tea.Quit
+			case key.Matches(msg, m.keys.Help):
+				m.help.ShowAll = !m.help.ShowAll
+				return m, nil
+			case key.Matches(msg, m.keys.Next):
+				m.activeTab = (m.activeTab + 1) % tabCount
+				return m, nil
+			case key.Matches(msg, m.keys.Prev):
+				if m.activeTab == 0 {
+					m.activeTab = tabCount - 1
+				} else {
+					m.activeTab = (m.activeTab - 1) % tabCount
+				}
+				return m, nil
+
+			// send other keymaps to the active tab
+			default:
+				var cmd tea.Cmd
+
+				switch m.activeTab {
+
+				case ObjectiveTab:
+					m.objective, cmd = m.objective.Update(msg)
+
+				}
+
+				return m, cmd
+			}
 		}
 
 	// send window size to the milestones model
