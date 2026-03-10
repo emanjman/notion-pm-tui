@@ -5,22 +5,22 @@ type BlockType string
 const (
 	// must handle
 	BulletedListItem BlockType = "bulleted_list_item"
+	NumberedListItem BlockType = "numbered_list_item"
 	Callout          BlockType = "callout"
-	ChildPage        BlockType = "child_page"
-	Divider          BlockType = "divider"
+	Divider          BlockType = "divider" // block unnecessary
 	Heading2         BlockType = "heading_2"
 	Heading3         BlockType = "heading_3"
-	NumberedListItem BlockType = "numbered_list_item"
 	Paragraph        BlockType = "paragraph"
 	Toggle           BlockType = "toggle"
+	ChildPage        BlockType = "child_page"
+	Code             BlockType = "code"
 
 	// could appear (handle)
-	Column      BlockType = "column"
-	ColumnList  BlockType = "column_list"
-	Equation    BlockType = "equation"
-	LinkPreview BlockType = "link_preview"
-	Table       BlockType = "table"
-	TableRow    BlockType = "table_row"
+	Equation   BlockType = "equation"
+	ColumnList BlockType = "column_list"
+	Column     BlockType = "column"
+	Table      BlockType = "table"
+	TableRow   BlockType = "table_row"
 
 	// could appear (hide)
 	Breadcrumb    BlockType = "breadcrumb"
@@ -41,14 +41,36 @@ const (
 	ToDo            BlockType = "to_do"
 	Transcription   BlockType = "transcription"
 	Video           BlockType = "video"
+	LinkPreview     BlockType = "link_preview"
 )
 
 // ---------------------------------
 
 type Block struct {
-	ID     string      `json:"id"`
-	Parent ParentBlock `json:"parent"`
-	Type   BlockType   `json:"type"`
+	ID          string      `json:"id"`
+	Parent      ParentBlock `json:"parent"`
+	InTrash     bool        `json:"in_trash"`
+	HasChildren bool        `json:"has_children"`
+	Type        BlockType   `json:"type"`
+
+	// dynamic type object
+	BulletedListItem *BulletedListItemBlock `json:"bulleted_list_item,omitempty"`
+	NumberedListItem *NumberedListItemBlock `json:"numbered_list_item,omitempty"`
+	Callout          *CalloutBlock          `json:"callout,omitempty"`
+	Divider          *struct{}              `json:"divider,omitempty"`
+	Heading2         *HeadingBlock          `json:"heading_2,omitempty"`
+	Heading3         *HeadingBlock          `json:"heading_3,omitempty"`
+	Paragraph        *ParagraphBlock        `json:"paragraph,omitempty"`
+	Toggle           *ToggleBlock           `json:"toggle,omitempty"`
+	ChildPage        *ChildPageBlock        `json:"child_page,omitempty"`
+	Code             *CodeBlock             `json:"code,omitempty"`
+	Equation         *EquationBlock         `json:"equation,omitempty"`
+	ColumnList       *struct{}              `json:"column_list,omitempty"`
+	Column           *ColumnBlock           `json:"column,omitempty"`
+	Table            *TableBlock            `json:"table,omitempty"`
+	TableRow         *TableRowBlock         `json:"table_row,omitempty"`
+
+	// todo: need to represent blocks that could appear but need to hide
 }
 
 type ParentBlock struct {
@@ -56,3 +78,75 @@ type ParentBlock struct {
 }
 
 // ---------------------------------
+
+type BulletedListItemBlock struct {
+	RichText []RichText `json:"rich_text"`
+	Color    Color      `json:"color"`
+	Children []Block    `json:"children"`
+}
+
+type NumberedListItemBlock struct {
+	RichText       []RichText      `json:"rich_text"`
+	Color          Color           `json:"color"`
+	ListStartIndex *int            `json:"list_start_index,omitempty"`
+	ListFormat     *ListFormatType `json:"list_format"`
+	Children       []Block         `json:"children"`
+}
+
+type CalloutBlock struct {
+	RichText []RichText `json:"rich_text"`
+	Color    Color      `json:"color"`
+}
+
+type HeadingBlock struct {
+	RichText []RichText `json:"rich_text"`
+	Color    Color      `json:"color"`
+}
+
+type ListFormatType string
+
+const (
+	Numbers ListFormatType = "numbers"
+	Letters ListFormatType = "letters"
+	Roman   ListFormatType = "roman"
+)
+
+type ParagraphBlock struct {
+	RichText []RichText `json:"rich_text"`
+	Color    Color      `json:"color"`
+	Children []Block    `json:"children"`
+}
+
+type ToggleBlock struct {
+	RichText []RichText `json:"rich_text"`
+	Color    Color      `json:"color"`
+	Children []Block    `json:"children"`
+}
+
+type ChildPageBlock struct {
+	Title string `json:"title"`
+}
+
+type CodeBlock struct {
+	Caption  []Block    `json:"caption"`
+	RichText []RichText `json:"rich_text"`
+	Language string     `json:"language"`
+}
+
+type EquationBlock struct {
+	Expression string `json:"expression"`
+}
+
+type ColumnBlock struct {
+	WidthRatio int `json:"width_ratio"` // 0-1
+}
+
+type TableBlock struct {
+	ColumnCount     int  `json:"table_width"`
+	HasColumnHeader bool `json:"has_column_header"`
+	HasRowHeader    bool `json:"has_row_header"`
+}
+
+type TableRowBlock struct {
+	Cells []RichText `json:"cells"`
+}
