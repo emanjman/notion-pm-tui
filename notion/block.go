@@ -26,7 +26,6 @@ const (
 	Breadcrumb    BlockType = "breadcrumb"
 	ChildDatabase BlockType = "child_database"
 	Image         BlockType = "image"
-	Unsupported   BlockType = "unsupported"
 
 	// shouldn't appear
 	Bookmark        BlockType = "bookmark"
@@ -42,6 +41,7 @@ const (
 	Transcription   BlockType = "transcription"
 	Video           BlockType = "video"
 	LinkPreview     BlockType = "link_preview"
+	Unsupported     BlockType = "unsupported"
 )
 
 // ---------------------------------
@@ -64,13 +64,18 @@ type Block struct {
 	Toggle           *ToggleBlock           `json:"toggle,omitempty"`
 	ChildPage        *ChildPageBlock        `json:"child_page,omitempty"`
 	Code             *CodeBlock             `json:"code,omitempty"`
-	Equation         *EquationBlock         `json:"equation,omitempty"`
-	ColumnList       *struct{}              `json:"column_list,omitempty"`
-	Column           *ColumnBlock           `json:"column,omitempty"`
-	Table            *TableBlock            `json:"table,omitempty"`
-	TableRow         *TableRowBlock         `json:"table_row,omitempty"`
 
-	// todo: need to represent blocks that could appear but need to hide
+	// uncommon, handle anyways
+	Equation   *EquationBlock `json:"equation,omitempty"`
+	ColumnList *struct{}      `json:"column_list,omitempty"`
+	Column     *ColumnBlock   `json:"column,omitempty"`
+	Table      *TableBlock    `json:"table,omitempty"`
+	TableRow   *TableRowBlock `json:"table_row,omitempty"`
+
+	// expect to exist, should ignore
+	Breadcrumb    *struct{}           `json:"breadcrumb,omitempty"`
+	ChildDatabase *ChildDatabaseBlock `json:"child_database,omitempty"`
+	Image         *ImageBlock         `json:"image,omitempty"`
 }
 
 type ParentBlock struct {
@@ -149,4 +154,33 @@ type TableBlock struct {
 
 type TableRowBlock struct {
 	Cells []RichText `json:"cells"`
+}
+
+type ChildDatabaseBlock struct {
+	Title string `json:"title"`
+}
+
+type FileType string
+
+const (
+	External   FileType = "external"
+	HostedFile FileType = "file"
+	FileUpload FileType = "file_upload"
+)
+
+type ImageBlock struct {
+	Type FileType `json:"type"`
+
+	FileUpload *struct {
+		ID string `json:"id"`
+	} `json:"file_upload"`
+
+	File *struct {
+		URL        string `json:"url"`
+		ExpiryTime string `json:"expiry_time"`
+	} `json:"file"`
+
+	External *struct {
+		URL string `json:"url"`
+	} `json:"external"`
 }
