@@ -5,19 +5,6 @@ type TitleProperty struct {
 	Title []RichText `json:"title"`
 }
 
-type RichTextType string
-
-const (
-	Text           RichTextType = "text"
-	Mention        RichTextType = "mention"
-	InlineEquation RichTextType = "equation"
-)
-
-type RichText struct {
-	PlainText string       `json:"plain_text"`
-	Type      RichTextType `json:"type"`
-}
-
 // ---------------------------------
 
 type RelationProperty struct {

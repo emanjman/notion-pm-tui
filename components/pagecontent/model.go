@@ -1,60 +1,87 @@
-package notion
+package pagecontent
 
 import (
+	"encoding/json"
 	"notion-project-tui/notion"
-	"strings"
+	"os"
+	"time"
 
-	"github.com/charmbracelet/bubbles/viewport"
+	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
 type PageContentModel struct {
-	viewport viewport.Model
-	blocks   []notion.Block
-	notion   *notion.Client
-	loading  bool
+	list    list.Model
+	notion  *notion.Client
+	loading bool
 }
 
-func NewContentModel(n *notion.Client) PageContentModel {
-	v := viewport.New(0, 0)
+func NewPageContentModel(n *notion.Client) PageContentModel {
+	l := list.New([]list.Item{}, NewPageContentDelegate(), 0, 0)
+
 	return PageContentModel{
-		viewport: v,
-		blocks:   []notion.Block{},
-		notion:   n,
-		loading:  true,
+		list:    l,
+		notion:  n,
+		loading: true,
 	}
+}
+
+type BlockMsg struct {
+	Data     []notion.Block
+	Err      error
+	Duration time.Duration
 }
 
 func (m PageContentModel) Init() tea.Cmd {
-	return nil
+	start := time.Now()
+
+	return func() tea.Msg {
+		data, err := os.ReadFile("mock/keycloak-migration.json")
+		if err != nil {
+			return BlockMsg{Err: err, Duration: time.Since(start)}
+		}
+
+		var content notion.PageContent
+		if err := json.Unmarshal(data, &content); err != nil {
+			return BlockMsg{Err: err, Duration: time.Since(start)}
+		}
+
+		// todo: if HasMore is true, we gotta keep fetching
+		return BlockMsg{Data: content.Results, Duration: time.Since(start)}
+	}
 }
 
 func (m PageContentModel) View() string {
-	return m.viewport.View()
+	if m.loading {
+		return "Loading..."
+	}
+	return m.list.View()
 }
 
-func (m PageContentModel) Update() (PageContentModel, tea.Cmd) {
-	// ! mock data
-	m.viewport.SetContent(m.renderBlocks())
+func (m PageContentModel) Update(msg tea.Msg) (PageContentModel, tea.Cmd) {
+	switch msg := msg.(type) {
+	case BlockMsg:
+		if msg.Err != nil {
+			return m, nil
+		}
+
+		blocks := make([]list.Item, len(msg.Data))
+		for i, block := range msg.Data {
+			blocks[i] = block
+		}
+
+		m.list.SetItems(blocks)
+		m.loading = false
+
+	case tea.WindowSizeMsg:
+		m.list.SetSize(msg.Width, msg.Height)
+
+	// forward other commands to list
+	default:
+		var cmd tea.Cmd
+		m.list, cmd = m.list.Update(msg)
+		return m, cmd
+	}
+
 	return m, nil
-}
-
-func (m PageContentModel) renderBlock(block notion.Block) string {
-	switch block.Type {
-	case notion.Paragraph:
-		return notion.ExtractPlainText(block.Paragraph.RichText)
-	case notion.Divider:
-		return strings.Repeat("─", m.viewport.Width)
-	}
-
-	return "Unhandled block"
-}
-
-func (m PageContentModel) renderBlocks() string {
-	var s strings.Builder
-	for _, block := range m.blocks {
-		s.WriteString(m.renderBlock(block))
-		s.WriteString("\n")
-	}
-	return s.String()
 }

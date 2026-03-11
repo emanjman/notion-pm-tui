@@ -4,6 +4,7 @@ import (
 	// ! temp, styling ui
 	// "fmt"
 	"notion-project-tui/components/objective"
+	"notion-project-tui/components/overview"
 	"notion-project-tui/notion"
 	"notion-project-tui/styles"
 	"notion-project-tui/util/keymap"
@@ -44,7 +45,7 @@ type ProjectModel struct {
 	client *notion.Client
 
 	objective objective.ObjectiveModel
-	// overview     views.PageContentModel
+	overview  overview.OverviewModel
 	// projectNotes views.NotesListModel
 	// debugNotes   views.NotesListModel
 }
@@ -58,12 +59,18 @@ func InitProjectModel() ProjectModel {
 		help:      help.New(),
 		client:    client,
 		objective: objective.NewObjectiveModel(client),
+		overview:  overview.NewOverviewModel(client),
 	}
 }
 
 func (m ProjectModel) Init() tea.Cmd {
 	// return m.client.FetchProject()
-	return nil // ! temp, styling ui
+	// return nil // ! temp, styling ui
+
+	return tea.Batch(
+		// m.client.FetchProject(),
+		m.overview.Init(),
+	)
 }
 
 func (m ProjectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -98,11 +105,12 @@ func (m ProjectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			default:
 				var cmd tea.Cmd
 
+				// todo: handle for other tabs
 				switch m.activeTab {
-
 				case ObjectiveTab:
 					m.objective, cmd = m.objective.Update(msg)
-
+				case OverviewTab:
+					m.overview, cmd = m.overview.Update(msg)
 				}
 
 				return m, cmd
@@ -114,12 +122,20 @@ func (m ProjectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.width = msg.Width
 		m.height = msg.Height
 
-		var cmd tea.Cmd
-		m.objective, cmd = m.objective.Update(tea.WindowSizeMsg{
+		childHeight := msg.Height - 5 // header row, help bar, spacing
+
+		var objCmd, ovrCmd tea.Cmd
+		m.objective, objCmd = m.objective.Update(tea.WindowSizeMsg{
 			Width:  msg.Width,
-			Height: msg.Height - 5, // header row, help bar, spacing
+			Height: childHeight,
 		})
-		return m, cmd
+
+		m.overview, ovrCmd = m.overview.Update(tea.WindowSizeMsg{
+			Width:  msg.Width,
+			Height: childHeight,
+		})
+
+		return m, tea.Batch(objCmd, ovrCmd)
 
 	case notion.ProjectMsg:
 		// if failed fetch, don't proceed w/ fetching ids
@@ -148,9 +164,10 @@ func (m ProjectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, cmd
 
 	default:
-		var cmd tea.Cmd
-		m.objective, cmd = m.objective.Update(msg)
-		return m, cmd
+		var objCmd, ovrCmd tea.Cmd
+		m.objective, objCmd = m.objective.Update(msg)
+		m.overview, ovrCmd = m.overview.Update(msg)
+		return m, tea.Batch(objCmd, ovrCmd)
 	}
 }
 
@@ -187,9 +204,9 @@ func (m ProjectModel) View() string {
 	switch m.activeTab {
 
 	case ObjectiveTab:
-		main = m.objective.View() // * this might be overriding the full view?
+		main = m.objective.View()
 	case OverviewTab:
-		main = "Overview (coming soon)"
+		main = m.overview.View()
 	case ProjectNotesTab:
 		main = "Project notes (coming soon)"
 	case DebugNotesTab:

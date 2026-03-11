@@ -85,6 +85,9 @@ type ParentBlock struct {
 	BlockID string `json:"block_id"`
 }
 
+// for list item compatibility
+func (b Block) FilterValue() string { return b.ID }
+
 // ---------------------------------
 
 type BulletedListItemBlock struct {

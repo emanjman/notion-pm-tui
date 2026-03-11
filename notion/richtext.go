@@ -1,7 +1,5 @@
 package notion
 
-type RichTextType string
-
 type RichText struct {
 	PlainText   string `json:"plain_text"`
 	Annotations struct {

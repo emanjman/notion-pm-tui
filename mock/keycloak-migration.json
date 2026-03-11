@@ -1,0 +1,2564 @@
+{
+  "object": "list",
+  "results": [
+    {
+      "object": "block",
+      "id": "1e3b7273-944b-8010-bbe6-d5e2528f34b7",
+      "parent": {
+        "type": "page_id",
+        "page_id": "1e3b7273-944b-8059-a15c-d994116f24a9"
+      },
+      "created_time": "2025-04-28T17:01:00.000Z",
+      "last_edited_time": "2025-04-28T17:01:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "has_children": false,
+      "in_trash": false,
+      "type": "breadcrumb",
+      "breadcrumb": {}
+    },
+    {
+      "object": "block",
+      "id": "1e3b7273-944b-8009-b589-e1cc354442a3",
+      "parent": {
+        "type": "page_id",
+        "page_id": "1e3b7273-944b-8059-a15c-d994116f24a9"
+      },
+      "created_time": "2025-04-28T17:01:00.000Z",
+      "last_edited_time": "2025-04-28T17:01:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "has_children": false,
+      "in_trash": false,
+      "type": "divider",
+      "divider": {}
+    },
+    {
+      "object": "block",
+      "id": "1e3b7273-944b-803b-a60c-c7bdc3b916b4",
+      "parent": {
+        "type": "page_id",
+        "page_id": "1e3b7273-944b-8059-a15c-d994116f24a9"
+      },
+      "created_time": "2025-04-28T17:02:00.000Z",
+      "last_edited_time": "2025-04-28T17:03:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "has_children": true,
+      "in_trash": false,
+      "type": "callout",
+      "callout": {
+        "rich_text": [],
+        "icon": null,
+        "color": "gray_background"
+      }
+    },
+    {
+      "object": "block",
+      "id": "1e3b7273-944b-80e5-a6c4-cf5023e23963",
+      "parent": {
+        "type": "page_id",
+        "page_id": "1e3b7273-944b-8059-a15c-d994116f24a9"
+      },
+      "created_time": "2025-04-28T17:03:00.000Z",
+      "last_edited_time": "2025-04-28T17:03:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "has_children": false,
+      "in_trash": false,
+      "type": "heading_3",
+      "heading_3": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "Replace Microsoft Azure",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "Replace Microsoft Azure",
+            "href": null
+          }
+        ],
+        "is_toggleable": false,
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "1e3b7273-944b-8066-a1ae-f702a9b63d4d",
+      "parent": {
+        "type": "page_id",
+        "page_id": "1e3b7273-944b-8059-a15c-d994116f24a9"
+      },
+      "created_time": "2025-04-28T17:03:00.000Z",
+      "last_edited_time": "2025-04-28T17:04:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "has_children": false,
+      "in_trash": false,
+      "type": "bulleted_list_item",
+      "bulleted_list_item": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "goal is to replace Microsoft Azure w/ Keycloak for authentication",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "goal is to replace Microsoft Azure w/ Keycloak for authentication",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "1e3b7273-944b-800f-be7a-d5f358aa5b6b",
+      "parent": {
+        "type": "page_id",
+        "page_id": "1e3b7273-944b-8059-a15c-d994116f24a9"
+      },
+      "created_time": "2025-04-28T17:06:00.000Z",
+      "last_edited_time": "2025-04-28T17:06:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "has_children": false,
+      "in_trash": false,
+      "type": "heading_3",
+      "heading_3": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "Minimal dependencies",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "Minimal dependencies",
+            "href": null
+          }
+        ],
+        "is_toggleable": false,
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "1e3b7273-944b-80cf-b5e4-f04beef05085",
+      "parent": {
+        "type": "page_id",
+        "page_id": "1e3b7273-944b-8059-a15c-d994116f24a9"
+      },
+      "created_time": "2025-04-28T17:06:00.000Z",
+      "last_edited_time": "2025-04-28T17:07:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "has_children": false,
+      "in_trash": false,
+      "type": "bulleted_list_item",
+      "bulleted_list_item": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "not using ",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "not using ",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": "nuxt-auth-utils",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": true,
+              "color": "default"
+            },
+            "plain_text": "nuxt-auth-utils",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": " dependency",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": " dependency",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "1e3b7273-944b-80a9-ada4-c327a8955798",
+      "parent": {
+        "type": "page_id",
+        "page_id": "1e3b7273-944b-8059-a15c-d994116f24a9"
+      },
+      "created_time": "2025-04-28T17:06:00.000Z",
+      "last_edited_time": "2025-04-28T17:07:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "has_children": false,
+      "in_trash": false,
+      "type": "bulleted_list_item",
+      "bulleted_list_item": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "should be able to handle w/ ",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "should be able to handle w/ ",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": "keycloak-js",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": true,
+              "color": "default"
+            },
+            "plain_text": "keycloak-js",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": " dependency?",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": " dependency?",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "1e3b7273-944b-8015-9885-eba7fc461fa2",
+      "parent": {
+        "type": "page_id",
+        "page_id": "1e3b7273-944b-8059-a15c-d994116f24a9"
+      },
+      "created_time": "2025-04-28T17:04:00.000Z",
+      "last_edited_time": "2025-04-28T17:04:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "has_children": false,
+      "in_trash": false,
+      "type": "divider",
+      "divider": {}
+    },
+    {
+      "object": "block",
+      "id": "1e3b7273-944b-8098-a2fe-e1c37c5b1a43",
+      "parent": {
+        "type": "page_id",
+        "page_id": "1e3b7273-944b-8059-a15c-d994116f24a9"
+      },
+      "created_time": "2025-04-28T17:12:00.000Z",
+      "last_edited_time": "2025-04-28T17:12:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "has_children": true,
+      "in_trash": false,
+      "type": "callout",
+      "callout": {
+        "rich_text": [],
+        "icon": null,
+        "color": "gray_background"
+      }
+    },
+    {
+      "object": "block",
+      "id": "1e3b7273-944b-8089-aa59-ea08260b5af2",
+      "parent": {
+        "type": "page_id",
+        "page_id": "1e3b7273-944b-8059-a15c-d994116f24a9"
+      },
+      "created_time": "2025-04-28T17:12:00.000Z",
+      "last_edited_time": "2025-04-28T17:12:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "has_children": false,
+      "in_trash": false,
+      "type": "heading_3",
+      "heading_3": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "Create client",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "Create client",
+            "href": null
+          }
+        ],
+        "is_toggleable": false,
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "1e3b7273-944b-806c-b4a9-f4795803dde2",
+      "parent": {
+        "type": "page_id",
+        "page_id": "1e3b7273-944b-8059-a15c-d994116f24a9"
+      },
+      "created_time": "2025-04-28T17:12:00.000Z",
+      "last_edited_time": "2025-04-28T17:12:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "has_children": false,
+      "in_trash": false,
+      "type": "numbered_list_item",
+      "numbered_list_item": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "click ",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "click ",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": "Create client",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": true,
+              "color": "default"
+            },
+            "plain_text": "Create client",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "1e3b7273-944b-801a-a307-c70fbddfc26d",
+      "parent": {
+        "type": "page_id",
+        "page_id": "1e3b7273-944b-8059-a15c-d994116f24a9"
+      },
+      "created_time": "2025-04-28T17:12:00.000Z",
+      "last_edited_time": "2025-04-28T17:12:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "has_children": false,
+      "in_trash": false,
+      "type": "numbered_list_item",
+      "numbered_list_item": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "enter a ",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "enter a ",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": "Client ID",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": true,
+              "color": "default"
+            },
+            "plain_text": "Client ID",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": ", which would typically be the same as the ",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": ", which would typically be the same as the ",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": "Name",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": true,
+              "color": "default"
+            },
+            "plain_text": "Name",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": " field",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": " field",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "1e3b7273-944b-804b-90c6-e2ced12c74a4",
+      "parent": {
+        "type": "page_id",
+        "page_id": "1e3b7273-944b-8059-a15c-d994116f24a9"
+      },
+      "created_time": "2025-04-28T17:12:00.000Z",
+      "last_edited_time": "2025-04-28T17:32:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "has_children": true,
+      "in_trash": false,
+      "type": "numbered_list_item",
+      "numbered_list_item": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "capability config:",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "capability config:",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "1e3b7273-944b-8031-92db-d900b3e6d8b0",
+      "parent": {
+        "type": "page_id",
+        "page_id": "1e3b7273-944b-8059-a15c-d994116f24a9"
+      },
+      "created_time": "2025-04-28T17:15:00.000Z",
+      "last_edited_time": "2025-04-28T17:29:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "has_children": true,
+      "in_trash": false,
+      "type": "numbered_list_item",
+      "numbered_list_item": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "access settings:",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "access settings:",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "1e3b7273-944b-8058-8fd7-e9594379f6ca",
+      "parent": {
+        "type": "page_id",
+        "page_id": "1e3b7273-944b-8059-a15c-d994116f24a9"
+      },
+      "created_time": "2025-04-28T17:29:00.000Z",
+      "last_edited_time": "2025-04-28T17:29:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "has_children": false,
+      "in_trash": false,
+      "type": "bulleted_list_item",
+      "bulleted_list_item": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "note that you’d need the GUID for each role later",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "note that you’d need the GUID for each role later",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "1e3b7273-944b-80d2-b6f8-ee4b1639b956",
+      "parent": {
+        "type": "page_id",
+        "page_id": "1e3b7273-944b-8059-a15c-d994116f24a9"
+      },
+      "created_time": "2025-04-28T17:20:00.000Z",
+      "last_edited_time": "2025-04-28T17:20:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "has_children": false,
+      "in_trash": false,
+      "type": "heading_3",
+      "heading_3": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "Display role in token",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "Display role in token",
+            "href": null
+          }
+        ],
+        "is_toggleable": false,
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "1e3b7273-944b-80a0-a853-cda645ad70b9",
+      "parent": {
+        "type": "page_id",
+        "page_id": "1e3b7273-944b-8059-a15c-d994116f24a9"
+      },
+      "created_time": "2025-04-28T17:20:00.000Z",
+      "last_edited_time": "2025-04-28T17:21:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "has_children": false,
+      "in_trash": false,
+      "type": "bulleted_list_item",
+      "bulleted_list_item": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "role does not display in token data by default; it must be configured",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "role does not display in token data by default; it must be configured",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "1e3b7273-944b-8031-a0db-dab2a4414ccd",
+      "parent": {
+        "type": "page_id",
+        "page_id": "1e3b7273-944b-8059-a15c-d994116f24a9"
+      },
+      "created_time": "2025-04-28T17:21:00.000Z",
+      "last_edited_time": "2025-04-28T17:22:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "has_children": true,
+      "in_trash": false,
+      "type": "numbered_list_item",
+      "numbered_list_item": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "go to client",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "go to client",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "1e3b7273-944b-80ee-810c-fe955efe3b42",
+      "parent": {
+        "type": "page_id",
+        "page_id": "1e3b7273-944b-8059-a15c-d994116f24a9"
+      },
+      "created_time": "2025-04-28T17:22:00.000Z",
+      "last_edited_time": "2025-04-28T17:22:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "has_children": false,
+      "in_trash": false,
+      "type": "numbered_list_item",
+      "numbered_list_item": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "click ",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "click ",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": "Client scopes",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": true,
+              "color": "default"
+            },
+            "plain_text": "Client scopes",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": " tab",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": " tab",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "1e3b7273-944b-8005-a046-fa1a464db912",
+      "parent": {
+        "type": "page_id",
+        "page_id": "1e3b7273-944b-8059-a15c-d994116f24a9"
+      },
+      "created_time": "2025-04-28T17:22:00.000Z",
+      "last_edited_time": "2025-04-28T17:23:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "has_children": false,
+      "in_trash": false,
+      "type": "numbered_list_item",
+      "numbered_list_item": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "click blue-link named: ",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "click blue-link named: ",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": "{client-name}-dedicated",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": true,
+              "color": "default"
+            },
+            "plain_text": "{client-name}-dedicated",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "1e3b7273-944b-80e7-86f2-f350e92ff4e8",
+      "parent": {
+        "type": "page_id",
+        "page_id": "1e3b7273-944b-8059-a15c-d994116f24a9"
+      },
+      "created_time": "2025-04-28T17:23:00.000Z",
+      "last_edited_time": "2025-04-28T17:28:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "has_children": true,
+      "in_trash": false,
+      "type": "numbered_list_item",
+      "numbered_list_item": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "click ",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "click ",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": "Add mapper",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": true,
+              "color": "default"
+            },
+            "plain_text": "Add mapper",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "1e3b7273-944b-806e-982b-e1c8fc2a45cf",
+      "parent": {
+        "type": "page_id",
+        "page_id": "1e3b7273-944b-8059-a15c-d994116f24a9"
+      },
+      "created_time": "2025-04-28T17:28:00.000Z",
+      "last_edited_time": "2025-04-28T17:28:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "has_children": false,
+      "in_trash": false,
+      "type": "heading_3",
+      "heading_3": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "Create client roles",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "Create client roles",
+            "href": null
+          }
+        ],
+        "is_toggleable": false,
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "1e3b7273-944b-80c8-9826-d9dcf747a64f",
+      "parent": {
+        "type": "page_id",
+        "page_id": "1e3b7273-944b-8059-a15c-d994116f24a9"
+      },
+      "created_time": "2025-04-28T17:28:00.000Z",
+      "last_edited_time": "2025-04-28T17:28:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "has_children": true,
+      "in_trash": false,
+      "type": "numbered_list_item",
+      "numbered_list_item": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "go to client",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "go to client",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "1e3b7273-944b-8048-8129-d215d8c630e7",
+      "parent": {
+        "type": "page_id",
+        "page_id": "1e3b7273-944b-8059-a15c-d994116f24a9"
+      },
+      "created_time": "2025-04-28T17:28:00.000Z",
+      "last_edited_time": "2025-04-28T17:28:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "has_children": false,
+      "in_trash": false,
+      "type": "numbered_list_item",
+      "numbered_list_item": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "click ",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "click ",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": "Roles",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": true,
+              "color": "default"
+            },
+            "plain_text": "Roles",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": " tab",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": " tab",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "1e3b7273-944b-80ff-8b9d-fc40216bce2a",
+      "parent": {
+        "type": "page_id",
+        "page_id": "1e3b7273-944b-8059-a15c-d994116f24a9"
+      },
+      "created_time": "2025-04-28T17:28:00.000Z",
+      "last_edited_time": "2025-04-28T17:29:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "has_children": false,
+      "in_trash": false,
+      "type": "numbered_list_item",
+      "numbered_list_item": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "click ",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "click ",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": "Create role",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": true,
+              "color": "default"
+            },
+            "plain_text": "Create role",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": " ",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": " ",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "1e3b7273-944b-80a8-8fdb-d7143518a522",
+      "parent": {
+        "type": "page_id",
+        "page_id": "1e3b7273-944b-8059-a15c-d994116f24a9"
+      },
+      "created_time": "2025-04-28T17:29:00.000Z",
+      "last_edited_time": "2025-04-28T17:29:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "has_children": false,
+      "in_trash": false,
+      "type": "bulleted_list_item",
+      "bulleted_list_item": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "note that you’d need the GUID for each role later",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "note that you’d need the GUID for each role later",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "1e3b7273-944b-80b0-8172-f1266ee9e6a6",
+      "parent": {
+        "type": "page_id",
+        "page_id": "1e3b7273-944b-8059-a15c-d994116f24a9"
+      },
+      "created_time": "2025-04-28T17:17:00.000Z",
+      "last_edited_time": "2025-04-28T17:18:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "has_children": false,
+      "in_trash": false,
+      "type": "heading_3",
+      "heading_3": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "Create group",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "Create group",
+            "href": null
+          }
+        ],
+        "is_toggleable": false,
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "1e3b7273-944b-8094-a4b1-cd25d6435bee",
+      "parent": {
+        "type": "page_id",
+        "page_id": "1e3b7273-944b-8059-a15c-d994116f24a9"
+      },
+      "created_time": "2025-04-28T17:18:00.000Z",
+      "last_edited_time": "2025-04-28T22:31:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "has_children": true,
+      "in_trash": false,
+      "type": "bulleted_list_item",
+      "bulleted_list_item": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "this is for specifying who has access to the app",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "this is for specifying who has access to the app",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "1e3b7273-944b-8037-b22b-f252e6f8b077",
+      "parent": {
+        "type": "page_id",
+        "page_id": "1e3b7273-944b-8059-a15c-d994116f24a9"
+      },
+      "created_time": "2025-04-28T17:19:00.000Z",
+      "last_edited_time": "2025-04-28T17:20:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "has_children": false,
+      "in_trash": false,
+      "type": "numbered_list_item",
+      "numbered_list_item": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "go to ",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "go to ",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": "Groups",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": true,
+              "color": "default"
+            },
+            "plain_text": "Groups",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": " tab",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": " tab",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "1e3b7273-944b-807b-8794-f6cdd7916836",
+      "parent": {
+        "type": "page_id",
+        "page_id": "1e3b7273-944b-8059-a15c-d994116f24a9"
+      },
+      "created_time": "2025-04-28T17:20:00.000Z",
+      "last_edited_time": "2025-04-28T17:20:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "has_children": false,
+      "in_trash": false,
+      "type": "numbered_list_item",
+      "numbered_list_item": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "click ",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "click ",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": "Create group",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": true,
+              "color": "default"
+            },
+            "plain_text": "Create group",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "1e3b7273-944b-80fd-8b86-db78082517d3",
+      "parent": {
+        "type": "page_id",
+        "page_id": "1e3b7273-944b-8059-a15c-d994116f24a9"
+      },
+      "created_time": "2025-04-28T17:20:00.000Z",
+      "last_edited_time": "2025-04-28T17:20:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "has_children": false,
+      "in_trash": false,
+      "type": "numbered_list_item",
+      "numbered_list_item": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "enter name as: ",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "enter name as: ",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": "{client-name}-access",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": true,
+              "color": "default"
+            },
+            "plain_text": "{client-name}-access",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": " ",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": " ",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "1e3b7273-944b-809d-ba8a-d844b73d2116",
+      "parent": {
+        "type": "page_id",
+        "page_id": "1e3b7273-944b-8059-a15c-d994116f24a9"
+      },
+      "created_time": "2025-04-28T17:29:00.000Z",
+      "last_edited_time": "2025-04-28T17:29:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "has_children": false,
+      "in_trash": false,
+      "type": "bulleted_list_item",
+      "bulleted_list_item": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "note that you’d need the GUID for each role later",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "note that you’d need the GUID for each role later",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "1e3b7273-944b-80f3-8a7f-f54282c4b839",
+      "parent": {
+        "type": "page_id",
+        "page_id": "1e3b7273-944b-8059-a15c-d994116f24a9"
+      },
+      "created_time": "2025-04-28T17:12:00.000Z",
+      "last_edited_time": "2025-04-28T17:12:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "has_children": false,
+      "in_trash": false,
+      "type": "divider",
+      "divider": {}
+    },
+    {
+      "object": "block",
+      "id": "1e3b7273-944b-805e-8b36-e44788a69133",
+      "parent": {
+        "type": "page_id",
+        "page_id": "1e3b7273-944b-8059-a15c-d994116f24a9"
+      },
+      "created_time": "2025-04-28T17:04:00.000Z",
+      "last_edited_time": "2025-04-28T17:10:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "has_children": true,
+      "in_trash": false,
+      "type": "callout",
+      "callout": {
+        "rich_text": [],
+        "icon": null,
+        "color": "gray_background"
+      }
+    },
+    {
+      "object": "block",
+      "id": "1e3b7273-944b-8095-85eb-df6dfc2bad1f",
+      "parent": {
+        "type": "page_id",
+        "page_id": "1e3b7273-944b-8059-a15c-d994116f24a9"
+      },
+      "created_time": "2025-04-28T17:17:00.000Z",
+      "last_edited_time": "2025-04-28T17:17:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "has_children": false,
+      "in_trash": false,
+      "type": "heading_3",
+      "heading_3": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": ".env",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": true,
+              "color": "default"
+            },
+            "plain_text": ".env",
+            "href": null
+          }
+        ],
+        "is_toggleable": false,
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "1e3b7273-944b-80e0-89ad-cd5946971487",
+      "parent": {
+        "type": "page_id",
+        "page_id": "1e3b7273-944b-8059-a15c-d994116f24a9"
+      },
+      "created_time": "2025-04-28T17:26:00.000Z",
+      "last_edited_time": "2025-04-29T15:40:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "has_children": false,
+      "in_trash": false,
+      "type": "code",
+      "code": {
+        "caption": [],
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "KC_AUTHORITY=https://auth.dev.jt4llc.com/realms/corp\nKC_AUDIENCE=org-chart-api\n\nNUXT_OAUTH_KEYCLOAK_CLIENT_ID= # from url\nNUXT_OAUTH_KEYCLOAK_CLIENT_SECRET= # seems to be the same for all clients?\nNUXT_OAUTH_KEYCLOAK_SERVER_URL=https://auth.dev.jt4llc.com\nNUXT_OAUTH_KEYCLOAK_REALM=corp\n\nNUXT_OAUTH_KEYCLOAK_ADMIN_CLIENT_ID=admin-cli\nNUXT_OAUTH_KEYCLOAK_ADMIN_CLIENT_SECRET=nNGiWNGuimUOP3qsNt5K0RzDnSDHH7PX\n\nKEYCLOAK_CLIENT_GUID= # from url\nKEYCLOAK_CLIENT_GROUP_ID= # from url\n\n# define for each role\nKEYCLOAK_CLIENT_ADMIN_ROLE_ID= # from url",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "KC_AUTHORITY=https://auth.dev.jt4llc.com/realms/corp\nKC_AUDIENCE=org-chart-api\n\nNUXT_OAUTH_KEYCLOAK_CLIENT_ID= # from url\nNUXT_OAUTH_KEYCLOAK_CLIENT_SECRET= # seems to be the same for all clients?\nNUXT_OAUTH_KEYCLOAK_SERVER_URL=https://auth.dev.jt4llc.com\nNUXT_OAUTH_KEYCLOAK_REALM=corp\n\nNUXT_OAUTH_KEYCLOAK_ADMIN_CLIENT_ID=admin-cli\nNUXT_OAUTH_KEYCLOAK_ADMIN_CLIENT_SECRET=nNGiWNGuimUOP3qsNt5K0RzDnSDHH7PX\n\nKEYCLOAK_CLIENT_GUID= # from url\nKEYCLOAK_CLIENT_GROUP_ID= # from url\n\n# define for each role\nKEYCLOAK_CLIENT_ADMIN_ROLE_ID= # from url",
+            "href": null
+          }
+        ],
+        "language": "python"
+      }
+    },
+    {
+      "object": "block",
+      "id": "1e3b7273-944b-8064-b772-de954af2ba07",
+      "parent": {
+        "type": "page_id",
+        "page_id": "1e3b7273-944b-8059-a15c-d994116f24a9"
+      },
+      "created_time": "2025-04-28T17:05:00.000Z",
+      "last_edited_time": "2025-04-28T17:09:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "has_children": false,
+      "in_trash": false,
+      "type": "heading_3",
+      "heading_3": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "Original authentication layout",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "Original authentication layout",
+            "href": null
+          }
+        ],
+        "is_toggleable": false,
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "1e3b7273-944b-8013-b3df-ec173ed968c2",
+      "parent": {
+        "type": "page_id",
+        "page_id": "1e3b7273-944b-8059-a15c-d994116f24a9"
+      },
+      "created_time": "2025-04-28T17:05:00.000Z",
+      "last_edited_time": "2025-04-28T17:09:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "has_children": false,
+      "in_trash": false,
+      "type": "bulleted_list_item",
+      "bulleted_list_item": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "project relies on a ",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "project relies on a ",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": "pinia",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": true,
+              "color": "default"
+            },
+            "plain_text": "pinia",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": " User store (",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": " User store (",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": "auth.ts",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": true,
+              "color": "default"
+            },
+            "plain_text": "auth.ts",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": ")",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": ")",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "1e3b7273-944b-80bf-8219-cea046803bf8",
+      "parent": {
+        "type": "page_id",
+        "page_id": "1e3b7273-944b-8059-a15c-d994116f24a9"
+      },
+      "created_time": "2025-04-28T17:06:00.000Z",
+      "last_edited_time": "2025-04-28T17:08:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "has_children": true,
+      "in_trash": false,
+      "type": "bulleted_list_item",
+      "bulleted_list_item": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "this involves a ",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "this involves a ",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": "plugins/msal.js",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": true,
+              "color": "default"
+            },
+            "plain_text": "plugins/msal.js",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": " which is responsible for setting the user in the ",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": " which is responsible for setting the user in the ",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": "pinia",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": true,
+              "color": "default"
+            },
+            "plain_text": "pinia",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": " store w/ the retrieved user",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": " store w/ the retrieved user",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "1e3b7273-944b-8058-8a1d-e651fc4c560f",
+      "parent": {
+        "type": "page_id",
+        "page_id": "1e3b7273-944b-8059-a15c-d994116f24a9"
+      },
+      "created_time": "2025-04-28T22:24:00.000Z",
+      "last_edited_time": "2025-04-28T22:24:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "has_children": false,
+      "in_trash": false,
+      "type": "heading_3",
+      "heading_3": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "Keycloak plugin",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "Keycloak plugin",
+            "href": null
+          }
+        ],
+        "is_toggleable": false,
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "1e3b7273-944b-807f-ac75-f9b86431c77d",
+      "parent": {
+        "type": "page_id",
+        "page_id": "1e3b7273-944b-8059-a15c-d994116f24a9"
+      },
+      "created_time": "2025-04-28T22:24:00.000Z",
+      "last_edited_time": "2025-04-28T22:25:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "has_children": true,
+      "in_trash": false,
+      "type": "toggle",
+      "toggle": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "[code]",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": true,
+              "color": "gray"
+            },
+            "plain_text": "[code]",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "1e3b7273-944b-806d-9f0b-d269b545be09",
+      "parent": {
+        "type": "page_id",
+        "page_id": "1e3b7273-944b-8059-a15c-d994116f24a9"
+      },
+      "created_time": "2025-04-28T22:26:00.000Z",
+      "last_edited_time": "2025-04-28T22:26:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "has_children": false,
+      "in_trash": false,
+      "type": "heading_3",
+      "heading_3": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "Handling unauthorized",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "Handling unauthorized",
+            "href": null
+          }
+        ],
+        "is_toggleable": false,
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "1e3b7273-944b-8090-9f46-ff4951f37269",
+      "parent": {
+        "type": "page_id",
+        "page_id": "1e3b7273-944b-8059-a15c-d994116f24a9"
+      },
+      "created_time": "2025-04-28T22:26:00.000Z",
+      "last_edited_time": "2025-04-28T22:51:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "has_children": true,
+      "in_trash": false,
+      "type": "bulleted_list_item",
+      "bulleted_list_item": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "user shouldn’t be allowed into the app if they’re missing access",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "user shouldn’t be allowed into the app if they’re missing access",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "1edb7273-944b-80e9-8648-c195343ec82c",
+      "parent": {
+        "type": "page_id",
+        "page_id": "1e3b7273-944b-8059-a15c-d994116f24a9"
+      },
+      "created_time": "2025-05-08T17:38:00.000Z",
+      "last_edited_time": "2025-05-08T17:38:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "has_children": false,
+      "in_trash": false,
+      "type": "heading_3",
+      "heading_3": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "Keycloak admin requests",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "Keycloak admin requests",
+            "href": null
+          }
+        ],
+        "is_toggleable": false,
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "1edb7273-944b-80a6-aa29-f6339a50b7b1",
+      "parent": {
+        "type": "page_id",
+        "page_id": "1e3b7273-944b-8059-a15c-d994116f24a9"
+      },
+      "created_time": "2025-05-08T17:38:00.000Z",
+      "last_edited_time": "2025-05-08T17:40:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "has_children": false,
+      "in_trash": false,
+      "type": "bulleted_list_item",
+      "bulleted_list_item": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "in order to make ",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "in order to make ",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": "write",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": true,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "write",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": " changes on a keycloak client, must get an admin token and include it on the request",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": " changes on a keycloak client, must get an admin token and include it on the request",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "1edb7273-944b-801b-abcf-c4d0e1e2eb79",
+      "parent": {
+        "type": "page_id",
+        "page_id": "1e3b7273-944b-8059-a15c-d994116f24a9"
+      },
+      "created_time": "2025-05-08T17:40:00.000Z",
+      "last_edited_time": "2025-05-08T17:40:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "has_children": true,
+      "in_trash": false,
+      "type": "toggle",
+      "toggle": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "[useKeycloakAdmin.ts]",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": true,
+              "color": "gray"
+            },
+            "plain_text": "[useKeycloakAdmin.ts]",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "1edb7273-944b-80da-8f89-dd9a47d3b04d",
+      "parent": {
+        "type": "page_id",
+        "page_id": "1e3b7273-944b-8059-a15c-d994116f24a9"
+      },
+      "created_time": "2025-05-08T17:41:00.000Z",
+      "last_edited_time": "2025-05-08T17:41:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "has_children": false,
+      "in_trash": false,
+      "type": "heading_3",
+      "heading_3": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "Deleting user",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "Deleting user",
+            "href": null
+          }
+        ],
+        "is_toggleable": false,
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "1edb7273-944b-8043-8114-c162e0963e89",
+      "parent": {
+        "type": "page_id",
+        "page_id": "1e3b7273-944b-8059-a15c-d994116f24a9"
+      },
+      "created_time": "2025-05-08T17:41:00.000Z",
+      "last_edited_time": "2025-05-08T17:47:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "has_children": true,
+      "in_trash": false,
+      "type": "bulleted_list_item",
+      "bulleted_list_item": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "must delete:",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "must delete:",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "1edb7273-944b-8021-97f5-ce85e7dec718",
+      "parent": {
+        "type": "page_id",
+        "page_id": "1e3b7273-944b-8059-a15c-d994116f24a9"
+      },
+      "created_time": "2025-05-08T17:47:00.000Z",
+      "last_edited_time": "2025-05-08T17:47:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "0e6039ee-b35a-4f24-b07b-22459eee6a7f"
+      },
+      "has_children": false,
+      "in_trash": false,
+      "type": "paragraph",
+      "paragraph": {
+        "rich_text": [],
+        "color": "default"
+      }
+    }
+  ],
+  "next_cursor": null,
+  "has_more": false,
+  "type": "block",
+  "block": {},
+  "request_id": "c10486f9-0c18-455c-ae22-233c90e025e6"
+}
