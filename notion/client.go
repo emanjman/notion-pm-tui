@@ -205,3 +205,23 @@ func (c *Client) FetchTasks(ids []string) tea.Cmd {
 		return TaskMsg{Data: tasks, Duration: time.Since(start)}
 	}
 }
+
+func (c *Client) FetchBlockChildren(pageID string) ([]Block, error) {
+	url := baseUrl + "/blocks/" + pageID + "/children"
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var result struct {
+		Blocks     []Block `json:"results"`
+		HasMore    bool    `json:"has_more"`
+		NextCursor string  `json:"next_cursor"`
+	}
+
+	if err := c.do(req, &result); err != nil {
+		return nil, err
+	}
+
+	return result.Blocks, nil
+}

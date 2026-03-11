@@ -53,6 +53,9 @@ type Block struct {
 	HasChildren bool        `json:"has_children"`
 	Type        BlockType   `json:"type"`
 
+	// manually populated, not from json
+	Children []Block `json:"-"`
+
 	// dynamic type object
 	BulletedListItem *BulletedListItemBlock `json:"bulleted_list_item,omitempty"`
 	NumberedListItem *NumberedListItemBlock `json:"numbered_list_item,omitempty"`
