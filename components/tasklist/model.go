@@ -67,6 +67,11 @@ func NewTaskListModel(mstone notion.SelectedMilestone, clt *notion.Client) TaskL
 	return m
 }
 
+// todo: will need to update this to kickoff the actual fetch task/msg (and call in parent)
+func (m TaskListModel) Init() tea.Cmd {
+	return nil
+}
+
 func (m TaskListModel) Update(msg tea.Msg) (TaskListModel, tea.Cmd) {
 	switch msg := msg.(type) {
 

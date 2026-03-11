@@ -40,7 +40,10 @@ func NewObjectiveModel(c *notion.Client) ObjectiveModel {
 }
 
 func (m ObjectiveModel) Init() tea.Cmd {
-	return nil
+	return tea.Batch(
+		m.milestones.Init(),
+		m.tasks.Init(),
+	)
 }
 
 func (m ObjectiveModel) Update(msg tea.Msg) (ObjectiveModel, tea.Cmd) {

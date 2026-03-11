@@ -55,6 +55,11 @@ func NewMilestoneListModel() MilestoneListModel {
 	return m
 }
 
+// todo: will need to update this to kickoff the actual fetch task/msg (and call in parent)
+func (m MilestoneListModel) Init() tea.Cmd {
+	return nil
+}
+
 func (m MilestoneListModel) Update(msg tea.Msg) (MilestoneListModel, tea.Cmd) {
 	switch msg := msg.(type) {
 
