@@ -6,23 +6,23 @@ import (
 	"os"
 	"time"
 
-	"github.com/charmbracelet/bubbles/list"
+	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
 type PageContentModel struct {
-	list    list.Model
-	notion  *notion.Client
-	loading bool
+	viewport viewport.Model
+	notion   *notion.Client
+	loading  bool
 }
 
 func NewPageContentModel(n *notion.Client) PageContentModel {
-	l := list.New([]list.Item{}, NewPageContentDelegate(), 0, 0)
+	vp := viewport.New(0, 0)
 
 	return PageContentModel{
-		list:    l,
-		notion:  n,
-		loading: true,
+		viewport: vp,
+		notion:   n,
+		loading:  true,
 	}
 }
 
@@ -55,7 +55,7 @@ func (m PageContentModel) View() string {
 	if m.loading {
 		return "Loading..."
 	}
-	return m.list.View()
+	return m.viewport.View()
 }
 
 func (m PageContentModel) Update(msg tea.Msg) (PageContentModel, tea.Cmd) {
@@ -65,21 +65,17 @@ func (m PageContentModel) Update(msg tea.Msg) (PageContentModel, tea.Cmd) {
 			return m, nil
 		}
 
-		blocks := make([]list.Item, len(msg.Data))
-		for i, block := range msg.Data {
-			blocks[i] = block
-		}
-
-		m.list.SetItems(blocks)
+		m.viewport.SetContent(renderBlocks(msg.Data, m.viewport.Width))
 		m.loading = false
 
 	case tea.WindowSizeMsg:
-		m.list.SetSize(msg.Width, msg.Height)
+		m.viewport.Width = msg.Width
+		m.viewport.Height = msg.Height
 
 	// forward other commands to list
 	default:
 		var cmd tea.Cmd
-		m.list, cmd = m.list.Update(msg)
+		m.viewport, cmd = m.viewport.Update(msg)
 		return m, cmd
 	}
 
