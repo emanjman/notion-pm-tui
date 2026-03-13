@@ -248,9 +248,9 @@ func (c *Client) fetchAllChildrenBlocks(blockID string) ([]Block, error) {
 	cursor := ""
 
 	for {
-		url := baseURL + "/blocks/" + blockID + "children?page_size=100"
+		url := baseURL + "/blocks/" + blockID + "/children?page_size=100"
 		if cursor != "" {
-			url += "&start_cucor=" + cursor
+			url += "&start_cursor=" + cursor
 		}
 
 		req, err := http.NewRequest("GET", url, nil)

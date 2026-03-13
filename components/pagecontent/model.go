@@ -1,13 +1,9 @@
 package pagecontent
 
 import (
-	"encoding/json"
-	"notion-project-tui/notion"
-	"os"
-	"time"
-
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
+	"notion-project-tui/notion"
 )
 
 type PageContentModel struct {
