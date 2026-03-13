@@ -116,7 +116,10 @@ func renderBlock(b notion.Block, windowWidth int, depth int, counter int, counte
 		return base.Render(chevron + notion.ExtractPlainText(b.Toggle.RichText))
 
 	case notion.Paragraph:
-		return base.Render(notion.ExtractPlainText(b.Paragraph.RichText))
+		txt := lg.NewStyle().
+			Foreground(styles.TechForeground).
+			Render(notion.ExtractPlainText(b.Paragraph.RichText))
+		return base.Render(txt)
 	}
 
 	return lg.NewStyle().

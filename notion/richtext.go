@@ -29,7 +29,6 @@ func ExtractPlainText(richTexts []RichText) string {
 			style = style.
 				Background(styles.SelectedBackground).
 				Foreground(styles.RedForeground)
-
 		}
 
 		switch txt.Annotations.Color {
