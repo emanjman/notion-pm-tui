@@ -1,15 +1,19 @@
 package pagecontent
 
 import (
+	"notion-project-tui/notion"
+	"notion-project-tui/styles"
+
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
-	"notion-project-tui/notion"
+	lg "github.com/charmbracelet/lipgloss"
 )
 
 type PageContentModel struct {
 	viewport viewport.Model
 	notion   *notion.Client
 	loading  bool
+	error    error
 }
 
 func NewPageContentModel(n *notion.Client) PageContentModel {
@@ -23,20 +27,29 @@ func NewPageContentModel(n *notion.Client) PageContentModel {
 }
 
 func (m PageContentModel) Init() tea.Cmd {
-	return notion.NewClient().FetchPageContent("1e3b7273944b8059a15cd994116f24a9")
+	return notion.NewClient().FetchPageContent("30eb7273944b80ad80c4f91a4f5cfd8d")
 }
 
 func (m PageContentModel) View() string {
-	if m.loading {
-		return "Loading..."
+	if m.error != nil {
+		style := lg.NewStyle().Foreground(styles.RedForeground)
+		return style.Render(m.error.Error())
 	}
-	return m.viewport.View()
+
+	if m.loading {
+		loadingStyle := lg.NewStyle().Height(m.viewport.Height)
+		return loadingStyle.Render("Loading...")
+	}
+
+	style := lg.NewStyle().Padding(0, 1)
+	return style.Render(m.viewport.View())
 }
 
 func (m PageContentModel) Update(msg tea.Msg) (PageContentModel, tea.Cmd) {
 	switch msg := msg.(type) {
 	case notion.PageContentMsg:
 		if msg.Err != nil {
+			m.error = msg.Err
 			return m, nil
 		}
 

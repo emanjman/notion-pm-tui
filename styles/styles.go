@@ -10,6 +10,9 @@ import (
 var (
 	PrimaryForeground = lg.Color("#c0caf5")
 	MutedForeground   = lg.Color("#565f89")
+	TechForeground    = lg.Color("#76FF83")
+	RedForeground     = lg.Color("#ff6369")
+	YellowForeground  = lg.Color("#ffed4f")
 )
 
 // background

@@ -122,7 +122,7 @@ func (m ProjectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.width = msg.Width
 		m.height = msg.Height
 
-		childHeight := msg.Height - 5 // header row, help bar, spacing
+		childHeight := msg.Height - 6 // header/footer row, help bar, spacing
 
 		var objCmd, ovrCmd tea.Cmd
 		m.objective, objCmd = m.objective.Update(tea.WindowSizeMsg{
@@ -240,8 +240,10 @@ func (m ProjectModel) View() string {
 	s.WriteString(
 		lg.NewStyle().
 			BorderTop(true).
-			BorderStyle(lg.NormalBorder()).
+			BorderStyle(lg.ThickBorder()).
 			BorderForeground(styles.BorderForeground).
+			PaddingLeft(2).
+			PaddingBottom(1).
 			Width(m.width).
 			Render(help))
 
