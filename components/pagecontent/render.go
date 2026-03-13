@@ -9,7 +9,7 @@ import (
 	lg "github.com/charmbracelet/lipgloss"
 )
 
-func renderBlocks(bs []notion.Block, windowWidth int) string {
+func renderBlocks(bs []notion.Block, windowWidth int, depth int) string {
 	var s strings.Builder
 	counter := 0
 	var counterType *notion.ListFormatType = nil
@@ -25,38 +25,45 @@ func renderBlocks(bs []notion.Block, windowWidth int) string {
 			counterType = nil
 		}
 
-		s.WriteString(renderBlock(b, windowWidth, 0, counter, counterType))
+		s.WriteString(renderBlock(b, windowWidth, depth, counter, counterType))
 		s.WriteString("\n")
+
+		if b.HasChildren {
+			s.WriteString(renderBlocks(b.Children, windowWidth, depth+1))
+		}
 	}
+
 	return s.String()
 }
 
 func renderBlock(b notion.Block, windowWidth int, depth int, counter int, counterType *notion.ListFormatType) string {
+	base := lg.NewStyle().PaddingLeft(depth * 2)
+
 	switch b.Type {
 	case notion.Divider:
-		return lg.NewStyle().
+		return base.
 			Foreground(styles.BorderForeground).
 			Render(strings.Repeat("—", windowWidth))
 
 	case notion.Callout:
-		return lg.NewStyle().
+		return base.
 			Border(lg.NormalBorder(), true, true, true, true).
 			BorderForeground(styles.BorderForeground).
 			Render("expect child here")
 
 	case notion.Heading2:
-		return lg.NewStyle().
+		return base.
 			Bold(true).
 			Render("\n" + notion.ExtractPlainText(b.Heading2.RichText) + "\n")
 
 	case notion.Heading3:
-		return lg.NewStyle().
+		return base.
 			Bold(true).
 			Underline(true).
 			Render("\n" + notion.ExtractPlainText(b.Heading3.RichText) + "\n")
 
 	case notion.BulletedListItem:
-		return "• " + notion.ExtractPlainText(b.BulletedListItem.RichText)
+		return base.Render("• " + notion.ExtractPlainText(b.BulletedListItem.RichText))
 
 	case notion.NumberedListItem:
 		var pt string
@@ -71,10 +78,11 @@ func renderBlock(b notion.Block, windowWidth int, depth int, counter int, counte
 			}
 		}
 
-		return fmt.Sprintf("%s %s", pt, notion.ExtractPlainText(b.NumberedListItem.RichText))
+		return base.Render(
+			fmt.Sprintf("%s %s", pt, notion.ExtractPlainText(b.NumberedListItem.RichText)))
 
 	case notion.Paragraph:
-		return notion.ExtractPlainText(b.Paragraph.RichText)
+		return base.Render(notion.ExtractPlainText(b.Paragraph.RichText))
 	}
 
 	return "--"

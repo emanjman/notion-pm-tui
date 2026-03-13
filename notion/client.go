@@ -11,7 +11,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-const baseUrl = "https://api.notion.com/v1"
+const baseURL = "https://api.notion.com/v1"
 const version = "2025-09-03"
 
 type Client struct {
@@ -55,7 +55,7 @@ func (c *Client) FetchProject() tea.Cmd {
 	return func() tea.Msg {
 		start := time.Now()
 
-		url := baseUrl + "/pages/" + c.projId
+		url := baseURL + "/pages/" + c.projId
 
 		req, err := http.NewRequest("GET", url, nil)
 		if err != nil {
@@ -90,7 +90,7 @@ func (c *Client) FetchMilestoneRelationIds(pageID string, propID string) tea.Cmd
 		cursor := ""
 
 		for {
-			url := baseUrl + "/pages/" + pageID + "/properties/" + propID + "?page_size=100"
+			url := baseURL + "/pages/" + pageID + "/properties/" + propID + "?page_size=100"
 			if cursor != "" {
 				url += "&start_cursor=" + cursor
 			}
@@ -127,7 +127,7 @@ func (c *Client) FetchTaskRelationIds(pageID string, propID string) tea.Cmd {
 		cursor := ""
 
 		for {
-			url := baseUrl + "/pages/" + pageID + "/properties/" + propID + "?page_size=100"
+			url := baseURL + "/pages/" + pageID + "/properties/" + propID + "?page_size=100"
 			if cursor != "" {
 				url += "&start_cursor=" + cursor
 			}
@@ -164,7 +164,7 @@ func (c *Client) FetchMilestones(ids []string) tea.Cmd {
 		milestones := make([]MilestonePage, 0, len(ids))
 
 		for _, id := range ids {
-			url := baseUrl + "/pages/" + id
+			url := baseURL + "/pages/" + id
 			req, err := http.NewRequest("GET", url, nil)
 			if err != nil {
 				return MilestoneMsg{Err: err, Duration: time.Since(start)}
@@ -188,7 +188,7 @@ func (c *Client) FetchTasks(ids []string) tea.Cmd {
 		tasks := make([]TaskPage, 0, len(ids))
 
 		for _, id := range ids {
-			url := baseUrl + "/pages/" + id
+			url := baseURL + "/pages/" + id
 			req, err := http.NewRequest("GET", url, nil)
 			if err != nil {
 				return TaskMsg{Err: err, Duration: time.Since(start)}
@@ -206,22 +206,79 @@ func (c *Client) FetchTasks(ids []string) tea.Cmd {
 	}
 }
 
-func (c *Client) FetchBlockChildren(pageID string) ([]Block, error) {
-	url := baseUrl + "/blocks/" + pageID + "/children"
-	req, err := http.NewRequest("GET", url, nil)
+func (c *Client) FetchPageContent(pageID string) tea.Cmd {
+	return func() tea.Msg {
+		start := time.Now()
+
+		blocks, err := c.fetchBlocksRecursive(pageID)
+
+		if err != nil {
+			return PageContentMsg{Err: err, Duration: time.Since(start)}
+		}
+
+		return PageContentMsg{Data: blocks, Duration: time.Since(start)}
+	}
+}
+
+// return every block of the page by dfs
+func (c *Client) fetchBlocksRecursive(pageID string) ([]Block, error) {
+	blocks, err := c.fetchAllChildrenBlocks(pageID)
 	if err != nil {
 		return nil, err
 	}
 
-	var result struct {
-		Blocks     []Block `json:"results"`
-		HasMore    bool    `json:"has_more"`
-		NextCursor string  `json:"next_cursor"`
+	for i, block := range blocks {
+		if block.HasChildren {
+			children, err := c.fetchBlocksRecursive(block.ID)
+
+			if err != nil {
+				return nil, err
+			}
+
+			blocks[i].Children = children
+		}
 	}
 
-	if err := c.do(req, &result); err != nil {
-		return nil, err
+	return blocks, nil
+}
+
+// fetches all children blocks of a given page/block
+func (c *Client) fetchAllChildrenBlocks(blockID string) ([]Block, error) {
+	var blocks []Block
+	cursor := ""
+
+	for {
+		url := baseURL + "/blocks/" + blockID + "children?page_size=100"
+		if cursor != "" {
+			url += "&start_cucor=" + cursor
+		}
+
+		req, err := http.NewRequest("GET", url, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		var result struct {
+			Results    []Block `json:"results"`
+			HasMore    bool    `json:"has_more"`
+			NextCursor string  `json:"next_cursor"`
+		}
+
+		if err := c.do(req, &result); err != nil {
+			return nil, err
+		}
+
+		// merge additional blocks
+		blocks = append(blocks, result.Results...)
+
+		// terminate if no more sibling blocks to fetch
+		if !result.HasMore {
+			break
+		}
+
+		cursor = result.NextCursor
 	}
 
-	return result.Blocks, nil
+	// return final set of blocks
+	return blocks, nil
 }
