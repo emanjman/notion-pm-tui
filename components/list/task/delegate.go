@@ -21,14 +21,14 @@ type style struct {
 	header        variantStyle
 }
 
-type TaskDelegate struct {
+type ItemDelegate struct {
 	focused bool
 	style   style
 
 	focus *FocusState
 }
 
-func NewTaskDelegate(focused bool, focus *FocusState) TaskDelegate {
+func NewItemDelegate(focused bool, focus *FocusState) ItemDelegate {
 	borderDistance := 0
 	rightEdgeDistance := 3
 
@@ -62,7 +62,7 @@ func NewTaskDelegate(focused bool, focus *FocusState) TaskDelegate {
 			Underline(true)
 	)
 
-	return TaskDelegate{
+	return ItemDelegate{
 		focused: focused,
 		style: style{
 			itemContainer: variantStyle{base: icbase, selected: icsel},
@@ -73,18 +73,18 @@ func NewTaskDelegate(focused bool, focus *FocusState) TaskDelegate {
 	}
 }
 
-func (d TaskDelegate) Height() int                               { return 2 }
-func (d TaskDelegate) Spacing() int                              { return 0 }
-func (d TaskDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd { return nil }
+func (d ItemDelegate) Height() int                               { return 2 }
+func (d ItemDelegate) Spacing() int                              { return 0 }
+func (d ItemDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd { return nil }
 
-func (d TaskDelegate) Render(w io.Writer, m list.Model, index int, item list.Item) {
+func (d ItemDelegate) Render(w io.Writer, m list.Model, index int, item list.Item) {
 	selected := index == m.Index() && d.focused
 
 	switch item := item.(type) {
 	case listutil.ListItemGroupHeader:
 		header := renderItemHeader(d, item, selected, m.Width())
 		fmt.Fprint(w, header)
-	case TaskListItem:
+	case Item:
 		task := renderItem(d, item, selected, m.Width())
 		fmt.Fprint(w, task)
 	}
@@ -92,7 +92,7 @@ func (d TaskDelegate) Render(w io.Writer, m list.Model, index int, item list.Ite
 
 // -- helper funcs
 
-func renderItemHeader(d TaskDelegate, item listutil.ListItemGroupHeader, selected bool, windowWidth int) string {
+func renderItemHeader(d ItemDelegate, item listutil.ListItemGroupHeader, selected bool, windowWidth int) string {
 	style := d.style.header.base
 	if selected {
 		style = d.style.header.selected
@@ -116,7 +116,7 @@ var priorityColors = []lg.Color{
 	lg.Color("#f7768e"),    // p5 - red (critical, urgent)
 }
 
-func renderItem(d TaskDelegate, item TaskListItem, selected bool, windowWidth int) string {
+func renderItem(d ItemDelegate, item Item, selected bool, windowWidth int) string {
 	contStyle := d.style.itemContainer.base
 	segStyle := d.style.itemSegment.base
 	typStyle, titleStyle, priorityStyle := lg.Style{}, lg.Style{}, lg.Style{}

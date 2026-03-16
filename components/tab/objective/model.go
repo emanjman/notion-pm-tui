@@ -16,64 +16,64 @@ import (
 type Panel int
 
 const (
-	MilestonesPanel Panel = iota
-	TasksPanel
+	MilestonePanel Panel = iota
+	TaskPanel
 )
 
-type ObjectiveModel struct {
-	focus      Panel
-	milestones milestone.MilestoneListModel
-	tasks      task.TaskListModel
-	keys       KeyMap
+type Model struct {
+	focus     Panel
+	milestone milestone.Model
+	task      task.Model
+	keys      KeyMap
 }
 
-func NewObjectiveModel(c *notion.Client) ObjectiveModel {
-	milestones := milestone.NewMilestoneListModel()
-	tasks := task.NewTaskListModel(milestones.SelectedMilestone(), c)
+func NewModel(c *notion.Client) Model {
+	ms := milestone.NewModel()
+	t := task.NewModel(ms.SelectedMilestone(), c)
 
-	return ObjectiveModel{
-		focus:      MilestonesPanel,
-		milestones: milestones,
-		tasks:      tasks,
-		keys:       DefaultKeyMap,
+	return Model{
+		focus:     MilestonePanel,
+		milestone: ms,
+		task:      t,
+		keys:      DefaultKeyMap,
 	}
 }
 
-func (m ObjectiveModel) Init() tea.Cmd {
+func (m Model) Init() tea.Cmd {
 	return tea.Batch(
-		m.milestones.Init(),
-		m.tasks.Init(),
+		m.milestone.Init(),
+		m.task.Init(),
 	)
 }
 
-func (m ObjectiveModel) Update(msg tea.Msg) (ObjectiveModel, tea.Cmd) {
+func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 
 		if m.InFocusMode() {
 			var cmd tea.Cmd
-			if m.focus == MilestonesPanel {
-				m.milestones, cmd = m.milestones.Update(msg)
-			} else if m.focus == TasksPanel {
-				m.tasks, cmd = m.tasks.Update(msg)
+			if m.focus == MilestonePanel {
+				m.milestone, cmd = m.milestone.Update(msg)
+			} else if m.focus == TaskPanel {
+				m.task, cmd = m.task.Update(msg)
 			}
 			return m, cmd
 		} else {
 			switch {
 			case key.Matches(msg, m.keys.LeftFocus):
-				m.tasks.Milestone = m.milestones.SelectedMilestone()
-				m.focus = MilestonesPanel
+				m.task.Milestone = m.milestone.SelectedMilestone()
+				m.focus = MilestonePanel
 
-				m.tasks.SetItemDelegate(task.NewTaskListDelegate(false, m.tasks.Focus))
-				m.milestones.SetItemDelegate(milestone.NewMilestoneListDelegate(true, m.milestones.Focus))
+				m.task.SetItemDelegate(task.NewItemDelegate(false, m.task.Focus))
+				m.milestone.SetItemDelegate(milestone.NewItemDelegate(true, m.milestone.Focus))
 
 				return m, nil
 
 			case key.Matches(msg, m.keys.RightFocus):
-				m.focus = TasksPanel
+				m.focus = TaskPanel
 
-				m.tasks.SetItemDelegate(task.NewTaskListDelegate(true, m.tasks.Focus))
-				m.milestones.SetItemDelegate(milestone.NewMilestoneListDelegate(false, m.milestones.Focus))
+				m.task.SetItemDelegate(task.NewItemDelegate(true, m.task.Focus))
+				m.milestone.SetItemDelegate(milestone.NewItemDelegate(false, m.milestone.Focus))
 
 				return m, nil
 			}
@@ -84,11 +84,11 @@ func (m ObjectiveModel) Update(msg tea.Msg) (ObjectiveModel, tea.Cmd) {
 		leftWidth := msg.Width * 30 / 100
 		rightWidth := msg.Width - leftWidth - 1 // account for dividing border
 
-		m.milestones, cmd = m.milestones.Update(tea.WindowSizeMsg{
+		m.milestone, cmd = m.milestone.Update(tea.WindowSizeMsg{
 			Width:  leftWidth,
 			Height: msg.Height,
 		})
-		m.tasks, cmd = m.tasks.Update(tea.WindowSizeMsg{
+		m.task, cmd = m.task.Update(tea.WindowSizeMsg{
 			Width:  rightWidth,
 			Height: msg.Height,
 		})
@@ -101,42 +101,42 @@ func (m ObjectiveModel) Update(msg tea.Msg) (ObjectiveModel, tea.Cmd) {
 
 	if _, isKey := msg.(tea.KeyMsg); isKey {
 		switch m.focus {
-		case MilestonesPanel:
-			m.milestones, milestoneCmd = m.milestones.Update(msg)
+		case MilestonePanel:
+			m.milestone, milestoneCmd = m.milestone.Update(msg)
 			return m, milestoneCmd
-		case TasksPanel:
-			m.tasks, taskCmd = m.tasks.Update(msg)
+		case TaskPanel:
+			m.task, taskCmd = m.task.Update(msg)
 			return m, taskCmd
 		}
 	} else {
-		m.milestones, milestoneCmd = m.milestones.Update(msg)
-		m.tasks, taskCmd = m.tasks.Update(msg)
+		m.milestone, milestoneCmd = m.milestone.Update(msg)
+		m.task, taskCmd = m.task.Update(msg)
 	}
 
 	return m, tea.Batch(milestoneCmd, taskCmd)
 
 }
 
-func (m ObjectiveModel) View() string {
+func (m Model) View() string {
 	left := lg.NewStyle().
 		BorderRight(true).
 		BorderStyle(lg.NormalBorder()).
 		BorderForeground(styles.BorderForeground).
-		Render(m.milestones.View())
-	right := m.tasks.View()
+		Render(m.milestone.View())
+	right := m.task.View()
 	return lg.JoinHorizontal(lg.Top, left, right)
 }
 
-func (m ObjectiveModel) KeyMap() help.KeyMap {
+func (m Model) KeyMap() help.KeyMap {
 	switch m.focus {
-	case MilestonesPanel:
-		return keymap.JoinedKeyMap{Primary: m.keys, Secondary: m.milestones.ActiveKeyMap}
-	case TasksPanel:
-		return keymap.JoinedKeyMap{Primary: m.keys, Secondary: m.tasks.ActiveKeyMap}
+	case MilestonePanel:
+		return keymap.JoinedKeyMap{Primary: m.keys, Secondary: m.milestone.ActiveKeyMap}
+	case TaskPanel:
+		return keymap.JoinedKeyMap{Primary: m.keys, Secondary: m.task.ActiveKeyMap}
 	}
 	return nil
 }
 
-func (m ObjectiveModel) InFocusMode() bool {
-	return m.milestones.Focus.Mode > 0 || m.tasks.Focus.Mode > 0
+func (m Model) InFocusMode() bool {
+	return m.milestone.Focus.Mode > 0 || m.task.Focus.Mode > 0
 }

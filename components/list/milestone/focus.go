@@ -55,7 +55,7 @@ func cycleTagField(curr string, delta int) string {
 	return tagFieldOptions[0]
 }
 
-func initTempTitle(item MilestoneListItem) textinput.Model {
+func initTempTitle(item Item) textinput.Model {
 	ti := textinput.New()
 	ti.SetValue(item.Name)
 	ti.CursorEnd()

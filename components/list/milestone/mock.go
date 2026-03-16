@@ -1,8 +1,8 @@
 package milestone
 
-func mockMilestoneItems() []MilestoneListItem {
-	return []MilestoneListItem{
-		MilestoneListItem{
+func mockItems() []Item {
+	return []Item{
+		Item{
 			ID:                  "1",
 			Name:                "Setup Project Structure",
 			Status:              "🎉 complete",
@@ -10,7 +10,7 @@ func mockMilestoneItems() []MilestoneListItem {
 			Tag:                 "backend",
 			LatestActivityLabel: "12/8/25",
 		},
-		MilestoneListItem{
+		Item{
 			ID:                  "2",
 			Name:                "Implement Notion API",
 			Status:              "🚧 under development",
@@ -18,7 +18,7 @@ func mockMilestoneItems() []MilestoneListItem {
 			Tag:                 "backend",
 			LatestActivityLabel: "today",
 		},
-		MilestoneListItem{
+		Item{
 			ID:                  "3",
 			Name:                "Build TUI Dashboard",
 			Status:              "🚧 under development",
@@ -26,7 +26,7 @@ func mockMilestoneItems() []MilestoneListItem {
 			Tag:                 "frontend",
 			LatestActivityLabel: "3d ago",
 		},
-		MilestoneListItem{
+		Item{
 			ID:                  "4",
 			Name:                "Authentication System",
 			Status:              "😴 idle",
@@ -34,7 +34,7 @@ func mockMilestoneItems() []MilestoneListItem {
 			Tag:                 "backend",
 			LatestActivityLabel: "no activity",
 		},
-		MilestoneListItem{
+		Item{
 			ID:                  "5",
 			Name:                "Data Persistence Layer",
 			Status:              "😴 idle",
@@ -42,7 +42,7 @@ func mockMilestoneItems() []MilestoneListItem {
 			Tag:                 "backend",
 			LatestActivityLabel: "no activity",
 		},
-		MilestoneListItem{
+		Item{
 			ID:                  "6",
 			Name:                "Testing & QA",
 			Status:              "😴 idle",
@@ -50,7 +50,7 @@ func mockMilestoneItems() []MilestoneListItem {
 			Tag:                 "testing",
 			LatestActivityLabel: "no activity",
 		},
-		MilestoneListItem{
+		Item{
 			ID:                  "7",
 			Name:                "Documentation",
 			Status:              "🚧 under development",

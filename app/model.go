@@ -30,7 +30,7 @@ const tabCount = 4
 
 var labels = []string{"Objective (n%)", "Overview", "Project Notes (n)", "Debug Notes (n)"}
 
-type ProjectModel struct {
+type Model struct {
 	activeTab Tab
 
 	page *notion.ProjectPage
@@ -44,26 +44,26 @@ type ProjectModel struct {
 
 	client *notion.Client
 
-	objective objective.ObjectiveModel
-	overview  overview.OverviewModel
+	objective objective.Model
+	overview  overview.Model
 	// projectNotes views.NotesListModel
 	// debugNotes   views.NotesListModel
 }
 
-func InitProjectModel() ProjectModel {
+func NewModel() Model {
 	client := notion.NewClient()
-	return ProjectModel{
+	return Model{
 		activeTab: ObjectiveTab,
 		page:      nil,
 		keys:      RootKeyMap,
 		help:      help.New(),
 		client:    client,
-		objective: objective.NewObjectiveModel(client),
-		overview:  overview.NewOverviewModel(client),
+		objective: objective.NewModel(client),
+		overview:  overview.NewModel(client),
 	}
 }
 
-func (m ProjectModel) Init() tea.Cmd {
+func (m Model) Init() tea.Cmd {
 	// return m.client.FetchProject()
 	// return nil // ! temp, styling ui
 
@@ -73,7 +73,7 @@ func (m ProjectModel) Init() tea.Cmd {
 	)
 }
 
-func (m ProjectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 
 	case tea.KeyMsg:
@@ -171,7 +171,7 @@ func (m ProjectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 }
 
-func (m ProjectModel) View() string {
+func (m Model) View() string {
 	// ! temp, styling ui
 	// if m.page == nil {
 	// 	return "Loading project..."
@@ -250,7 +250,7 @@ func (m ProjectModel) View() string {
 	return s.String()
 }
 
-func (m ProjectModel) getActiveKeyMap() help.KeyMap {
+func (m Model) getActiveKeyMap() help.KeyMap {
 	switch m.activeTab {
 
 	case ObjectiveTab:

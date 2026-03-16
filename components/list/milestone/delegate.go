@@ -23,14 +23,14 @@ type style struct {
 	header        variantStyle
 }
 
-type MilestoneDelegate struct {
+type ItemDelegate struct {
 	focused bool
 	style   style
 
 	focus *FocusState
 }
 
-func NewMilestoneDelegate(focused bool, focus *FocusState) MilestoneDelegate {
+func NewItemDelegate(focused bool, focus *FocusState) ItemDelegate {
 	borderDistance := 1
 	leftEdgeDistance := 1
 
@@ -64,7 +64,7 @@ func NewMilestoneDelegate(focused bool, focus *FocusState) MilestoneDelegate {
 			Underline(true)
 	)
 
-	return MilestoneDelegate{
+	return ItemDelegate{
 		focused: focused,
 		style: style{
 			itemContainer: variantStyle{base: icbase, selected: icsel},
@@ -75,21 +75,21 @@ func NewMilestoneDelegate(focused bool, focus *FocusState) MilestoneDelegate {
 	}
 }
 
-func (d MilestoneDelegate) Height() int  { return 3 }
-func (d MilestoneDelegate) Spacing() int { return 0 }
-func (d MilestoneDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd {
+func (d ItemDelegate) Height() int  { return 3 }
+func (d ItemDelegate) Spacing() int { return 0 }
+func (d ItemDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd {
 	return nil
 }
 
 // render items (based on the list item type => header vs milestone)
-func (d MilestoneDelegate) Render(w io.Writer, m list.Model, index int, item list.Item) {
+func (d ItemDelegate) Render(w io.Writer, m list.Model, index int, item list.Item) {
 	selected := index == m.Index() && d.focused
 
 	switch item := item.(type) {
 	case listutil.ListItemGroupHeader:
 		header := renderItemHeader(d, item, selected, m.Width())
 		fmt.Fprint(w, header)
-	case MilestoneItem:
+	case Item:
 		milestone := renderItem(d, item, selected, m.Width())
 		fmt.Fprint(w, milestone)
 	}
@@ -110,7 +110,7 @@ func createProgressBar(progress float64, width int) string {
 		s.Foreground(styles.MutedForeground).Render(empty)
 }
 
-func renderItemHeader(d MilestoneDelegate, item listutil.ListItemGroupHeader, selected bool, windowWidth int) string {
+func renderItemHeader(d ItemDelegate, item listutil.ListItemGroupHeader, selected bool, windowWidth int) string {
 	style := d.style.header.base
 	if selected {
 		style = d.style.header.selected
@@ -125,7 +125,7 @@ func renderItemHeader(d MilestoneDelegate, item listutil.ListItemGroupHeader, se
 	return style.Width(windowWidth).Render(content)
 }
 
-func renderItem(d MilestoneDelegate, item MilestoneItem, selected bool, windowWidth int) string {
+func renderItem(d ItemDelegate, item Item, selected bool, windowWidth int) string {
 	contStyle := d.style.itemContainer.base
 	segStyle := d.style.itemSegment.base
 	nameStyle, tagStyle := lg.Style{}, lg.Style{}

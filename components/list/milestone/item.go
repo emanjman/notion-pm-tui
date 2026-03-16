@@ -5,7 +5,7 @@ import (
 )
 
 // implementation for the `list.Item` interface
-type MilestoneItem struct {
+type Item struct {
 	ID                  string
 	TasksPropID         string
 	Name                string
@@ -15,12 +15,10 @@ type MilestoneItem struct {
 	Tag                 string
 }
 
-// func (m MilestoneListItem) Title() string       { return m.Name }
-// func (m MilestoneListItem) Description() string { return m.Status }
-func (m MilestoneItem) FilterValue() string { return m.Name }
-func (m MilestoneItem) GroupKey() string    { return m.Status } // conform Groupable
+func (m Item) FilterValue() string { return m.Name }
+func (m Item) GroupKey() string    { return m.Status } // conform Groupable
 
-func NewMilestoneItem(page notion.MilestonePage) MilestoneItem {
+func NewItem(page notion.MilestonePage) Item {
 	title := notion.ExtractPlainText(page.Properties.Title.Title)
 
 	status := ""
@@ -40,7 +38,7 @@ func NewMilestoneItem(page notion.MilestonePage) MilestoneItem {
 		label = *page.Properties.LatestActivityLabel.Formula.String
 	}
 
-	return MilestoneItem{
+	return Item{
 		ID:                  page.ID,
 		TasksPropID:         page.Properties.Tasks.ID,
 		Name:                title,

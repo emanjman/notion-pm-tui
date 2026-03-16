@@ -12,14 +12,14 @@ import (
 	lg "github.com/charmbracelet/lipgloss"
 )
 
-type TaskModel struct {
+type Model struct {
 	Milestone notion.SelectedMilestone // milestone these tasks source from
 	list      list.Model
 	notion    *notion.Client
 	loading   bool
 
-	groups map[string][]TaskItem // should this be Groupable intf?
-	hidden map[string]bool       // should this be Groupable intf?
+	groups map[string][]Item // should this be Groupable intf?
+	hidden map[string]bool   // should this be Groupable intf?
 
 	ActiveKeyMap    help.KeyMap // for help focus view
 	neutralKeyMap   NeutralKeyMap
@@ -35,23 +35,23 @@ type TaskModel struct {
 
 var statusOrder = []string{"dev", "idle", "done"}
 
-func NewTaskModel(mstone notion.SelectedMilestone, clt *notion.Client) TaskModel {
+func NewModel(mstone notion.SelectedMilestone, clt *notion.Client) Model {
 	f := FocusState{}
 
-	l := list.New([]list.Item{}, NewTaskDelegate(false, &f), 0, 0)
+	l := list.New([]list.Item{}, NewItemDelegate(false, &f), 0, 0)
 	l.Title = "Tasks"
 	l.SetShowHelp(false)
 	l.SetShowStatusBar(false)
 	l.SetShowTitle(false)
 	l.DisableQuitKeybindings()
 
-	m := TaskModel{
+	m := Model{
 		Milestone: mstone,
 		list:      l,
 		notion:    clt,
 		loading:   true,
 
-		groups: listutil.GroupByKey(mockTaskItems()), // ! fetch actual tasks
+		groups: listutil.GroupByKey(mockItems()), // ! fetch actual tasks
 		hidden: map[string]bool{},
 
 		ActiveKeyMap:    NeutralKeyMapper, // default map view
@@ -68,11 +68,11 @@ func NewTaskModel(mstone notion.SelectedMilestone, clt *notion.Client) TaskModel
 }
 
 // todo: will need to update this to kickoff the actual fetch task/msg (and call in parent)
-func (m TaskModel) Init() tea.Cmd {
+func (m Model) Init() tea.Cmd {
 	return nil
 }
 
-func (m TaskModel) Update(msg tea.Msg) (TaskModel, tea.Cmd) {
+func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
 
 	case tea.WindowSizeMsg:
@@ -84,7 +84,7 @@ func (m TaskModel) Update(msg tea.Msg) (TaskModel, tea.Cmd) {
 			switch {
 			case key.Matches(msg, m.writingKeyMap.Save):
 				// update item in list
-				if task, ok := m.list.SelectedItem().(TaskItem); ok {
+				if task, ok := m.list.SelectedItem().(Item); ok {
 					task.Task = m.Focus.tempTitle.Value()
 					m.list.SetItem(m.Focus.taskIdx, task)
 					m.updateTaskInGroups(task)
@@ -130,7 +130,7 @@ func (m TaskModel) Update(msg tea.Msg) (TaskModel, tea.Cmd) {
 			// enter field edit mode, catch all keys from root; handle per field
 			case key.Matches(msg, m.selectingKeyMap.Select):
 				selected := m.list.SelectedItem()
-				if task, ok := selected.(TaskItem); ok {
+				if task, ok := selected.(Item); ok {
 					switch m.Focus.field {
 					case TaskType:
 						task.Type = cycleTypeField(task.Type, 1)
@@ -140,7 +140,7 @@ func (m TaskModel) Update(msg tea.Msg) (TaskModel, tea.Cmd) {
 						m.Focus.Mode = WritingMode
 						m.ActiveKeyMap = WritingKeyMapper
 
-						if item, ok := m.list.SelectedItem().(TaskItem); ok {
+						if item, ok := m.list.SelectedItem().(Item); ok {
 							m.Focus.tempTitle = initTempTitle(item)
 						}
 					}
@@ -171,7 +171,7 @@ func (m TaskModel) Update(msg tea.Msg) (TaskModel, tea.Cmd) {
 				if header, ok := selected.(listutil.ListItemGroupHeader); ok {
 					m.hidden[header.Label] = !m.hidden[header.Label]
 					m.list.SetItems(listutil.BuildGroupList(m.groups, m.hidden, statusOrder))
-				} else if task, ok := selected.(TaskItem); ok {
+				} else if task, ok := selected.(Item); ok {
 					// initialize the focus state
 					m.Focus.taskID = task.ID
 					m.Focus.taskIdx = m.list.Index()
@@ -189,21 +189,21 @@ func (m TaskModel) Update(msg tea.Msg) (TaskModel, tea.Cmd) {
 				return m, nil
 
 			case key.Matches(msg, m.neutralKeyMap.StatusPrev):
-				if task, ok := m.list.SelectedItem().(TaskItem); ok {
+				if task, ok := m.list.SelectedItem().(Item); ok {
 					m = m.changeTaskStatus(task, -1)
 					// todo: send command to update status in notion
 				}
 				return m, nil
 
 			case key.Matches(msg, m.neutralKeyMap.StatusNext):
-				if task, ok := m.list.SelectedItem().(TaskItem); ok {
+				if task, ok := m.list.SelectedItem().(Item); ok {
 					m = m.changeTaskStatus(task, +1)
 					// todo: send command to update status in notion
 				}
 				return m, nil
 
 			case key.Matches(msg, m.neutralKeyMap.Delete):
-				if task, ok := m.list.SelectedItem().(TaskItem); ok {
+				if task, ok := m.list.SelectedItem().(Item); ok {
 					if m.Focus.pendingDelete && m.Focus.taskID == task.ID {
 						// Second press: actually delete
 						m = m.deleteTask(task)
@@ -237,9 +237,9 @@ func (m TaskModel) Update(msg tea.Msg) (TaskModel, tea.Cmd) {
 		}
 
 		// create list items
-		tempItems := make([]TaskItem, len(msg.Data))
+		tempItems := make([]Item, len(msg.Data))
 		for i, page := range msg.Data {
-			tempItems[i] = NewTaskItem(page)
+			tempItems[i] = NewItem(page)
 		}
 
 		m.groups = listutil.GroupByKey(tempItems)
@@ -255,7 +255,7 @@ func (m TaskModel) Update(msg tea.Msg) (TaskModel, tea.Cmd) {
 	return m, cmd
 }
 
-func (m TaskModel) View() string {
+func (m Model) View() string {
 	// ! temp, styling
 	// if m.loading {
 	// 	return "Loading tasks..."
@@ -267,7 +267,7 @@ func (m TaskModel) View() string {
 
 // --- helpers
 
-func (m TaskModel) changeTaskStatus(task TaskItem, delta int) TaskModel {
+func (m Model) changeTaskStatus(task Item, delta int) Model {
 	newStatus := cycleStatus(task.Status, delta)
 	if newStatus == task.Status {
 		return m // no change
@@ -292,7 +292,7 @@ func (m TaskModel) changeTaskStatus(task TaskItem, delta int) TaskModel {
 	return m
 }
 
-func (m TaskModel) updateTaskInGroups(updated TaskItem) TaskModel {
+func (m Model) updateTaskInGroups(updated Item) Model {
 	group := m.groups[updated.Status]
 
 	// overwrite task in m.groups
@@ -308,14 +308,14 @@ func (m TaskModel) updateTaskInGroups(updated TaskItem) TaskModel {
 	return m
 }
 
-func (m TaskModel) addTask() TaskModel {
+func (m Model) addTask() Model {
 	defaultStatus := "idle"
 
 	m.tempIDCounter++
 	tempID := fmt.Sprintf("temp-%d", m.tempIDCounter)
 
 	// new task with defaults
-	newTask := TaskItem{
+	newTask := Item{
 		ID:       tempID,
 		Task:     "",
 		Status:   "idle",
@@ -332,7 +332,7 @@ func (m TaskModel) addTask() TaskModel {
 
 	// Find the new task's index in the rebuilt list
 	for i, item := range items {
-		if task, ok := item.(TaskItem); ok && task.ID == tempID {
+		if task, ok := item.(Item); ok && task.ID == tempID {
 			// Select the new task
 			m.list.Select(i)
 
@@ -353,7 +353,7 @@ func (m TaskModel) addTask() TaskModel {
 	return m
 }
 
-func (m TaskModel) deleteTask(task TaskItem) TaskModel {
+func (m Model) deleteTask(task Item) Model {
 	// Remove from group
 	group := m.groups[task.Status]
 	for i, t := range group {
@@ -374,6 +374,6 @@ func (m TaskModel) deleteTask(task TaskItem) TaskModel {
 	return m
 }
 
-func (m *TaskModel) SetItemDelegate(d list.ItemDelegate) {
+func (m *Model) SetItemDelegate(d list.ItemDelegate) {
 	m.list.SetDelegate(d)
 }

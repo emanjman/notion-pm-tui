@@ -5,7 +5,7 @@ import (
 	"strconv"
 )
 
-type TaskItem struct {
+type Item struct {
 	ID          string
 	Task        string
 	Status      string
@@ -14,11 +14,11 @@ type TaskItem struct {
 	MilestoneID string
 }
 
-func (t TaskItem) FilterValue() string { return t.Task + "_" + t.Type }
-func (t TaskItem) GroupKey() string    { return t.Status }
+func (t Item) FilterValue() string { return t.Task + "_" + t.Type }
+func (t Item) GroupKey() string    { return t.Status }
 
-func NewTaskItem(page notion.TaskPage) TaskItem {
-	t := TaskItem{
+func NewItem(page notion.TaskPage) Item {
+	t := Item{
 		ID:          page.ID,
 		Task:        notion.ExtractPlainText(page.Properties.Title.Title),
 		Status:      page.Properties.Status.Status.Name,

@@ -11,11 +11,11 @@ import (
 	lg "github.com/charmbracelet/lipgloss"
 )
 
-type MilestoneModel struct {
+type Model struct {
 	list    list.Model
 	loading bool
-	groups  map[string][]MilestoneItem // header to items
-	hidden  map[string]bool            // hidden group
+	groups  map[string][]Item // header to items
+	hidden  map[string]bool   // hidden group
 
 	ActiveKeyMap    help.KeyMap // for help focus view
 	neutralKeyMap   NeutralKeyMap
@@ -27,20 +27,20 @@ type MilestoneModel struct {
 
 var statusOrder = []string{"🚧 under development", "😴 idle", "🎉 complete"}
 
-func NewMilestoneModel() MilestoneModel {
+func NewModel() Model {
 	f := FocusState{}
 
-	l := list.New([]list.Item{}, NewMilestoneDelegate(true, &f), 0, 0)
+	l := list.New([]list.Item{}, NewItemDelegate(true, &f), 0, 0)
 	l.Title = "Milestones"
 	l.SetShowHelp(false)
 	l.SetShowStatusBar(false)
 	l.SetShowTitle(false)
 	l.DisableQuitKeybindings()
 
-	m := MilestoneModel{
+	m := Model{
 		list:    l,
 		loading: true,
-		groups:  listutil.GroupByKey(mockMilestoneItems()),
+		groups:  listutil.GroupByKey(mockItems()),
 		hidden:  map[string]bool{},
 
 		ActiveKeyMap:    NeutralKeyMapper, // default map view
@@ -56,11 +56,11 @@ func NewMilestoneModel() MilestoneModel {
 }
 
 // todo: will need to update this to kickoff the actual fetch task/msg (and call in parent)
-func (m MilestoneModel) Init() tea.Cmd {
+func (m Model) Init() tea.Cmd {
 	return nil
 }
 
-func (m MilestoneModel) Update(msg tea.Msg) (MilestoneModel, tea.Cmd) {
+func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
 
 	case tea.WindowSizeMsg:
@@ -72,7 +72,7 @@ func (m MilestoneModel) Update(msg tea.Msg) (MilestoneModel, tea.Cmd) {
 			switch {
 			case key.Matches(msg, m.writingKeyMap.Save):
 				// update item in list
-				if milestone, ok := m.list.SelectedItem().(MilestoneItem); ok {
+				if milestone, ok := m.list.SelectedItem().(Item); ok {
 					milestone.Name = m.Focus.tempTitle.Value()
 					m.list.SetItem(m.list.Index(), milestone)
 					m.updateMilestoneInGroups(milestone)
@@ -118,7 +118,7 @@ func (m MilestoneModel) Update(msg tea.Msg) (MilestoneModel, tea.Cmd) {
 			// enter field: cycle select or enter writing mode
 			case key.Matches(msg, m.selectingKeyMap.Select):
 				selected := m.list.SelectedItem()
-				if milestone, ok := selected.(MilestoneItem); ok {
+				if milestone, ok := selected.(Item); ok {
 					switch m.Focus.field {
 					case MilestoneTag:
 						// cycle tag, stay in selecting mode
@@ -130,7 +130,7 @@ func (m MilestoneModel) Update(msg tea.Msg) (MilestoneModel, tea.Cmd) {
 						m.Focus.Mode = WritingMode
 						m.ActiveKeyMap = WritingKeyMapper
 
-						if item, ok := m.list.SelectedItem().(MilestoneItem); ok {
+						if item, ok := m.list.SelectedItem().(Item); ok {
 							m.Focus.tempTitle = initTempTitle(item)
 						}
 					}
@@ -152,7 +152,7 @@ func (m MilestoneModel) Update(msg tea.Msg) (MilestoneModel, tea.Cmd) {
 				if header, ok := selected.(listutil.ListItemGroupHeader); ok {
 					m.hidden[header.Label] = !m.hidden[header.Label]
 					m.list.SetItems(listutil.BuildGroupList(m.groups, m.hidden, statusOrder))
-				} else if milestone, ok := selected.(MilestoneItem); ok {
+				} else if milestone, ok := selected.(Item); ok {
 					// initialize the focus state
 					m.Focus.milestoneID = milestone.ID
 					m.Focus.milestoneIdx = m.list.Index()
@@ -172,9 +172,9 @@ func (m MilestoneModel) Update(msg tea.Msg) (MilestoneModel, tea.Cmd) {
 		}
 
 		// create the list items
-		tempItems := make([]MilestoneItem, len(msg.Data))
+		tempItems := make([]Item, len(msg.Data))
 		for i, page := range msg.Data {
-			tempItems[i] = NewMilestoneItem(page)
+			tempItems[i] = NewItem(page)
 		}
 
 		m.groups = listutil.GroupByKey(tempItems)
@@ -191,7 +191,7 @@ func (m MilestoneModel) Update(msg tea.Msg) (MilestoneModel, tea.Cmd) {
 }
 
 // just forward the list.View()
-func (m MilestoneModel) View() string {
+func (m Model) View() string {
 	// ! temp, styling
 	// if m.loading {
 	// 	return "Loading milestones..."
@@ -201,7 +201,7 @@ func (m MilestoneModel) View() string {
 	return containerStyle.Render(m.list.View())
 }
 
-func (m MilestoneModel) SelectedMilestone() notion.SelectedMilestone {
+func (m Model) SelectedMilestone() notion.SelectedMilestone {
 	item := m.list.SelectedItem()
 
 	switch item := item.(type) {
@@ -213,7 +213,7 @@ func (m MilestoneModel) SelectedMilestone() notion.SelectedMilestone {
 			TasksPropID: milestone.TasksPropID,
 		}
 	// otherwise, on milestone, return its id
-	case MilestoneItem:
+	case Item:
 		return notion.SelectedMilestone{
 			ID:          item.ID,
 			TasksPropID: item.TasksPropID,
@@ -223,11 +223,11 @@ func (m MilestoneModel) SelectedMilestone() notion.SelectedMilestone {
 	return notion.SelectedMilestone{}
 }
 
-func (m *MilestoneModel) SetItemDelegate(d list.ItemDelegate) {
+func (m *Model) SetItemDelegate(d list.ItemDelegate) {
 	m.list.SetDelegate(d)
 }
 
-func (m MilestoneModel) updateMilestoneInGroups(updated MilestoneItem) MilestoneModel {
+func (m Model) updateMilestoneInGroups(updated Item) Model {
 	group := m.groups[updated.Status]
 
 	// overwrite task in m.groups

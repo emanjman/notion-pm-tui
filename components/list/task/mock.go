@@ -1,7 +1,7 @@
 package task
 
-func mockTaskItems() []TaskListItem {
-	return []TaskListItem{
+func mockItems() []Item {
+	return []Item{
 		{ID: "1", MilestoneID: "1", Task: "Implement task list model", Status: "dev", Priority: 1, Type: "feat"},
 		{ID: "2", MilestoneID: "1", Task: "Fix milestone progress formula", Status: "dev", Priority: 2, Type: "fix"},
 		{ID: "3", MilestoneID: "1", Task: "Refactor notion client", Status: "dev", Priority: 3, Type: "refactor"},

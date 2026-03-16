@@ -85,7 +85,7 @@ func cycleStatus(curr string, delta int) string {
 	return "idle" // default
 }
 
-func initTempTitle(item TaskListItem) textinput.Model {
+func initTempTitle(item Item) textinput.Model {
 	ti := textinput.New()
 	ti.SetValue(item.Task)
 	ti.CursorEnd()
