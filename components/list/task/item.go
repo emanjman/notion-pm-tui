@@ -1,11 +1,11 @@
-package tasklist
+package task
 
 import (
 	"notion-project-tui/notion"
 	"strconv"
 )
 
-type TaskListItem struct {
+type TaskItem struct {
 	ID          string
 	Task        string
 	Status      string
@@ -14,11 +14,11 @@ type TaskListItem struct {
 	MilestoneID string
 }
 
-func (t TaskListItem) FilterValue() string { return t.Task + "_" + t.Type }
-func (t TaskListItem) GroupKey() string    { return t.Status }
+func (t TaskItem) FilterValue() string { return t.Task + "_" + t.Type }
+func (t TaskItem) GroupKey() string    { return t.Status }
 
-func NewTaskListItem(page notion.TaskPage) TaskListItem {
-	t := TaskListItem{
+func NewTaskItem(page notion.TaskPage) TaskItem {
+	t := TaskItem{
 		ID:          page.ID,
 		Task:        notion.ExtractPlainText(page.Properties.Title.Title),
 		Status:      page.Properties.Status.Status.Name,

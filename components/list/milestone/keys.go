@@ -1,4 +1,4 @@
-package milestonelist
+package milestone
 
 import "github.com/charmbracelet/bubbles/key"
 

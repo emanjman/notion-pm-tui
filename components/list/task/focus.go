@@ -1,4 +1,4 @@
-package tasklist
+package task
 
 import (
 	"notion-project-tui/styles"

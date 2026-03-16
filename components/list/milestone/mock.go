@@ -1,4 +1,4 @@
-package milestonelist
+package milestone
 
 func mockMilestoneItems() []MilestoneListItem {
 	return []MilestoneListItem{

@@ -3,8 +3,8 @@ package app
 import (
 	// ! temp, styling ui
 	// "fmt"
-	"notion-project-tui/components/objective"
-	"notion-project-tui/components/overview"
+	"notion-project-tui/components/tab/objective"
+	"notion-project-tui/components/tab/overview"
 	"notion-project-tui/notion"
 	"notion-project-tui/styles"
 	"notion-project-tui/util/keymap"

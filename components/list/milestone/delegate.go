@@ -1,4 +1,4 @@
-package milestonelist
+package milestone
 
 import (
 	"fmt"
@@ -23,14 +23,14 @@ type style struct {
 	header        variantStyle
 }
 
-type MilestoneListDelegate struct {
+type MilestoneDelegate struct {
 	focused bool
 	style   style
 
 	focus *FocusState
 }
 
-func NewMilestoneListDelegate(focused bool, focus *FocusState) MilestoneListDelegate {
+func NewMilestoneDelegate(focused bool, focus *FocusState) MilestoneDelegate {
 	borderDistance := 1
 	leftEdgeDistance := 1
 
@@ -64,7 +64,7 @@ func NewMilestoneListDelegate(focused bool, focus *FocusState) MilestoneListDele
 			Underline(true)
 	)
 
-	return MilestoneListDelegate{
+	return MilestoneDelegate{
 		focused: focused,
 		style: style{
 			itemContainer: variantStyle{base: icbase, selected: icsel},
@@ -75,22 +75,22 @@ func NewMilestoneListDelegate(focused bool, focus *FocusState) MilestoneListDele
 	}
 }
 
-func (d MilestoneListDelegate) Height() int  { return 3 }
-func (d MilestoneListDelegate) Spacing() int { return 0 }
-func (d MilestoneListDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd {
+func (d MilestoneDelegate) Height() int  { return 3 }
+func (d MilestoneDelegate) Spacing() int { return 0 }
+func (d MilestoneDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd {
 	return nil
 }
 
 // render items (based on the list item type => header vs milestone)
-func (d MilestoneListDelegate) Render(w io.Writer, m list.Model, index int, item list.Item) {
+func (d MilestoneDelegate) Render(w io.Writer, m list.Model, index int, item list.Item) {
 	selected := index == m.Index() && d.focused
 
 	switch item := item.(type) {
 	case listutil.ListItemGroupHeader:
-		header := renderListItemGroupHeader(d, item, selected, m.Width())
+		header := renderItemHeader(d, item, selected, m.Width())
 		fmt.Fprint(w, header)
-	case MilestoneListItem:
-		milestone := renderMilestoneListItem(d, item, selected, m.Width())
+	case MilestoneItem:
+		milestone := renderItem(d, item, selected, m.Width())
 		fmt.Fprint(w, milestone)
 	}
 }
@@ -110,7 +110,7 @@ func createProgressBar(progress float64, width int) string {
 		s.Foreground(styles.MutedForeground).Render(empty)
 }
 
-func renderListItemGroupHeader(d MilestoneListDelegate, item listutil.ListItemGroupHeader, selected bool, windowWidth int) string {
+func renderItemHeader(d MilestoneDelegate, item listutil.ListItemGroupHeader, selected bool, windowWidth int) string {
 	style := d.style.header.base
 	if selected {
 		style = d.style.header.selected
@@ -125,7 +125,7 @@ func renderListItemGroupHeader(d MilestoneListDelegate, item listutil.ListItemGr
 	return style.Width(windowWidth).Render(content)
 }
 
-func renderMilestoneListItem(d MilestoneListDelegate, item MilestoneListItem, selected bool, windowWidth int) string {
+func renderItem(d MilestoneDelegate, item MilestoneItem, selected bool, windowWidth int) string {
 	contStyle := d.style.itemContainer.base
 	segStyle := d.style.itemSegment.base
 	nameStyle, tagStyle := lg.Style{}, lg.Style{}

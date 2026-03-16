@@ -1,8 +1,8 @@
 package objective
 
 import (
-	"notion-project-tui/components/milestonelist"
-	"notion-project-tui/components/tasklist"
+	"notion-project-tui/components/list/milestone"
+	"notion-project-tui/components/list/task"
 	"notion-project-tui/notion"
 	"notion-project-tui/styles"
 	"notion-project-tui/util/keymap"
@@ -22,14 +22,14 @@ const (
 
 type ObjectiveModel struct {
 	focus      Panel
-	milestones milestonelist.MilestoneListModel
-	tasks      tasklist.TaskListModel
+	milestones milestone.MilestoneListModel
+	tasks      task.TaskListModel
 	keys       KeyMap
 }
 
 func NewObjectiveModel(c *notion.Client) ObjectiveModel {
-	milestones := milestonelist.NewMilestoneListModel()
-	tasks := tasklist.NewTaskListModel(milestones.SelectedMilestone(), c)
+	milestones := milestone.NewMilestoneListModel()
+	tasks := task.NewTaskListModel(milestones.SelectedMilestone(), c)
 
 	return ObjectiveModel{
 		focus:      MilestonesPanel,
@@ -64,16 +64,16 @@ func (m ObjectiveModel) Update(msg tea.Msg) (ObjectiveModel, tea.Cmd) {
 				m.tasks.Milestone = m.milestones.SelectedMilestone()
 				m.focus = MilestonesPanel
 
-				m.tasks.SetItemDelegate(tasklist.NewTaskListDelegate(false, m.tasks.Focus))
-				m.milestones.SetItemDelegate(milestonelist.NewMilestoneListDelegate(true, m.milestones.Focus))
+				m.tasks.SetItemDelegate(task.NewTaskListDelegate(false, m.tasks.Focus))
+				m.milestones.SetItemDelegate(milestone.NewMilestoneListDelegate(true, m.milestones.Focus))
 
 				return m, nil
 
 			case key.Matches(msg, m.keys.RightFocus):
 				m.focus = TasksPanel
 
-				m.tasks.SetItemDelegate(tasklist.NewTaskListDelegate(true, m.tasks.Focus))
-				m.milestones.SetItemDelegate(milestonelist.NewMilestoneListDelegate(false, m.milestones.Focus))
+				m.tasks.SetItemDelegate(task.NewTaskListDelegate(true, m.tasks.Focus))
+				m.milestones.SetItemDelegate(milestone.NewMilestoneListDelegate(false, m.milestones.Focus))
 
 				return m, nil
 			}

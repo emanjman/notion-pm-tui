@@ -1,4 +1,4 @@
-package tasklist
+package task
 
 import (
 	"fmt"
@@ -12,14 +12,14 @@ import (
 	lg "github.com/charmbracelet/lipgloss"
 )
 
-type TaskListModel struct {
+type TaskModel struct {
 	Milestone notion.SelectedMilestone // milestone these tasks source from
 	list      list.Model
 	notion    *notion.Client
 	loading   bool
 
-	groups map[string][]TaskListItem // should this be Groupable intf?
-	hidden map[string]bool           // should this be Groupable intf?
+	groups map[string][]TaskItem // should this be Groupable intf?
+	hidden map[string]bool       // should this be Groupable intf?
 
 	ActiveKeyMap    help.KeyMap // for help focus view
 	neutralKeyMap   NeutralKeyMap
@@ -35,17 +35,17 @@ type TaskListModel struct {
 
 var statusOrder = []string{"dev", "idle", "done"}
 
-func NewTaskListModel(mstone notion.SelectedMilestone, clt *notion.Client) TaskListModel {
+func NewTaskModel(mstone notion.SelectedMilestone, clt *notion.Client) TaskModel {
 	f := FocusState{}
 
-	l := list.New([]list.Item{}, NewTaskListDelegate(false, &f), 0, 0)
+	l := list.New([]list.Item{}, NewTaskDelegate(false, &f), 0, 0)
 	l.Title = "Tasks"
 	l.SetShowHelp(false)
 	l.SetShowStatusBar(false)
 	l.SetShowTitle(false)
 	l.DisableQuitKeybindings()
 
-	m := TaskListModel{
+	m := TaskModel{
 		Milestone: mstone,
 		list:      l,
 		notion:    clt,
@@ -68,11 +68,11 @@ func NewTaskListModel(mstone notion.SelectedMilestone, clt *notion.Client) TaskL
 }
 
 // todo: will need to update this to kickoff the actual fetch task/msg (and call in parent)
-func (m TaskListModel) Init() tea.Cmd {
+func (m TaskModel) Init() tea.Cmd {
 	return nil
 }
 
-func (m TaskListModel) Update(msg tea.Msg) (TaskListModel, tea.Cmd) {
+func (m TaskModel) Update(msg tea.Msg) (TaskModel, tea.Cmd) {
 	switch msg := msg.(type) {
 
 	case tea.WindowSizeMsg:
@@ -84,7 +84,7 @@ func (m TaskListModel) Update(msg tea.Msg) (TaskListModel, tea.Cmd) {
 			switch {
 			case key.Matches(msg, m.writingKeyMap.Save):
 				// update item in list
-				if task, ok := m.list.SelectedItem().(TaskListItem); ok {
+				if task, ok := m.list.SelectedItem().(TaskItem); ok {
 					task.Task = m.Focus.tempTitle.Value()
 					m.list.SetItem(m.Focus.taskIdx, task)
 					m.updateTaskInGroups(task)
@@ -130,7 +130,7 @@ func (m TaskListModel) Update(msg tea.Msg) (TaskListModel, tea.Cmd) {
 			// enter field edit mode, catch all keys from root; handle per field
 			case key.Matches(msg, m.selectingKeyMap.Select):
 				selected := m.list.SelectedItem()
-				if task, ok := selected.(TaskListItem); ok {
+				if task, ok := selected.(TaskItem); ok {
 					switch m.Focus.field {
 					case TaskType:
 						task.Type = cycleTypeField(task.Type, 1)
@@ -140,7 +140,7 @@ func (m TaskListModel) Update(msg tea.Msg) (TaskListModel, tea.Cmd) {
 						m.Focus.Mode = WritingMode
 						m.ActiveKeyMap = WritingKeyMapper
 
-						if item, ok := m.list.SelectedItem().(TaskListItem); ok {
+						if item, ok := m.list.SelectedItem().(TaskItem); ok {
 							m.Focus.tempTitle = initTempTitle(item)
 						}
 					}
@@ -171,7 +171,7 @@ func (m TaskListModel) Update(msg tea.Msg) (TaskListModel, tea.Cmd) {
 				if header, ok := selected.(listutil.ListItemGroupHeader); ok {
 					m.hidden[header.Label] = !m.hidden[header.Label]
 					m.list.SetItems(listutil.BuildGroupList(m.groups, m.hidden, statusOrder))
-				} else if task, ok := selected.(TaskListItem); ok {
+				} else if task, ok := selected.(TaskItem); ok {
 					// initialize the focus state
 					m.Focus.taskID = task.ID
 					m.Focus.taskIdx = m.list.Index()
@@ -189,21 +189,21 @@ func (m TaskListModel) Update(msg tea.Msg) (TaskListModel, tea.Cmd) {
 				return m, nil
 
 			case key.Matches(msg, m.neutralKeyMap.StatusPrev):
-				if task, ok := m.list.SelectedItem().(TaskListItem); ok {
+				if task, ok := m.list.SelectedItem().(TaskItem); ok {
 					m = m.changeTaskStatus(task, -1)
 					// todo: send command to update status in notion
 				}
 				return m, nil
 
 			case key.Matches(msg, m.neutralKeyMap.StatusNext):
-				if task, ok := m.list.SelectedItem().(TaskListItem); ok {
+				if task, ok := m.list.SelectedItem().(TaskItem); ok {
 					m = m.changeTaskStatus(task, +1)
 					// todo: send command to update status in notion
 				}
 				return m, nil
 
 			case key.Matches(msg, m.neutralKeyMap.Delete):
-				if task, ok := m.list.SelectedItem().(TaskListItem); ok {
+				if task, ok := m.list.SelectedItem().(TaskItem); ok {
 					if m.Focus.pendingDelete && m.Focus.taskID == task.ID {
 						// Second press: actually delete
 						m = m.deleteTask(task)
@@ -237,9 +237,9 @@ func (m TaskListModel) Update(msg tea.Msg) (TaskListModel, tea.Cmd) {
 		}
 
 		// create list items
-		tempItems := make([]TaskListItem, len(msg.Data))
+		tempItems := make([]TaskItem, len(msg.Data))
 		for i, page := range msg.Data {
-			tempItems[i] = NewTaskListItem(page)
+			tempItems[i] = NewTaskItem(page)
 		}
 
 		m.groups = listutil.GroupByKey(tempItems)
@@ -255,7 +255,7 @@ func (m TaskListModel) Update(msg tea.Msg) (TaskListModel, tea.Cmd) {
 	return m, cmd
 }
 
-func (m TaskListModel) View() string {
+func (m TaskModel) View() string {
 	// ! temp, styling
 	// if m.loading {
 	// 	return "Loading tasks..."
@@ -267,7 +267,7 @@ func (m TaskListModel) View() string {
 
 // --- helpers
 
-func (m TaskListModel) changeTaskStatus(task TaskListItem, delta int) TaskListModel {
+func (m TaskModel) changeTaskStatus(task TaskItem, delta int) TaskModel {
 	newStatus := cycleStatus(task.Status, delta)
 	if newStatus == task.Status {
 		return m // no change
@@ -292,7 +292,7 @@ func (m TaskListModel) changeTaskStatus(task TaskListItem, delta int) TaskListMo
 	return m
 }
 
-func (m TaskListModel) updateTaskInGroups(updated TaskListItem) TaskListModel {
+func (m TaskModel) updateTaskInGroups(updated TaskItem) TaskModel {
 	group := m.groups[updated.Status]
 
 	// overwrite task in m.groups
@@ -308,14 +308,14 @@ func (m TaskListModel) updateTaskInGroups(updated TaskListItem) TaskListModel {
 	return m
 }
 
-func (m TaskListModel) addTask() TaskListModel {
+func (m TaskModel) addTask() TaskModel {
 	defaultStatus := "idle"
 
 	m.tempIDCounter++
 	tempID := fmt.Sprintf("temp-%d", m.tempIDCounter)
 
 	// new task with defaults
-	newTask := TaskListItem{
+	newTask := TaskItem{
 		ID:       tempID,
 		Task:     "",
 		Status:   "idle",
@@ -332,7 +332,7 @@ func (m TaskListModel) addTask() TaskListModel {
 
 	// Find the new task's index in the rebuilt list
 	for i, item := range items {
-		if task, ok := item.(TaskListItem); ok && task.ID == tempID {
+		if task, ok := item.(TaskItem); ok && task.ID == tempID {
 			// Select the new task
 			m.list.Select(i)
 
@@ -353,7 +353,7 @@ func (m TaskListModel) addTask() TaskListModel {
 	return m
 }
 
-func (m TaskListModel) deleteTask(task TaskListItem) TaskListModel {
+func (m TaskModel) deleteTask(task TaskItem) TaskModel {
 	// Remove from group
 	group := m.groups[task.Status]
 	for i, t := range group {
@@ -374,6 +374,6 @@ func (m TaskListModel) deleteTask(task TaskListItem) TaskListModel {
 	return m
 }
 
-func (m *TaskListModel) SetItemDelegate(d list.ItemDelegate) {
+func (m *TaskModel) SetItemDelegate(d list.ItemDelegate) {
 	m.list.SetDelegate(d)
 }

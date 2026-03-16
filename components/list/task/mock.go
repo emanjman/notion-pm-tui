@@ -1,4 +1,4 @@
-package tasklist
+package task
 
 func mockTaskItems() []TaskListItem {
 	return []TaskListItem{

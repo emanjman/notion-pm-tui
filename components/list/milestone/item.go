@@ -1,11 +1,11 @@
-package milestonelist
+package milestone
 
 import (
 	"notion-project-tui/notion"
 )
 
 // implementation for the `list.Item` interface
-type MilestoneListItem struct {
+type MilestoneItem struct {
 	ID                  string
 	TasksPropID         string
 	Name                string
@@ -17,10 +17,10 @@ type MilestoneListItem struct {
 
 // func (m MilestoneListItem) Title() string       { return m.Name }
 // func (m MilestoneListItem) Description() string { return m.Status }
-func (m MilestoneListItem) FilterValue() string { return m.Name }
-func (m MilestoneListItem) GroupKey() string    { return m.Status } // conform Groupable
+func (m MilestoneItem) FilterValue() string { return m.Name }
+func (m MilestoneItem) GroupKey() string    { return m.Status } // conform Groupable
 
-func NewMilestoneListItem(page notion.MilestonePage) MilestoneListItem {
+func NewMilestoneItem(page notion.MilestonePage) MilestoneItem {
 	title := notion.ExtractPlainText(page.Properties.Title.Title)
 
 	status := ""
@@ -40,7 +40,7 @@ func NewMilestoneListItem(page notion.MilestonePage) MilestoneListItem {
 		label = *page.Properties.LatestActivityLabel.Formula.String
 	}
 
-	return MilestoneListItem{
+	return MilestoneItem{
 		ID:                  page.ID,
 		TasksPropID:         page.Properties.Tasks.ID,
 		Name:                title,

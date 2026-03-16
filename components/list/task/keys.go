@@ -1,4 +1,4 @@
-package tasklist
+package task
 
 import "github.com/charmbracelet/bubbles/key"
 

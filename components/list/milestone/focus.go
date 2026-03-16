@@ -1,4 +1,4 @@
-package milestonelist
+package milestone
 
 import (
 	"notion-project-tui/styles"
