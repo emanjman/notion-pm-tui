@@ -27,7 +27,7 @@ type Model struct {
 
 var statusOrder = []string{"🚧 under development", "😴 idle", "🎉 complete"}
 
-func NewModel() Model {
+func New() Model {
 	f := FocusState{}
 
 	l := list.New([]list.Item{}, NewItemDelegate(true, &f), 0, 0)

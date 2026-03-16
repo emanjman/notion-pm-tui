@@ -50,16 +50,16 @@ type Model struct {
 	// debugNotes   views.NotesListModel
 }
 
-func NewModel() Model {
-	client := notion.NewClient()
+func New() Model {
+	c := notion.NewClient()
 	return Model{
 		activeTab: ObjectiveTab,
 		page:      nil,
 		keys:      RootKeyMap,
 		help:      help.New(),
-		client:    client,
-		objective: objective.NewModel(client),
-		overview:  overview.NewModel(client),
+		client:    notion.NewClient(),
+		objective: objective.New(c),
+		overview:  overview.New(c),
 	}
 }
 

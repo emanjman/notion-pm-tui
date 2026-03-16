@@ -11,7 +11,7 @@ type Model struct {
 	content pagecontent.PageContentModel
 }
 
-func NewModel(n *notion.Client) Model {
+func New(n *notion.Client) Model {
 	return Model{
 		content: pagecontent.NewPageContentModel(n),
 	}

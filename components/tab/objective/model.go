@@ -27,9 +27,9 @@ type Model struct {
 	keys      KeyMap
 }
 
-func NewModel(c *notion.Client) Model {
-	ms := milestone.NewModel()
-	t := task.NewModel(ms.SelectedMilestone(), c)
+func New(c *notion.Client) Model {
+	ms := milestone.New()
+	t := task.New(ms.SelectedMilestone(), c)
 
 	return Model{
 		focus:     MilestonePanel,

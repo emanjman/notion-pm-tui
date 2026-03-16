@@ -35,7 +35,7 @@ type Model struct {
 
 var statusOrder = []string{"dev", "idle", "done"}
 
-func NewModel(mstone notion.SelectedMilestone, clt *notion.Client) Model {
+func New(mstone notion.SelectedMilestone, clt *notion.Client) Model {
 	f := FocusState{}
 
 	l := list.New([]list.Item{}, NewItemDelegate(false, &f), 0, 0)
