@@ -5,6 +5,7 @@ import (
 	// "fmt"
 	"notion-project-tui/components/objective"
 	"notion-project-tui/components/overview"
+	"notion-project-tui/components/projectnotes"
 	"notion-project-tui/notion"
 	"notion-project-tui/styles"
 	"notion-project-tui/util/keymap"
@@ -44,10 +45,10 @@ type ProjectModel struct {
 
 	client *notion.Client
 
-	objective objective.ObjectiveModel
-	overview  overview.OverviewModel
-	// projectNotes views.NotesListModel
-	// debugNotes   views.NotesListModel
+	objective    objective.ObjectiveModel
+	overview     overview.OverviewModel
+	projectNotes projectnotes.ProjectNotesModel
+	notesFetched bool
 }
 
 func InitProjectModel() ProjectModel {
@@ -58,17 +59,15 @@ func InitProjectModel() ProjectModel {
 		keys:      RootKeyMap,
 		help:      help.New(),
 		client:    client,
-		objective: objective.NewObjectiveModel(client),
-		overview:  overview.NewOverviewModel(client),
+		objective:    objective.NewObjectiveModel(client),
+		overview:     overview.NewOverviewModel(client),
+		projectNotes: projectnotes.NewProjectNotesModel(client),
 	}
 }
 
 func (m ProjectModel) Init() tea.Cmd {
-	// return m.client.FetchProject()
-	// return nil // ! temp, styling ui
-
 	return tea.Batch(
-		// m.client.FetchProject(),
+		m.client.FetchProject(),
 		m.overview.Init(),
 	)
 }
@@ -92,14 +91,14 @@ func (m ProjectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, nil
 			case key.Matches(msg, m.keys.Next):
 				m.activeTab = (m.activeTab + 1) % tabCount
-				return m, nil
+				return m, m.onTabSwitch()
 			case key.Matches(msg, m.keys.Prev):
 				if m.activeTab == 0 {
 					m.activeTab = tabCount - 1
 				} else {
 					m.activeTab = (m.activeTab - 1) % tabCount
 				}
-				return m, nil
+				return m, m.onTabSwitch()
 
 			// send other keymaps to the active tab
 			default:
@@ -111,6 +110,8 @@ func (m ProjectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.objective, cmd = m.objective.Update(msg)
 				case OverviewTab:
 					m.overview, cmd = m.overview.Update(msg)
+				case ProjectNotesTab:
+					m.projectNotes, cmd = m.projectNotes.Update(msg)
 				}
 
 				return m, cmd
@@ -124,18 +125,17 @@ func (m ProjectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		childHeight := msg.Height - 6 // header/footer row, help bar, spacing
 
-		var objCmd, ovrCmd tea.Cmd
-		m.objective, objCmd = m.objective.Update(tea.WindowSizeMsg{
+		childMsg := tea.WindowSizeMsg{
 			Width:  msg.Width,
 			Height: childHeight,
-		})
+		}
 
-		m.overview, ovrCmd = m.overview.Update(tea.WindowSizeMsg{
-			Width:  msg.Width,
-			Height: childHeight,
-		})
+		var objCmd, ovrCmd, pnCmd tea.Cmd
+		m.objective, objCmd = m.objective.Update(childMsg)
+		m.overview, ovrCmd = m.overview.Update(childMsg)
+		m.projectNotes, pnCmd = m.projectNotes.Update(childMsg)
 
-		return m, tea.Batch(objCmd, ovrCmd)
+		return m, tea.Batch(objCmd, ovrCmd, pnCmd)
 
 	case notion.ProjectMsg:
 		// if failed fetch, don't proceed w/ fetching ids
@@ -162,6 +162,33 @@ func (m ProjectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		var cmd tea.Cmd
 		m.objective, cmd = m.objective.Update(msg)
 		return m, cmd
+
+	case notion.ProjectNoteRelationIdsMsg:
+		if msg.Err != nil {
+			return m, nil
+		}
+		return m, m.client.FetchProjectNotes(msg.IDs)
+
+	case notion.ProjectNoteMsg:
+		var cmd tea.Cmd
+		m.projectNotes, cmd = m.projectNotes.Update(msg)
+		return m, cmd
+
+	case notion.ProjectNoteSelectedMsg:
+		var cmd tea.Cmd
+		m.projectNotes, cmd = m.projectNotes.Update(msg)
+		return m, cmd
+
+	case notion.ProjectNotePreviewMsg:
+		var cmd tea.Cmd
+		m.projectNotes, cmd = m.projectNotes.Update(msg)
+		return m, cmd
+
+	case notion.PageContentMsg:
+		var pnCmd, ovrCmd tea.Cmd
+		m.projectNotes, pnCmd = m.projectNotes.Update(msg)
+		m.overview, ovrCmd = m.overview.Update(msg)
+		return m, tea.Batch(pnCmd, ovrCmd)
 
 	default:
 		var objCmd, ovrCmd tea.Cmd
@@ -208,7 +235,7 @@ func (m ProjectModel) View() string {
 	case OverviewTab:
 		main = m.overview.View()
 	case ProjectNotesTab:
-		main = "Project notes (coming soon)"
+		main = m.projectNotes.View()
 	case DebugNotesTab:
 		main = "Debug notes (coming soon)"
 
@@ -256,11 +283,10 @@ func (m ProjectModel) getActiveKeyMap() help.KeyMap {
 	case ObjectiveTab:
 		return m.objective.KeyMap()
 
-	// todo: handle other tabs
 	case OverviewTab:
 		return m.objective.KeyMap()
 	case ProjectNotesTab:
-		return m.objective.KeyMap()
+		return m.projectNotes.KeyMap()
 	case DebugNotesTab:
 		return m.objective.KeyMap()
 
@@ -270,4 +296,12 @@ func (m ProjectModel) getActiveKeyMap() help.KeyMap {
 
 	}
 
+}
+
+func (m *ProjectModel) onTabSwitch() tea.Cmd {
+	if m.activeTab == ProjectNotesTab && !m.notesFetched && m.page != nil {
+		m.notesFetched = true
+		return m.client.FetchProjectNoteRelationIds(m.page.ID, m.page.Properties.ProjectNotes.ID)
+	}
+	return nil
 }

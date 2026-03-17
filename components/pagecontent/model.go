@@ -45,6 +45,13 @@ func (m PageContentModel) View() string {
 	return style.Render(m.viewport.View())
 }
 
+func (m PageContentModel) WithContent(blocks []notion.Block) PageContentModel {
+	m.viewport.SetContent(renderBlocks(blocks, m.viewport.Width, 0))
+	m.loading = false
+	m.error = nil
+	return m
+}
+
 func (m PageContentModel) Update(msg tea.Msg) (PageContentModel, tea.Cmd) {
 	switch msg := msg.(type) {
 	case notion.PageContentMsg:

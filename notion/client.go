@@ -220,6 +220,88 @@ func (c *Client) FetchPageContent(pageID string) tea.Cmd {
 	}
 }
 
+func (c *Client) FetchProjectNoteRelationIds(pageID string, propID string) tea.Cmd {
+	return func() tea.Msg {
+		start := time.Now()
+		ids := []string{}
+		cursor := ""
+
+		for {
+			url := baseURL + "/pages/" + pageID + "/properties/" + propID + "?page_size=100"
+			if cursor != "" {
+				url += "&start_cursor=" + cursor
+			}
+
+			req, err := http.NewRequest("GET", url, nil)
+			if err != nil {
+				return ProjectNoteRelationIdsMsg{Err: err, Duration: time.Since(start)}
+			}
+
+			var res RelationListResponse
+			if err := c.do(req, &res); err != nil {
+				return ProjectNoteRelationIdsMsg{Err: err, Duration: time.Since(start)}
+			}
+
+			for _, result := range res.Results {
+				ids = append(ids, result.Relation.ID)
+			}
+
+			if !res.HasMore || res.NextCursor == nil {
+				break
+			}
+
+			cursor = *res.NextCursor
+		}
+
+		return ProjectNoteRelationIdsMsg{IDs: ids, Duration: time.Since(start)}
+	}
+}
+
+func (c *Client) FetchProjectNotes(ids []string) tea.Cmd {
+	return func() tea.Msg {
+		start := time.Now()
+		notes := make([]ProjectNotePage, 0, len(ids))
+
+		for _, id := range ids {
+			url := baseURL + "/pages/" + id
+			req, err := http.NewRequest("GET", url, nil)
+			if err != nil {
+				return ProjectNoteMsg{Err: err, Duration: time.Since(start)}
+			}
+
+			var note ProjectNotePage
+			if err := c.do(req, &note); err != nil {
+				return ProjectNoteMsg{Err: err, Duration: time.Since(start)}
+			}
+
+			notes = append(notes, note)
+		}
+
+		return ProjectNoteMsg{Data: notes, Duration: time.Since(start)}
+	}
+}
+
+func (c *Client) FetchProjectNotePreview(pageID string) tea.Cmd {
+	return func() tea.Msg {
+		url := baseURL + "/blocks/" + pageID + "/children?page_size=5"
+
+		req, err := http.NewRequest("GET", url, nil)
+		if err != nil {
+			return ProjectNotePreviewMsg{PageID: pageID, Err: err}
+		}
+
+		var result struct {
+			Results []Block `json:"results"`
+		}
+
+		if err := c.do(req, &result); err != nil {
+			return ProjectNotePreviewMsg{PageID: pageID, Err: err}
+		}
+
+		return ProjectNotePreviewMsg{PageID: pageID, Blocks: result.Results}
+	}
+}
+
 // return every block of the page by dfs
 func (c *Client) fetchBlocksRecursive(pageID string) ([]Block, error) {
 	blocks, err := c.fetchAllChildrenBlocks(pageID)
