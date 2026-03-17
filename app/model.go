@@ -78,7 +78,9 @@ func (m Model) Init() tea.Cmd {
 
 	return tea.Batch(
 		// m.client.FetchProject(),
+		m.objective.Init(),
 		m.overview.Init(),
+		m.note.Init(),
 	)
 }
 
