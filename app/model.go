@@ -122,6 +122,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.objective, cmd = m.objective.Update(msg)
 				case OverviewTab:
 					m.overview, cmd = m.overview.Update(msg)
+				case NotesTab:
+					m.note, cmd = m.note.Update(msg)
 				}
 
 				return m, cmd
@@ -135,7 +137,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		childHeight := msg.Height - 6 // header/footer row, help bar, spacing
 
-		var objCmd, ovrCmd tea.Cmd
+		var objCmd, ovrCmd, noteCmd tea.Cmd
 		m.objective, objCmd = m.objective.Update(tea.WindowSizeMsg{
 			Width:  msg.Width,
 			Height: childHeight,
@@ -146,7 +148,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			Height: childHeight,
 		})
 
-		return m, tea.Batch(objCmd, ovrCmd)
+		m.note, noteCmd = m.note.Update(tea.WindowSizeMsg{
+			Width:  msg.Width,
+			Height: childHeight,
+		})
+
+		return m, tea.Batch(objCmd, ovrCmd, noteCmd)
 
 	// todo: on msg, start forwarding the commands to children??? use default?
 	case notion.ProjectMsg:

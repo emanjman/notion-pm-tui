@@ -17,10 +17,17 @@ type Model struct {
 }
 
 func New(notion *notion.Client, projID, notesPropID string) Model {
+	// list configs
+	l := list.New([]list.Item{}, NewItemDelegate(true), 0, 0)
+	l.SetShowHelp(false)
+	l.SetShowStatusBar(false)
+	l.SetShowTitle(false)
+	l.DisableQuitKeybindings()
+
 	return Model{
 		projID:      projID,
 		notesPropID: notesPropID,
-		list:        list.New([]list.Item{}, NewItemDelegate(true), 0, 0),
+		list:        l,
 		loading:     true,
 		err:         nil,
 		notion:      notion,
@@ -65,6 +72,9 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 
 		m.loading = false
 		return m, nil
+
+	case tea.WindowSizeMsg:
+		m.list.SetSize(msg.Width, msg.Height)
 	}
 
 	// foward rest of commands to children
