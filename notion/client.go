@@ -282,3 +282,68 @@ func (c *Client) fetchAllChildrenBlocks(blockID string) ([]Block, error) {
 	// return final set of blocks
 	return blocks, nil
 }
+
+// ---
+
+type RelationIDsResponse struct {
+	IDs      []string
+	Err      error
+	Duration time.Duration
+}
+
+func (c *Client) FetchRelationIDs(pageID string, propID string) RelationIDsResponse {
+	start := time.Now()
+	ids := []string{}
+	cursor := ""
+
+	for {
+		url := baseURL + "/pages/" + pageID + "/properties/" + propID + "?page_size=100"
+		if cursor != "" {
+			url += "&start_cursor=" + cursor
+		}
+
+		req, err := http.NewRequest("GET", url, nil)
+		if err != nil {
+			return RelationIDsResponse{Err: err, Duration: time.Since(start)}
+		}
+
+		var res RelationListResponse
+		if err := c.do(req, &res); err != nil {
+			return RelationIDsResponse{Err: err, Duration: time.Since(start)}
+		}
+
+		for _, result := range res.Results {
+			ids = append(ids, result.Relation.ID)
+		}
+
+		// exit if we've exhausted all relations
+		if !res.HasMore || res.NextCursor == nil {
+			break
+		}
+
+		cursor = *res.NextCursor
+	}
+
+	return RelationIDsResponse{IDs: ids, Duration: time.Since(start)}
+}
+
+func (c *Client) FetchRelations(ids []string) ([]interface{}, error) {
+	relations := make([]interface{}, 0, len(ids))
+
+	for _, id := range ids {
+		url := baseURL + "/pages/" + id
+		req, err := http.NewRequest("GET", url, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		var relation interface{}
+		if err := c.do(req, &relation); err != nil {
+			return nil, err
+		}
+
+		relations = append(relations, relation)
+	}
+
+	return relations, nil
+}
