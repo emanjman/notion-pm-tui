@@ -327,23 +327,21 @@ func (c *Client) FetchRelationIDs(pageID string, propID string) RelationIDsRespo
 	return RelationIDsResponse{IDs: ids, Duration: time.Since(start)}
 }
 
-func (c *Client) FetchRelations(ids []string) ([]interface{}, error) {
-	relations := make([]interface{}, 0, len(ids))
-
+// todo: turn this into a standalone generic (to avoid func repetitiion)
+// caller decodes data via `json.Unmarshal`
+func (c *Client) FetchRelations(ids []string) ([]json.RawMessage, error) {
+	relations := make([]json.RawMessage, 0, len(ids))
 	for _, id := range ids {
 		url := baseURL + "/pages/" + id
 		req, err := http.NewRequest("GET", url, nil)
 		if err != nil {
 			return nil, err
 		}
-
-		var relation interface{}
+		var relation json.RawMessage
 		if err := c.do(req, &relation); err != nil {
 			return nil, err
 		}
-
 		relations = append(relations, relation)
 	}
-
 	return relations, nil
 }
