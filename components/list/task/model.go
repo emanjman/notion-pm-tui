@@ -221,24 +221,28 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	case notion.MilestoneSelectedMsg:
 		m.Milestone.ID = msg.Milestone.ID
 		m.Milestone.TasksPropID = msg.Milestone.TasksPropID
+		return m, func() tea.Msg {
+			ids, err := m.notion.FetchRelationIDs(m.Milestone.ID, m.Milestone.TasksPropID)
+			return notion.TaskIDsMsg{IDs: ids, Err: err}
+		}
 
-		return m, m.notion.FetchTaskRelationIds(m.Milestone.ID, m.Milestone.TasksPropID)
-
-	case notion.TaskRelationIdsMsg:
+	case notion.TaskIDsMsg:
 		if msg.Err != nil {
 			return m, nil
 		}
+		return m, func() tea.Msg {
+			pages, err := notion.FetchPages[notion.TaskPage](m.notion, msg.IDs)
+			return notion.TaskPagesMsg{Pages: pages, Err: err}
+		}
 
-		return m, m.notion.FetchTasks(msg.IDs)
-
-	case notion.TaskMsg:
+	case notion.TaskPagesMsg:
 		if msg.Err != nil {
 			return m, nil
 		}
 
 		// create list items
-		tempItems := make([]Item, len(msg.Data))
-		for i, page := range msg.Data {
+		tempItems := make([]Item, len(msg.Pages))
+		for i, page := range msg.Pages {
 			tempItems[i] = NewItem(page)
 		}
 
@@ -249,9 +253,9 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		m.loading = false
 	}
 
-	// forward rest of commands to children models (list)
+	// forward to children
 	var cmd tea.Cmd
-	m.list, cmd = m.list.Update(msg) // handles up/down nav
+	m.list, cmd = m.list.Update(msg)
 	return m, cmd
 }
 

@@ -71,141 +71,6 @@ func (c *Client) FetchProject() tea.Cmd {
 	}
 }
 
-type TaskRelationIdsMsg struct {
-	IDs      []string
-	Err      error
-	Duration time.Duration
-}
-
-type MilestoneRelationIdsMsg struct {
-	IDs      []string
-	Err      error
-	Duration time.Duration
-}
-
-func (c *Client) FetchMilestoneRelationIds(pageID string, propID string) tea.Cmd {
-	return func() tea.Msg {
-		start := time.Now()
-		ids := []string{}
-		cursor := ""
-
-		for {
-			url := baseURL + "/pages/" + pageID + "/properties/" + propID + "?page_size=100"
-			if cursor != "" {
-				url += "&start_cursor=" + cursor
-			}
-
-			req, err := http.NewRequest("GET", url, nil)
-			if err != nil {
-				return MilestoneRelationIdsMsg{Err: err, Duration: time.Since(start)}
-			}
-
-			var res RelationListResponse
-			if err := c.do(req, &res); err != nil {
-				return MilestoneRelationIdsMsg{Err: err, Duration: time.Since(start)}
-			}
-
-			for _, result := range res.Results {
-				ids = append(ids, result.Relation.ID)
-			}
-
-			if !res.HasMore || res.NextCursor == nil {
-				break
-			}
-
-			cursor = *res.NextCursor
-		}
-
-		return MilestoneRelationIdsMsg{IDs: ids, Duration: time.Since(start)}
-	}
-}
-
-func (c *Client) FetchTaskRelationIds(pageID string, propID string) tea.Cmd {
-	return func() tea.Msg {
-		start := time.Now()
-		ids := []string{}
-		cursor := ""
-
-		for {
-			url := baseURL + "/pages/" + pageID + "/properties/" + propID + "?page_size=100"
-			if cursor != "" {
-				url += "&start_cursor=" + cursor
-			}
-
-			req, err := http.NewRequest("GET", url, nil)
-			if err != nil {
-				return TaskRelationIdsMsg{Err: err, Duration: time.Since(start)}
-			}
-
-			var res RelationListResponse
-			if err := c.do(req, &res); err != nil {
-				return TaskRelationIdsMsg{Err: err, Duration: time.Since(start)}
-			}
-
-			for _, result := range res.Results {
-				ids = append(ids, result.Relation.ID)
-			}
-
-			// exit if we've exhausted all relations
-			if !res.HasMore || res.NextCursor == nil {
-				break
-			}
-
-			cursor = *res.NextCursor
-		}
-
-		return TaskRelationIdsMsg{IDs: ids, Duration: time.Since(start)}
-	}
-}
-
-func (c *Client) FetchMilestones(ids []string) tea.Cmd {
-	return func() tea.Msg {
-		start := time.Now()
-		milestones := make([]MilestonePage, 0, len(ids))
-
-		for _, id := range ids {
-			url := baseURL + "/pages/" + id
-			req, err := http.NewRequest("GET", url, nil)
-			if err != nil {
-				return MilestoneMsg{Err: err, Duration: time.Since(start)}
-			}
-
-			var milestone MilestonePage
-			if err := c.do(req, &milestone); err != nil {
-				return MilestoneMsg{Err: err, Duration: time.Since(start)}
-			}
-
-			milestones = append(milestones, milestone)
-		}
-
-		return MilestoneMsg{Data: milestones, Duration: time.Since(start)}
-	}
-}
-
-func (c *Client) FetchTasks(ids []string) tea.Cmd {
-	return func() tea.Msg {
-		start := time.Now()
-		tasks := make([]TaskPage, 0, len(ids))
-
-		for _, id := range ids {
-			url := baseURL + "/pages/" + id
-			req, err := http.NewRequest("GET", url, nil)
-			if err != nil {
-				return TaskMsg{Err: err, Duration: time.Since(start)}
-			}
-
-			var task TaskPage
-			if err := c.do(req, &task); err != nil {
-				return TaskMsg{Err: err, Duration: time.Since(start)}
-			}
-
-			tasks = append(tasks, task)
-		}
-
-		return TaskMsg{Data: tasks, Duration: time.Since(start)}
-	}
-}
-
 func (c *Client) FetchPageContent(pageID string) tea.Cmd {
 	return func() tea.Msg {
 		start := time.Now()
@@ -285,14 +150,7 @@ func (c *Client) fetchAllChildrenBlocks(blockID string) ([]Block, error) {
 
 // ---
 
-type RelationIDsResponse struct {
-	IDs      []string
-	Err      error
-	Duration time.Duration
-}
-
-func (c *Client) FetchRelationIDs(pageID string, propID string) RelationIDsResponse {
-	start := time.Now()
+func (c *Client) FetchRelationIDs(pageID string, propID string) ([]string, error) {
 	ids := []string{}
 	cursor := ""
 
@@ -304,12 +162,12 @@ func (c *Client) FetchRelationIDs(pageID string, propID string) RelationIDsRespo
 
 		req, err := http.NewRequest("GET", url, nil)
 		if err != nil {
-			return RelationIDsResponse{Err: err, Duration: time.Since(start)}
+			return nil, err
 		}
 
 		var res RelationListResponse
 		if err := c.do(req, &res); err != nil {
-			return RelationIDsResponse{Err: err, Duration: time.Since(start)}
+			return nil, err
 		}
 
 		for _, result := range res.Results {
@@ -324,20 +182,18 @@ func (c *Client) FetchRelationIDs(pageID string, propID string) RelationIDsRespo
 		cursor = *res.NextCursor
 	}
 
-	return RelationIDsResponse{IDs: ids, Duration: time.Since(start)}
+	return ids, nil
 }
 
-// todo: turn this into a standalone generic (to avoid func repetitiion)
-// caller decodes data via `json.Unmarshal`
-func (c *Client) FetchRelations(ids []string) ([]json.RawMessage, error) {
-	relations := make([]json.RawMessage, 0, len(ids))
+func FetchPages[T any](c *Client, ids []string) ([]T, error) {
+	relations := make([]T, 0, len(ids))
 	for _, id := range ids {
 		url := baseURL + "/pages/" + id
 		req, err := http.NewRequest("GET", url, nil)
 		if err != nil {
 			return nil, err
 		}
-		var relation json.RawMessage
+		var relation T
 		if err := c.do(req, &relation); err != nil {
 			return nil, err
 		}

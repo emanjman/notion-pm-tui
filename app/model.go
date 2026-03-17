@@ -28,7 +28,12 @@ const (
 )
 const tabCount = 4
 
-var labels = []string{"Objective (n%)", "Overview", "Project Notes (n)", "Debug Notes (n)"}
+var labels = []string{
+	"Objective (n%)",
+	"Overview",
+	"Project Notes (n)",
+	"Debug Notes (n)",
+}
 
 type Model struct {
 	activeTab Tab
@@ -42,7 +47,7 @@ type Model struct {
 	help     help.Model
 	duration time.Duration
 
-	client *notion.Client
+	notion *notion.Client
 
 	objective objective.Model
 	overview  overview.Model
@@ -57,7 +62,7 @@ func New() Model {
 		page:      nil,
 		keys:      RootKeyMap,
 		help:      help.New(),
-		client:    notion.NewClient(),
+		notion:    notion.NewClient(),
 		objective: objective.New(c),
 		overview:  overview.New(c),
 	}
@@ -137,6 +142,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		return m, tea.Batch(objCmd, ovrCmd)
 
+	// todo: on msg, start forwarding the commands to children??? use default?
 	case notion.ProjectMsg:
 		// if failed fetch, don't proceed w/ fetching ids
 		if msg.Err != nil {
@@ -147,18 +153,22 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.page = &msg.Data
 		m.duration = msg.Duration
 
-		return m, m.client.FetchMilestoneRelationIds(m.page.ID, m.page.Properties.Milestones.ID)
+		return m, func() tea.Msg {
+			ids, err := m.notion.FetchRelationIDs(m.page.ID, m.page.Properties.Milestones.ID)
+			return notion.MilestoneIDsMsg{IDs: ids, Err: err}
+		}
 
-	case notion.MilestoneRelationIdsMsg:
-		// if failed fetch, don't proceed w/ milestones fetch
+	case notion.MilestoneIDsMsg:
 		if msg.Err != nil {
 			return m, nil
 		}
-
-		return m, m.client.FetchMilestones(msg.IDs)
+		return m, func() tea.Msg {
+			pages, err := notion.FetchPages[notion.MilestonePage](m.notion, msg.IDs)
+			return notion.MilestonePagesMsg{Pages: pages, Err: err}
+		}
 
 	// forward updated milestones model + cmd
-	case notion.MilestoneMsg:
+	case notion.MilestonePagesMsg:
 		var cmd tea.Cmd
 		m.objective, cmd = m.objective.Update(msg)
 		return m, cmd

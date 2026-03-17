@@ -166,14 +166,14 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			}
 		}
 
-	case notion.MilestoneMsg:
+	case notion.MilestonePagesMsg:
 		if msg.Err != nil {
 			return m, nil
 		}
 
 		// create the list items
-		tempItems := make([]Item, len(msg.Data))
-		for i, page := range msg.Data {
+		tempItems := make([]Item, len(msg.Pages))
+		for i, page := range msg.Pages {
 			tempItems[i] = NewItem(page)
 		}
 

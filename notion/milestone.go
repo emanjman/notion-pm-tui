@@ -1,11 +1,13 @@
 package notion
 
-import "time"
+type MilestonePagesMsg struct {
+	Pages []MilestonePage
+	Err   error
+}
 
-type MilestoneMsg struct {
-	Data     []MilestonePage
-	Err      error
-	Duration time.Duration
+type MilestoneIDsMsg struct {
+	IDs []string
+	Err error
 }
 
 // ------
@@ -16,11 +18,11 @@ type MilestonePage struct {
 }
 
 type MilestoneProperties struct {
-	Title               TitleProperty    `json:"name"`
-	Tags                SelectProperty   `json:"tags"`
-	Progress            FormulaProperty  `json:"progress"`               // type:number
-	Status              FormulaProperty  `json:"$status"`                // type:string
-	LatestActivityLabel FormulaProperty  `json:"$latest-acitivty-label"` // type:string
+	Title               TitleProperty   `json:"name"`
+	Tags                SelectProperty  `json:"tags"`
+	Progress            FormulaProperty `json:"progress"`               // type:number
+	Status              FormulaProperty `json:"$status"`                // type:string
+	LatestActivityLabel FormulaProperty `json:"$latest-acitivty-label"` // type:string
 	// LatestActivityAt    FormulaProperty     `json:"$latest-activity-at"`    // type:date
 	Tasks RelationProperty `json:"@tasks"`
 }

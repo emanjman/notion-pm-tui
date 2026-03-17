@@ -1,11 +1,13 @@
 package notion
 
-import "time"
+type TaskPagesMsg struct {
+	Pages []TaskPage
+	Err   error
+}
 
-type TaskMsg struct {
-	Data     []TaskPage
-	Err      error
-	Duration time.Duration
+type TaskIDsMsg struct {
+	IDs []string
+	Err error
 }
 
 type TaskPage struct {
