@@ -1,11 +1,13 @@
 package notion
 
-import "time"
+type NotePagesMsg struct {
+	Pages []NotePage
+	Err   error
+}
 
-type NoteMsg struct {
-	Data     []NotePage
-	Err      error
-	Duration time.Duration
+type NoteIDsMsg struct {
+	IDs []string
+	Err error
 }
 
 // * this can also act as the `selected, all we need to fetch is from the id`

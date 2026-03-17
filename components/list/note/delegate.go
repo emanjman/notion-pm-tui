@@ -24,5 +24,10 @@ func (d ItemDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd { return nil }
 
 func (d ItemDelegate) Render(w io.Writer, m list.Model, index int, item list.Item) {
 	// todo: implement hover styling
-	fmt.Fprint(w, "temp note render")
+	switch item := item.(type) {
+	case Item:
+		fmt.Fprint(w, item.Title)
+	default:
+		fmt.Fprint(w, "Unhandled")
+	}
 }

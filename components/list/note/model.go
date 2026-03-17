@@ -8,36 +8,77 @@ import (
 )
 
 type Model struct {
-	list    list.Model
-	loading bool
-	error   error
-	notion  *notion.Client
+	projID      string
+	notesPropID string
+	list        list.Model
+	loading     bool
+	err         error
+	notion      *notion.Client
 }
 
-func New(notion *notion.Client) Model {
+func New(notion *notion.Client, projID, notesPropID string) Model {
 	return Model{
-		list:    list.New([]list.Item{}, NewItemDelegate(true), 0, 0),
-		loading: false,
-		error:   nil,
-		notion:  notion,
+		projID:      projID,
+		notesPropID: notesPropID,
+		list:        list.New([]list.Item{}, NewItemDelegate(true), 0, 0),
+		loading:     true,
+		err:         nil,
+		notion:      notion,
 	}
 }
 
 func (m Model) Init() tea.Cmd {
-	// todo: kickoff fetch to relation ids
-	return nil
+	return func() tea.Msg {
+		ids, err := m.notion.FetchRelationIDs(m.projID, m.notesPropID)
+		return notion.NoteIDsMsg{IDs: ids, Err: err}
+	}
 }
 
 func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
-	// todo: handle msg on fetched relation ids (request for relations)
+	switch msg := msg.(type) {
 
-	// todo: handle msg on fetched relations (build list)
+	// todo: on project selection msg, send out fetch-relation-ids req
 
+	case notion.NoteIDsMsg:
+		if msg.Err != nil {
+			m.err = msg.Err
+		} else {
+			return m, func() tea.Msg {
+				pages, err := notion.FetchPages[notion.NotePage](m.notion, msg.IDs)
+				return notion.NotePagesMsg{Pages: pages, Err: err}
+			}
+		}
+
+		m.loading = false
+		return m, nil
+
+	case notion.NotePagesMsg:
+		if msg.Err != nil {
+			m.err = msg.Err
+		} else {
+			items := make([]list.Item, len(msg.Pages))
+			for i, page := range msg.Pages {
+				items[i] = NewItem(page)
+			}
+			m.list.SetItems(items)
+		}
+
+		m.loading = false
+		return m, nil
+	}
+
+	// foward rest of commands to children
 	var cmd tea.Cmd
 	m.list, cmd = m.list.Update(msg)
 	return m, cmd
 }
 
 func (m Model) View() string {
+	if m.loading {
+		return "Loading..."
+	}
+	if m.err != nil {
+		return m.err.Error()
+	}
 	return m.list.View()
 }

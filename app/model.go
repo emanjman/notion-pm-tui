@@ -3,6 +3,7 @@ package app
 import (
 	// ! temp, styling ui
 	// "fmt"
+	"notion-project-tui/components/list/note"
 	"notion-project-tui/components/tab/objective"
 	"notion-project-tui/components/tab/overview"
 	"notion-project-tui/notion"
@@ -23,16 +24,16 @@ type Tab int
 const (
 	ObjectiveTab Tab = iota
 	OverviewTab
-	ProjectNotesTab
-	DebugNotesTab
+	NotesTab
+	BugsTab
 )
 const tabCount = 4
 
 var labels = []string{
 	"Objective (n%)",
 	"Overview",
-	"Project Notes (n)",
-	"Debug Notes (n)",
+	"Notes (n)",
+	"Bugs (n)",
 }
 
 type Model struct {
@@ -51,7 +52,7 @@ type Model struct {
 
 	objective objective.Model
 	overview  overview.Model
-	// projectNotes views.NotesListModel
+	note      note.Model
 	// debugNotes   views.NotesListModel
 }
 
@@ -65,6 +66,9 @@ func New() Model {
 		notion:    notion.NewClient(),
 		objective: objective.New(c),
 		overview:  overview.New(c),
+
+		//! hardoded for now
+		note: note.New(c, "25cc98516ab84a2cb0074d8b332b5847", "%7BGKi"),
 	}
 }
 
@@ -173,11 +177,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.objective, cmd = m.objective.Update(msg)
 		return m, cmd
 
+	// spill messages into children to be handled at that lvl
 	default:
-		var objCmd, ovrCmd tea.Cmd
+		var objCmd, ovrCmd, noteCmd tea.Cmd
 		m.objective, objCmd = m.objective.Update(msg)
 		m.overview, ovrCmd = m.overview.Update(msg)
-		return m, tea.Batch(objCmd, ovrCmd)
+		m.note, noteCmd = m.note.Update(msg)
+		return m, tea.Batch(objCmd, ovrCmd, noteCmd)
 	}
 }
 
@@ -217,9 +223,9 @@ func (m Model) View() string {
 		main = m.objective.View()
 	case OverviewTab:
 		main = m.overview.View()
-	case ProjectNotesTab:
-		main = "Project notes (coming soon)"
-	case DebugNotesTab:
+	case NotesTab:
+		main = m.note.View()
+	case BugsTab:
 		main = "Debug notes (coming soon)"
 
 	}
@@ -268,10 +274,10 @@ func (m Model) getActiveKeyMap() help.KeyMap {
 
 	// todo: handle other tabs
 	case OverviewTab:
+		return m.objective.KeyMap() // todo: change
+	case NotesTab:
 		return m.objective.KeyMap()
-	case ProjectNotesTab:
-		return m.objective.KeyMap()
-	case DebugNotesTab:
+	case BugsTab:
 		return m.objective.KeyMap()
 
 	default:
