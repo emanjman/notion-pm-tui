@@ -1,6 +1,7 @@
 package pagecontent
 
 import (
+	"log"
 	"notion-project-tui/notion"
 	"notion-project-tui/styles"
 
@@ -9,62 +10,50 @@ import (
 	lg "github.com/charmbracelet/lipgloss"
 )
 
+type SwitchContentMsg struct {
+	Content string
+}
+
 type Model struct {
-	viewport viewport.Model
+	Viewport viewport.Model
 	notion   *notion.Client
 	loading  bool
 	error    error
-	PageID   string
+	Content  string
 }
 
 func New(pageID string, n *notion.Client) Model {
 	vp := viewport.New(0, 0)
-
 	m := Model{
-		viewport: vp,
+		Viewport: vp,
 		notion:   n,
 		loading:  true,
+		error:    nil,
+		Content:  "",
 	}
-
-	if pageID != "" {
-		m.PageID = pageID
-	}
-
 	return m
 }
 
 func (m Model) Init() tea.Cmd {
-	if m.PageID != "" {
-		return func() tea.Msg {
-			blocks, err := m.notion.FetchPageContent(m.PageID)
-			return notion.PageContentMsg{PageID: m.PageID, Data: blocks, Err: err}
-		}
-	}
 	return nil
 }
 
 func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
-	case notion.PageContentMsg:
-		if msg.PageID != m.PageID {
-			return m, nil
-		}
-		if msg.Err != nil {
-			m.error = msg.Err
-			return m, nil
-		}
 
-		m.viewport.SetContent(renderBlocks(msg.Data, m.viewport.Width, 0))
+	case SwitchContentMsg:
+		log.Printf("page content received [SwitchContentMsg]")
+		m.Viewport.SetContent(msg.Content)
 		m.loading = false
 
 	case tea.WindowSizeMsg:
-		m.viewport.Width = msg.Width
-		m.viewport.Height = msg.Height
+		m.Viewport.Width = msg.Width
+		m.Viewport.Height = msg.Height
 
 	// forward other commands to list
 	default:
 		var cmd tea.Cmd
-		m.viewport, cmd = m.viewport.Update(msg)
+		m.Viewport, cmd = m.Viewport.Update(msg)
 		return m, cmd
 	}
 
@@ -78,16 +67,10 @@ func (m Model) View() string {
 	}
 
 	if m.loading {
-		loadingStyle := lg.NewStyle().Height(m.viewport.Height)
-		return loadingStyle.Render("Loading...")
+		loadingStyle := lg.NewStyle().Height(m.Viewport.Height)
+		return loadingStyle.Render("loading...")
 	}
 
 	style := lg.NewStyle().Padding(0, 1)
-	content := ""
-	if m.PageID != "" {
-		content = m.viewport.View()
-	} else {
-		content = "No content loaded..."
-	}
-	return style.Render(content)
+	return style.Render(m.Viewport.View())
 }

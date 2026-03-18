@@ -1,26 +1,25 @@
-package pagecontent
+package notion
 
 import (
 	"fmt"
-	"notion-project-tui/notion"
 	"notion-project-tui/styles"
 	"strings"
 
 	lg "github.com/charmbracelet/lipgloss"
 )
 
-func renderBlocks(bs []notion.Block, windowWidth int, depth int) string {
+func RenderBlocks(bs []Block, windowWidth int, depth int) string {
 	var s strings.Builder
 	counter := 0
-	var counterType *notion.ListFormatType = nil
+	var counterType *ListFormatType = nil
 
 	for i, b := range bs {
 		// skip possible block types to hide
-		if (i == 1 && b.Type == notion.Divider) || b.Type == notion.Breadcrumb {
+		if (i == 1 && b.Type == Divider) || b.Type == Breadcrumb {
 			continue
 		}
 
-		if b.Type == notion.NumberedListItem {
+		if b.Type == NumberedListItem {
 			counter++
 			if b.NumberedListItem.ListFormat != nil {
 				counterType = b.NumberedListItem.ListFormat
@@ -33,27 +32,27 @@ func renderBlocks(bs []notion.Block, windowWidth int, depth int) string {
 		s.WriteString(renderBlock(b, windowWidth, depth, counter, counterType))
 		s.WriteString("\n")
 
-		if b.HasChildren && b.Type != notion.Callout {
-			s.WriteString(renderBlocks(b.Children, windowWidth, depth+1))
+		if b.HasChildren && b.Type != Callout {
+			s.WriteString(RenderBlocks(b.Children, windowWidth, depth+1))
 		}
 	}
 
 	return s.String()
 }
 
-func renderBlock(b notion.Block, windowWidth int, depth int, counter int, counterType *notion.ListFormatType) string {
+func renderBlock(b Block, windowWidth int, depth int, counter int, counterType *ListFormatType) string {
 	base := lg.NewStyle().PaddingLeft(depth * 3)
 
 	switch b.Type {
-	case notion.Divider:
+	case Divider:
 		return base.
 			Foreground(styles.BorderForeground).
 			PaddingTop(1).
 			PaddingBottom(1).
 			Render(strings.Repeat("—", windowWidth))
 
-	case notion.Callout:
-		content := notion.ExtractPlainText(b.Callout.RichText)
+	case Callout:
+		content := ExtractPlainText(b.Callout.RichText)
 
 		if b.HasChildren {
 			for _, child := range b.Children {
@@ -65,8 +64,8 @@ func renderBlock(b notion.Block, windowWidth int, depth int, counter int, counte
 			Background(styles.SelectedBackground).
 			Render(content)
 
-	case notion.Heading2:
-		txt := notion.ExtractPlainText(b.Heading2.RichText)
+	case Heading2:
+		txt := ExtractPlainText(b.Heading2.RichText)
 		parts := strings.Fields(txt)
 		icon, header := parts[0], parts[1]
 
@@ -75,31 +74,31 @@ func renderBlock(b notion.Block, windowWidth int, depth int, counter int, counte
 			Foreground(styles.PrimaryForeground).
 			Render(fmt.Sprintf(" %s %s ", icon, header))
 
-	case notion.Heading3:
+	case Heading3:
 		return base.
 			Bold(true).
 			Foreground(styles.PrimaryForeground).
-			Render("\n" + notion.ExtractPlainText(b.Heading3.RichText) + "\n")
+			Render("\n" + ExtractPlainText(b.Heading3.RichText) + "\n")
 
-	case notion.BulletedListItem:
+	case BulletedListItem:
 		pt := lg.NewStyle().
 			Foreground(styles.MutedForeground).
 			Render("-  ")
 		txt := lg.NewStyle().
 			Foreground(styles.TechForeground).
-			Render(notion.ExtractPlainText(b.BulletedListItem.RichText))
+			Render(ExtractPlainText(b.BulletedListItem.RichText))
 		return base.Render(pt + txt)
 
-	case notion.NumberedListItem:
+	case NumberedListItem:
 		var pt string
 		format := getListFormat(counterType, depth)
 
 		switch format {
-		case notion.Numbers:
+		case Numbers:
 			pt = fmt.Sprintf("%d ", counter)
-		case notion.Letters:
+		case Letters:
 			pt = fmt.Sprintf("%s ", string(letterPoints[counter-1]))
-		case notion.Roman:
+		case Roman:
 			pt = fmt.Sprintf("%s.", toRomanNumeral(counter))
 		}
 
@@ -108,15 +107,15 @@ func renderBlock(b notion.Block, windowWidth int, depth int, counter int, counte
 			Render(pt)
 		txt := lg.NewStyle().
 			Foreground(styles.TechForeground).
-			Render(notion.ExtractPlainText(b.NumberedListItem.RichText))
+			Render(ExtractPlainText(b.NumberedListItem.RichText))
 		return base.Render(fmt.Sprintf("%s %s", pt, txt))
 
-	case notion.Toggle:
+	case Toggle:
 		chevron := lg.NewStyle().Foreground(styles.MutedForeground).Render("▼  ")
-		return base.Render(chevron + notion.ExtractPlainText(b.Toggle.RichText))
+		return base.Render(chevron + ExtractPlainText(b.Toggle.RichText))
 
-	case notion.Paragraph:
-		return base.Render(notion.ExtractPlainText(b.Paragraph.RichText))
+	case Paragraph:
+		return base.Render(ExtractPlainText(b.Paragraph.RichText))
 	}
 
 	return lg.NewStyle().
@@ -124,20 +123,20 @@ func renderBlock(b notion.Block, windowWidth int, depth int, counter int, counte
 		Render("<Unhandled block>")
 }
 
-func getListFormat(explicit *notion.ListFormatType, depth int) notion.ListFormatType {
+func getListFormat(explicit *ListFormatType, depth int) ListFormatType {
 	if explicit != nil {
 		return *explicit
 	}
 
 	switch depth % 3 {
 	case 0:
-		return notion.Numbers
+		return Numbers
 	case 1:
-		return notion.Letters
+		return Letters
 	case 2:
-		return notion.Roman
+		return Roman
 	}
-	return notion.Numbers
+	return Numbers
 }
 
 var letterPoints = "abcdefghijklmnopqrstuvwxyz"

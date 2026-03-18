@@ -1,6 +1,7 @@
 package note
 
 import (
+	"log"
 	"notion-project-tui/components/pagecontent"
 	"notion-project-tui/notion"
 	"notion-project-tui/styles"
@@ -10,6 +11,8 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	lg "github.com/charmbracelet/lipgloss"
 )
+
+type FetchAllNoteContentMsg struct{}
 
 type Model struct {
 	projID      string
@@ -57,11 +60,6 @@ func (m Model) Init() tea.Cmd {
 func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
 
-	// case notion.PageContentMsg:
-	// 	var cmd tea.Cmd
-	// 	m.reader, cmd = m.reader.Update(msg)
-	// 	return m, cmd
-
 	case notion.NoteIDsMsg:
 		if msg.Err != nil {
 			m.err = msg.Err
@@ -77,15 +75,23 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	case notion.NotePagesMsg:
 		if msg.Err != nil {
 			m.err = msg.Err
+			m.loading = false
+			return m, nil
 		} else {
 			items := make([]list.Item, len(msg.Pages))
 			for i, page := range msg.Pages {
 				items[i] = NewItem(page)
 			}
 			m.browser.SetItems(items)
+
+			log.Printf("here we have received note pages")
+			m.loading = false
+			return m, m.fetchAllNoteContent()
 		}
-		m.loading = false
-		return m, nil
+
+	case FetchAllNoteContentMsg:
+		log.Printf("completed fetching all note content msg")
+		return m, m.displayCurrentContent()
 
 	case tea.WindowSizeMsg:
 		var readerCmd tea.Cmd
@@ -107,15 +113,10 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 				m.browsing = false
 				m.browser.SetDelegate(NewItemDelegate(false))
 				return m, nil
-			case key.Matches(msg, m.keys.FetchContent):
-				if item, ok := m.browser.SelectedItem().(Item); ok {
-					m.reader.PageID = item.ID
-					return m, m.reader.Init()
-				}
-			default:
+			case key.Matches(msg, m.keys.Up), key.Matches(msg, m.keys.Down):
 				var cmd tea.Cmd
 				m.browser, cmd = m.browser.Update(msg)
-				return m, cmd
+				return m, tea.Batch(m.displayCurrentContent(), cmd)
 			}
 		} else {
 			switch {
@@ -123,10 +124,6 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 				m.browsing = true
 				m.browser.SetDelegate(NewItemDelegate(true))
 				return m, nil
-			default:
-				var cmd tea.Cmd
-				m.reader, cmd = m.reader.Update(msg)
-				return m, cmd
 			}
 		}
 	}
@@ -152,7 +149,37 @@ func (m Model) View() string {
 		BorderStyle(lg.NormalBorder()).
 		BorderForeground(styles.BorderForeground).
 		Render(browserContent)
-
 	right := m.reader.View()
 	return lg.JoinHorizontal(lg.Top, left, right)
+}
+
+func (m Model) fetchAllNoteContent() tea.Cmd {
+	return func() tea.Msg {
+		log.Printf("enter the note content")
+
+		for i, item := range m.browser.Items() {
+			if note, ok := item.(Item); ok {
+				blocks, err := m.notion.FetchPageContent(note.ID)
+				if err != nil {
+					continue
+				}
+				log.Printf("fetching blocks for note: " + note.Title)
+				note.Content = notion.RenderBlocks(blocks, m.reader.Viewport.Width, 0)
+				m.browser.SetItem(i, note)
+			}
+		}
+		return FetchAllNoteContentMsg{}
+	}
+}
+
+func (m Model) displayCurrentContent() tea.Cmd {
+	return func() tea.Msg {
+		content := "Unable to render"
+		if note, ok := m.browser.SelectedItem().(Item); ok {
+			content = note.Content
+		}
+
+		log.Printf("display curr content")
+		return pagecontent.SwitchContentMsg{Content: content}
+	}
 }
