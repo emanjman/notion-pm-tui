@@ -22,8 +22,6 @@ type Model struct {
 
 	browser list.Model
 	reader  pagecontent.Model
-
-	selectedNote *Item
 }
 
 func New(notion *notion.Client, projID, notesPropID string) Model {
@@ -43,9 +41,8 @@ func New(notion *notion.Client, projID, notesPropID string) Model {
 		notion:      notion,
 		keys:        DefaultKeyMap,
 
-		browser:      l,
-		reader:       pagecontent.New("", notion),
-		selectedNote: nil,
+		browser: l,
+		reader:  pagecontent.New("", notion),
 	}
 }
 
@@ -112,8 +109,8 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 				return m, nil
 			case key.Matches(msg, m.keys.FetchContent):
 				if item, ok := m.browser.SelectedItem().(Item); ok {
-					m.selectedNote = &item
-					m.reader = pagecontent.New(m.selectedNote.ID, m.notion)
+					m.reader.PageID = item.ID
+					m.reader.Init() // explicitly fetch content
 				}
 			default:
 				var cmd tea.Cmd
