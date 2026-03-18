@@ -8,6 +8,7 @@ type Item struct {
 	CreatedLabel string
 
 	Content string // defined on fetch
+	Loading bool
 }
 
 func (x Item) FilterValue() string { return x.Title }
@@ -23,5 +24,6 @@ func NewItem(page notion.NotePage) Item {
 		Title:        notion.ExtractPlainText(page.Properties.Title.Title),
 		CreatedLabel: createdLabel,
 		Content:      "",
+		Loading:      true,
 	}
 }

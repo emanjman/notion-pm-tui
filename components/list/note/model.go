@@ -12,8 +12,11 @@ import (
 	lg "github.com/charmbracelet/lipgloss"
 )
 
-type FetchAllNoteContentMsg struct{}
 type SwitchContentMsg struct{ Content string }
+type FetchNoteContentMsg struct {
+	Idx  int
+	Note *Item
+}
 
 type Model struct {
 	projID      string
@@ -84,14 +87,22 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 				items[i] = NewItem(page)
 			}
 			m.browser.SetItems(items)
+			m.loading = false
 
 			log.Printf("here we have received note pages")
-			m.loading = false
-			return m, m.fetchAllNoteContent()
+			// return m, m.fetchAllNoteContent()
+
+			cmds := make([]tea.Cmd, len(m.browser.Items()))
+			for i, item := range m.browser.Items() {
+				if note, ok := item.(Item); ok {
+					cmds[i] = m.fetchNoteContent(i, note)
+				}
+			}
+			return m, tea.Batch(cmds...)
 		}
 
-	case FetchAllNoteContentMsg:
-		log.Printf("completed fetching all note content msg")
+	case FetchNoteContentMsg:
+		m.browser.SetItem(msg.Idx, msg.Note)
 		return m, m.displayCurrentContent()
 
 	case SwitchContentMsg:
@@ -156,22 +167,18 @@ func (m Model) View() string {
 	return lg.JoinHorizontal(lg.Top, left, right)
 }
 
-func (m Model) fetchAllNoteContent() tea.Cmd {
+func (m Model) fetchNoteContent(idx int, note Item) tea.Cmd {
 	return func() tea.Msg {
-		log.Printf("enter the note content")
+		blocks, err := m.notion.FetchPageContent(note.ID)
+		log.Printf("fetching blocks for note: " + note.Title)
 
-		for i, item := range m.browser.Items() {
-			if note, ok := item.(Item); ok {
-				blocks, err := m.notion.FetchPageContent(note.ID)
-				if err != nil {
-					continue
-				}
-				log.Printf("fetching blocks for note: " + note.Title)
-				note.Content = notion.RenderBlocks(blocks, m.reader.Width, 0)
-				m.browser.SetItem(i, note)
-			}
+		if err != nil {
+			note.Content = err.Error()
 		}
-		return FetchAllNoteContentMsg{}
+		note.Content = notion.RenderBlocks(blocks, m.reader.Width, 0)
+
+		note.Loading = false
+		return FetchNoteContentMsg{Idx: idx, Note: &note}
 	}
 }
 
@@ -179,10 +186,12 @@ func (m Model) displayCurrentContent() tea.Cmd {
 	return func() tea.Msg {
 		content := "Unable to render"
 		if note, ok := m.browser.SelectedItem().(Item); ok {
-			content = note.Content
+			if note.Loading {
+				content = "Loading..."
+			} else {
+				content = note.Content // may be blocks or the err msg
+			}
 		}
-
-		log.Printf("display curr content")
 		return SwitchContentMsg{Content: content}
 	}
 }
