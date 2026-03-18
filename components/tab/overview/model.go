@@ -8,13 +8,11 @@ import (
 )
 
 type Model struct {
-	content pagecontent.PageContentModel
+	content pagecontent.Model
 }
 
 func New(n *notion.Client) Model {
-	return Model{
-		content: pagecontent.NewPageContentModel(n),
-	}
+	return Model{content: pagecontent.New(n)}
 }
 
 func (m Model) Init() tea.Cmd {

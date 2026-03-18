@@ -9,28 +9,28 @@ import (
 	lg "github.com/charmbracelet/lipgloss"
 )
 
-type PageContentModel struct {
+type Model struct {
 	viewport viewport.Model
 	notion   *notion.Client
 	loading  bool
 	error    error
 }
 
-func NewPageContentModel(n *notion.Client) PageContentModel {
+func New(n *notion.Client) Model {
 	vp := viewport.New(0, 0)
 
-	return PageContentModel{
+	return Model{
 		viewport: vp,
 		notion:   n,
 		loading:  true,
 	}
 }
 
-func (m PageContentModel) Init() tea.Cmd {
+func (m Model) Init() tea.Cmd {
 	return notion.NewClient().FetchPageContent("30eb7273944b80ad80c4f91a4f5cfd8d")
 }
 
-func (m PageContentModel) View() string {
+func (m Model) View() string {
 	if m.error != nil {
 		style := lg.NewStyle().Foreground(styles.RedForeground)
 		return style.Render(m.error.Error())
@@ -45,7 +45,7 @@ func (m PageContentModel) View() string {
 	return style.Render(m.viewport.View())
 }
 
-func (m PageContentModel) Update(msg tea.Msg) (PageContentModel, tea.Cmd) {
+func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case notion.PageContentMsg:
 		if msg.Err != nil {
