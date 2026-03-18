@@ -14,35 +14,33 @@ type Model struct {
 	notion   *notion.Client
 	loading  bool
 	error    error
+	PageID   string
 }
 
-func New(n *notion.Client) Model {
+func New(pageID string, n *notion.Client) Model {
 	vp := viewport.New(0, 0)
 
-	return Model{
+	m := Model{
 		viewport: vp,
 		notion:   n,
 		loading:  true,
 	}
+
+	if pageID != "" {
+		m.PageID = pageID
+	}
+
+	return m
 }
 
 func (m Model) Init() tea.Cmd {
-	return m.notion.FetchPageContent("30eb7273944b80ad80c4f91a4f5cfd8d")
-}
-
-func (m Model) View() string {
-	if m.error != nil {
-		style := lg.NewStyle().Foreground(styles.RedForeground)
-		return style.Render(m.error.Error())
+	if m.PageID != "" {
+		return func() tea.Msg {
+			blocks, err := m.notion.FetchPageContent(m.PageID)
+			return notion.PageContentMsg{Data: blocks, Err: err}
+		}
 	}
-
-	if m.loading {
-		loadingStyle := lg.NewStyle().Height(m.viewport.Height)
-		return loadingStyle.Render("Loading...")
-	}
-
-	style := lg.NewStyle().Padding(0, 1)
-	return style.Render(m.viewport.View())
+	return nil
 }
 
 func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
@@ -68,4 +66,25 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	}
 
 	return m, nil
+}
+
+func (m Model) View() string {
+	if m.error != nil {
+		style := lg.NewStyle().Foreground(styles.RedForeground)
+		return style.Render(m.error.Error())
+	}
+
+	if m.loading {
+		loadingStyle := lg.NewStyle().Height(m.viewport.Height)
+		return loadingStyle.Render("Loading...")
+	}
+
+	style := lg.NewStyle().Padding(0, 1)
+	content := ""
+	if m.PageID != "" {
+		content = m.viewport.View()
+	} else {
+		content = "No content loaded..."
+	}
+	return style.Render(content)
 }

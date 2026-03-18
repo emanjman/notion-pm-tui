@@ -71,18 +71,12 @@ func (c *Client) FetchProject() tea.Cmd {
 	}
 }
 
-func (c *Client) FetchPageContent(pageID string) tea.Cmd {
-	return func() tea.Msg {
-		start := time.Now()
-
-		blocks, err := c.fetchBlocksRecursive(pageID)
-
-		if err != nil {
-			return PageContentMsg{Err: err, Duration: time.Since(start)}
-		}
-
-		return PageContentMsg{Data: blocks, Duration: time.Since(start)}
+func (c *Client) FetchPageContent(pageID string) ([]Block, error) {
+	blocks, err := c.fetchBlocksRecursive(pageID)
+	if err != nil {
+		return nil, err
 	}
+	return blocks, nil
 }
 
 // return every block of the page by dfs

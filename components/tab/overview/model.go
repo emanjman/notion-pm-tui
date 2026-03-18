@@ -12,7 +12,7 @@ type Model struct {
 }
 
 func New(n *notion.Client) Model {
-	return Model{content: pagecontent.New(n)}
+	return Model{content: pagecontent.New("30eb7273944b80ad80c4f91a4f5cfd8d", n)}
 }
 
 func (m Model) Init() tea.Cmd {

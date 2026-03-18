@@ -1,9 +1,5 @@
 package notion
 
-import (
-	"time"
-)
-
 type PageContent struct {
 	Results    []Block `json:"results"`
 	HasMore    bool    `json:"has_more"`
@@ -11,7 +7,6 @@ type PageContent struct {
 }
 
 type PageContentMsg struct {
-	Data     []Block
-	Err      error
-	Duration time.Duration
+	Data []Block
+	Err  error
 }
