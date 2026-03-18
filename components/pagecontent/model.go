@@ -37,7 +37,7 @@ func (m Model) Init() tea.Cmd {
 	if m.PageID != "" {
 		return func() tea.Msg {
 			blocks, err := m.notion.FetchPageContent(m.PageID)
-			return notion.PageContentMsg{Data: blocks, Err: err}
+			return notion.PageContentMsg{PageID: m.PageID, Data: blocks, Err: err}
 		}
 	}
 	return nil
@@ -46,6 +46,9 @@ func (m Model) Init() tea.Cmd {
 func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case notion.PageContentMsg:
+		if msg.PageID != m.PageID {
+			return m, nil
+		}
 		if msg.Err != nil {
 			m.error = msg.Err
 			return m, nil

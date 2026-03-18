@@ -7,6 +7,7 @@ type PageContent struct {
 }
 
 type PageContentMsg struct {
-	Data []Block
-	Err  error
+	PageID string
+	Data   []Block
+	Err    error
 }

@@ -110,7 +110,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			case key.Matches(msg, m.keys.FetchContent):
 				if item, ok := m.browser.SelectedItem().(Item); ok {
 					m.reader.PageID = item.ID
-					m.reader.Init() // explicitly fetch content
+					return m, m.reader.Init()
 				}
 			default:
 				var cmd tea.Cmd
