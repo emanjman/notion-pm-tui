@@ -1,4 +1,4 @@
-package note
+package notebook
 
 import (
 	"log"
@@ -136,6 +136,10 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 				m.browsing = true
 				m.browser.SetDelegate(NewItemDelegate(true))
 				return m, nil
+			case key.Matches(msg, m.keys.Up), key.Matches(msg, m.keys.Down):
+				var cmd tea.Cmd
+				m.reader, cmd = m.reader.Update(msg)
+				return m, cmd
 			}
 		}
 	}

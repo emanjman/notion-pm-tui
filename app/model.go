@@ -3,7 +3,7 @@ package app
 import (
 	// ! temp, styling ui
 	// "fmt"
-	"notion-project-tui/components/list/note"
+	"notion-project-tui/components/notebook"
 	"notion-project-tui/components/tab/objective"
 	"notion-project-tui/notion"
 	"notion-project-tui/styles"
@@ -23,7 +23,7 @@ type Tab int
 const (
 	ObjectiveTab Tab = iota
 	OverviewTab
-	NotesTab
+	NotebookTab
 	BugsTab
 )
 const tabCount = 4
@@ -51,7 +51,7 @@ type Model struct {
 
 	objective objective.Model
 	// overview  overview.Model
-	note note.Model
+	notebook notebook.Model
 	// debugNotes   views.NotesListModel
 }
 
@@ -67,7 +67,7 @@ func New() Model {
 		// overview:  overview.New(c),
 
 		//! hardoded for now
-		note: note.New(c, "25cc98516ab84a2cb0074d8b332b5847", "%7BGKi"),
+		notebook: notebook.New(c, "25cc98516ab84a2cb0074d8b332b5847", "%7BGKi"),
 	}
 }
 
@@ -79,7 +79,7 @@ func (m Model) Init() tea.Cmd {
 		// m.client.FetchProject(),
 		m.objective.Init(),
 		// m.overview.Init(),
-		m.note.Init(),
+		m.notebook.Init(),
 	)
 }
 
@@ -121,8 +121,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.objective, cmd = m.objective.Update(msg)
 				// case OverviewTab:
 				// 	m.overview, cmd = m.overview.Update(msg)
-				case NotesTab:
-					m.note, cmd = m.note.Update(msg)
+				case NotebookTab:
+					m.notebook, cmd = m.notebook.Update(msg)
 				}
 
 				return m, cmd
@@ -147,7 +147,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		// 	Height: childHeight,
 		// })
 
-		m.note, noteCmd = m.note.Update(tea.WindowSizeMsg{
+		m.notebook, noteCmd = m.notebook.Update(tea.WindowSizeMsg{
 			Width:  msg.Width,
 			Height: childHeight,
 		})
@@ -190,7 +190,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		var objCmd, ovrCmd, noteCmd tea.Cmd
 		m.objective, objCmd = m.objective.Update(msg)
 		// m.overview, ovrCmd = m.overview.Update(msg)
-		m.note, noteCmd = m.note.Update(msg)
+		m.notebook, noteCmd = m.notebook.Update(msg)
 		return m, tea.Batch(objCmd, ovrCmd, noteCmd)
 	}
 }
@@ -232,8 +232,8 @@ func (m Model) View() string {
 	case OverviewTab:
 		// main = m.overview.View()
 		main = "Overview (coming soon)"
-	case NotesTab:
-		main = m.note.View()
+	case NotebookTab:
+		main = m.notebook.View()
 	case BugsTab:
 		main = "Debug notes (coming soon)"
 
@@ -284,7 +284,7 @@ func (m Model) getActiveKeyMap() help.KeyMap {
 	// todo: handle other tabs
 	case OverviewTab:
 		return m.objective.KeyMap() // todo: change
-	case NotesTab:
+	case NotebookTab:
 		return m.objective.KeyMap()
 	case BugsTab:
 		return m.objective.KeyMap()

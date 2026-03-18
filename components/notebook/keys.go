@@ -1,4 +1,4 @@
-package note
+package notebook
 
 import "github.com/charmbracelet/bubbles/key"
 

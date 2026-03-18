@@ -1,4 +1,4 @@
-package note
+package notebook
 
 import "notion-project-tui/notion"
 
