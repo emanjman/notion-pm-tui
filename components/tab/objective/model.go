@@ -80,20 +80,20 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		}
 
 	case tea.WindowSizeMsg:
-		var cmd tea.Cmd
+		var mstoneCmd, taskCmd tea.Cmd
 		leftWidth := msg.Width * 30 / 100
 		rightWidth := msg.Width - leftWidth - 1 // account for dividing border
 
-		m.milestone, cmd = m.milestone.Update(tea.WindowSizeMsg{
+		m.milestone, mstoneCmd = m.milestone.Update(tea.WindowSizeMsg{
 			Width:  leftWidth,
 			Height: msg.Height,
 		})
-		m.task, cmd = m.task.Update(tea.WindowSizeMsg{
+		m.task, taskCmd = m.task.Update(tea.WindowSizeMsg{
 			Width:  rightWidth,
 			Height: msg.Height,
 		})
 
-		return m, cmd
+		return m, tea.Batch(mstoneCmd, taskCmd)
 	}
 
 	// key presses go to active panel only; data messages go to both
