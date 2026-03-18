@@ -16,11 +16,12 @@ func init() {
 
 func main() {
 	// set up log file
-	f, err := tea.LogToFile("debug.log", "debug")
+	f, err := os.OpenFile("debug.log", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer f.Close()
+	log.SetOutput(f)
 
 	p := tea.NewProgram(app.New(), tea.WithAltScreen())
 
