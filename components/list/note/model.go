@@ -102,7 +102,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		}
 
 	case FetchNoteContentMsg:
-		m.browser.SetItem(msg.Idx, msg.Note)
+		m.browser.SetItem(msg.Idx, *msg.Note)
 		return m, m.displayCurrentContent()
 
 	case SwitchContentMsg:
@@ -174,8 +174,9 @@ func (m Model) fetchNoteContent(idx int, note Item) tea.Cmd {
 
 		if err != nil {
 			note.Content = err.Error()
+		} else {
+			note.Content = notion.RenderBlocks(blocks, m.reader.Width, 0)
 		}
-		note.Content = notion.RenderBlocks(blocks, m.reader.Width, 0)
 
 		note.Loading = false
 		return FetchNoteContentMsg{Idx: idx, Note: &note}
