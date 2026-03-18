@@ -39,6 +39,7 @@ func New(notion *notion.Client, projID, notesPropID string) Model {
 		browsing:    true,
 		err:         nil,
 		notion:      notion,
+		keys:        DefaultKeyMap,
 
 		browser: l,
 		reader:  pagecontent.New(notion),
@@ -46,10 +47,11 @@ func New(notion *notion.Client, projID, notesPropID string) Model {
 }
 
 func (m Model) Init() tea.Cmd {
-	return func() tea.Msg {
+	browserInit := func() tea.Msg {
 		ids, err := m.notion.FetchRelationIDs(m.projID, m.notesPropID)
 		return notion.NoteIDsMsg{IDs: ids, Err: err}
 	}
+	return tea.Batch(browserInit, m.reader.Init())
 }
 
 func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
@@ -95,26 +97,37 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 
 		return m, readerCmd
 
-	// toggle views
 	case tea.KeyMsg:
-		switch {
-		case key.Matches(msg, m.keys.LeftFocus):
-			if !m.browsing {
-				m.browsing = true
-				m.browser.SetDelegate(NewItemDelegate(true))
-			}
-		case key.Matches(msg, m.keys.RightFocus):
-			if m.browsing {
+		if m.browsing {
+			switch {
+			case key.Matches(msg, m.keys.RightFocus):
 				m.browsing = false
 				m.browser.SetDelegate(NewItemDelegate(false))
+				return m, nil
+			default:
+				var cmd tea.Cmd
+				m.browser, cmd = m.browser.Update(msg)
+				return m, cmd
+			}
+		} else {
+			switch {
+			case key.Matches(msg, m.keys.LeftFocus):
+				m.browsing = true
+				m.browser.SetDelegate(NewItemDelegate(true))
+				return m, nil
+			default:
+				var cmd tea.Cmd
+				m.reader, cmd = m.reader.Update(msg)
+				return m, cmd
 			}
 		}
 	}
 
 	// foward rest of commands to children
-	var cmd tea.Cmd
-	m.browser, cmd = m.browser.Update(msg)
-	return m, cmd
+	var bcmd, rcmd tea.Cmd
+	m.browser, bcmd = m.browser.Update(msg)
+	m.reader, rcmd = m.reader.Update(msg)
+	return m, tea.Batch(bcmd, rcmd)
 }
 
 func (m Model) View() string {
