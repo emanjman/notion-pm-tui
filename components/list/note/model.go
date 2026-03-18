@@ -2,17 +2,18 @@ package note
 
 import (
 	"log"
-	"notion-project-tui/components/pagecontent"
 	"notion-project-tui/notion"
 	"notion-project-tui/styles"
 
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
+	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	lg "github.com/charmbracelet/lipgloss"
 )
 
 type FetchAllNoteContentMsg struct{}
+type SwitchContentMsg struct{ Content string }
 
 type Model struct {
 	projID      string
@@ -24,7 +25,7 @@ type Model struct {
 	keys        KeyMap
 
 	browser list.Model
-	reader  pagecontent.Model
+	reader  viewport.Model
 }
 
 func New(notion *notion.Client, projID, notesPropID string) Model {
@@ -45,7 +46,7 @@ func New(notion *notion.Client, projID, notesPropID string) Model {
 		keys:        DefaultKeyMap,
 
 		browser: l,
-		reader:  pagecontent.New("", notion),
+		reader:  viewport.New(0, 0),
 	}
 }
 
@@ -93,16 +94,16 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		log.Printf("completed fetching all note content msg")
 		return m, m.displayCurrentContent()
 
+	case SwitchContentMsg:
+		m.reader.SetContent(msg.Content)
+
 	case tea.WindowSizeMsg:
 		var readerCmd tea.Cmd
 		leftw := msg.Width * 30 / 100
 		rightw := msg.Width - leftw - 1 // div border
 
-		m.browser.SetSize(leftw, msg.Height) // ? do we reorganize for greater sep of concerns?
-		m.reader, readerCmd = m.reader.Update(tea.WindowSizeMsg{
-			Width:  rightw,
-			Height: msg.Height,
-		})
+		m.browser.SetSize(leftw, msg.Height)
+		m.reader.Width, m.reader.Height = rightw, msg.Height
 
 		return m, readerCmd
 
@@ -149,7 +150,9 @@ func (m Model) View() string {
 		BorderStyle(lg.NormalBorder()).
 		BorderForeground(styles.BorderForeground).
 		Render(browserContent)
-	right := m.reader.View()
+	right := lg.NewStyle().
+		Padding(0, 1).
+		Render(m.reader.View())
 	return lg.JoinHorizontal(lg.Top, left, right)
 }
 
@@ -164,7 +167,7 @@ func (m Model) fetchAllNoteContent() tea.Cmd {
 					continue
 				}
 				log.Printf("fetching blocks for note: " + note.Title)
-				note.Content = notion.RenderBlocks(blocks, m.reader.Viewport.Width, 0)
+				note.Content = notion.RenderBlocks(blocks, m.reader.Width, 0)
 				m.browser.SetItem(i, note)
 			}
 		}
@@ -180,6 +183,6 @@ func (m Model) displayCurrentContent() tea.Cmd {
 		}
 
 		log.Printf("display curr content")
-		return pagecontent.SwitchContentMsg{Content: content}
+		return SwitchContentMsg{Content: content}
 	}
 }

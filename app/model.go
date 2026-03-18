@@ -5,7 +5,6 @@ import (
 	// "fmt"
 	"notion-project-tui/components/list/note"
 	"notion-project-tui/components/tab/objective"
-	"notion-project-tui/components/tab/overview"
 	"notion-project-tui/notion"
 	"notion-project-tui/styles"
 	"notion-project-tui/util/keymap"
@@ -51,8 +50,8 @@ type Model struct {
 	notion *notion.Client
 
 	objective objective.Model
-	overview  overview.Model
-	note      note.Model
+	// overview  overview.Model
+	note note.Model
 	// debugNotes   views.NotesListModel
 }
 
@@ -65,7 +64,7 @@ func New() Model {
 		help:      help.New(),
 		notion:    notion.NewClient(),
 		objective: objective.New(c),
-		overview:  overview.New(c),
+		// overview:  overview.New(c),
 
 		//! hardoded for now
 		note: note.New(c, "25cc98516ab84a2cb0074d8b332b5847", "%7BGKi"),
@@ -79,7 +78,7 @@ func (m Model) Init() tea.Cmd {
 	return tea.Batch(
 		// m.client.FetchProject(),
 		m.objective.Init(),
-		m.overview.Init(),
+		// m.overview.Init(),
 		m.note.Init(),
 	)
 }
@@ -120,8 +119,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				switch m.activeTab {
 				case ObjectiveTab:
 					m.objective, cmd = m.objective.Update(msg)
-				case OverviewTab:
-					m.overview, cmd = m.overview.Update(msg)
+				// case OverviewTab:
+				// 	m.overview, cmd = m.overview.Update(msg)
 				case NotesTab:
 					m.note, cmd = m.note.Update(msg)
 				}
@@ -143,10 +142,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			Height: childHeight,
 		})
 
-		m.overview, ovrCmd = m.overview.Update(tea.WindowSizeMsg{
-			Width:  msg.Width,
-			Height: childHeight,
-		})
+		// m.overview, ovrCmd = m.overview.Update(tea.WindowSizeMsg{
+		// 	Width:  msg.Width,
+		// 	Height: childHeight,
+		// })
 
 		m.note, noteCmd = m.note.Update(tea.WindowSizeMsg{
 			Width:  msg.Width,
@@ -190,7 +189,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	default:
 		var objCmd, ovrCmd, noteCmd tea.Cmd
 		m.objective, objCmd = m.objective.Update(msg)
-		m.overview, ovrCmd = m.overview.Update(msg)
+		// m.overview, ovrCmd = m.overview.Update(msg)
 		m.note, noteCmd = m.note.Update(msg)
 		return m, tea.Batch(objCmd, ovrCmd, noteCmd)
 	}
@@ -231,7 +230,8 @@ func (m Model) View() string {
 	case ObjectiveTab:
 		main = m.objective.View()
 	case OverviewTab:
-		main = m.overview.View()
+		// main = m.overview.View()
+		main = "Overview (coming soon)"
 	case NotesTab:
 		main = m.note.View()
 	case BugsTab:
