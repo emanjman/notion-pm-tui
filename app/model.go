@@ -285,7 +285,7 @@ func (m Model) getActiveKeyMap() help.KeyMap {
 	case OverviewTab:
 		return m.objective.KeyMap() // todo: change
 	case NotebookTab:
-		return m.objective.KeyMap()
+		return m.notebook.ActiveKeyMap
 	case BugsTab:
 		return m.objective.KeyMap()
 

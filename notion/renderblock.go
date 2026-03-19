@@ -57,7 +57,7 @@ func renderBlock(b Block, windowWidth int, depth int, counter int, counterType *
 			Foreground(styles.BorderForeground).
 			PaddingTop(1).
 			PaddingBottom(1).
-			Render(strings.Repeat("—", windowWidth))
+			Render(strings.Repeat("—", contentWidth))
 
 	case Callout:
 		content := ExtractPlainText(b.Callout.RichText)

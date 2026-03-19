@@ -6,6 +6,7 @@ import (
 	"notion-project-tui/styles"
 	"slices"
 
+	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/viewport"
@@ -24,16 +25,19 @@ type ItemStateMsg struct {
 }
 
 type Model struct {
-	projID      string
-	notesPropID string
-	loading     bool
-	browsing    bool // focused on notes list
-	err         error
-	notion      *notion.Client
-	keys        KeyMap
+	projID       string
+	notesPropID  string
+	loading      bool
+	browsing     bool // focused on notes list
+	err          error
+	notion       *notion.Client
+	ActiveKeyMap help.KeyMap
 
-	browser list.Model
-	reader  viewport.Model
+	browser       list.Model
+	browserKeyMap BrowserKeyMap
+
+	reader       viewport.Model
+	readerKeyMap ReaderKeyMap
 }
 
 func New(notion *notion.Client, projID, notesPropID string) Model {
@@ -45,16 +49,19 @@ func New(notion *notion.Client, projID, notesPropID string) Model {
 	l.DisableQuitKeybindings()
 
 	return Model{
-		projID:      projID,
-		notesPropID: notesPropID,
-		loading:     true,
-		browsing:    true,
-		err:         nil,
-		notion:      notion,
-		keys:        DefaultKeyMap,
+		projID:       projID,
+		notesPropID:  notesPropID,
+		loading:      true,
+		browsing:     true,
+		err:          nil,
+		notion:       notion,
+		ActiveKeyMap: BrowserKeys,
 
-		browser: l,
-		reader:  viewport.New(0, 0),
+		browser:       l,
+		browserKeyMap: BrowserKeys,
+
+		reader:       viewport.New(0, 0),
+		readerKeyMap: ReaderKeys,
 	}
 }
 
@@ -127,22 +134,23 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	case tea.KeyMsg:
 		if m.browsing {
 			switch {
-			case key.Matches(msg, m.keys.RightFocus):
+			case key.Matches(msg, m.browserKeyMap.Right):
 				m.browsing = false
+				m.ActiveKeyMap = ReaderKeys
 				m.browser.SetDelegate(NewItemDelegate(false))
 				return m, nil
 
-			case key.Matches(msg, m.keys.Down):
+			case key.Matches(msg, m.browserKeyMap.Down):
 				m.browser.CursorDown()
 				m.reader.SetContent(m.getCurrContent())
 				return m, nil
 
-			case key.Matches(msg, m.keys.Up):
+			case key.Matches(msg, m.browserKeyMap.Up):
 				m.browser.CursorUp()
 				m.reader.SetContent(m.getCurrContent())
 				return m, nil
 
-			case key.Matches(msg, m.keys.Enter):
+			case key.Matches(msg, m.browserKeyMap.Enter):
 				selected := m.browser.SelectedItem()
 				if note, ok := selected.(Item); ok && note.State == Idle {
 					idx := m.browser.Index()
@@ -155,11 +163,12 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			}
 		} else {
 			switch {
-			case key.Matches(msg, m.keys.LeftFocus):
+			case key.Matches(msg, m.readerKeyMap.Left):
 				m.browsing = true
+				m.ActiveKeyMap = BrowserKeys
 				m.browser.SetDelegate(NewItemDelegate(true))
 				return m, nil
-			case key.Matches(msg, m.keys.Up), key.Matches(msg, m.keys.Down):
+			case key.Matches(msg, m.readerKeyMap.Up), key.Matches(msg, m.readerKeyMap.Down):
 				var cmd tea.Cmd
 				m.reader, cmd = m.reader.Update(msg)
 				return m, cmd

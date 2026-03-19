@@ -1,7 +1,6 @@
 package notebook
 
 import (
-	"log"
 	"notion-project-tui/notion"
 	"time"
 )
@@ -36,7 +35,6 @@ func NewItem(page notion.NotePage) Item {
 	date, err := time.Parse(time.RFC3339Nano, page.Properties.CreatedDate.CreatedTime)
 	if err != nil {
 		date = time.Time{}
-		log.Printf("invalid date from note item")
 	}
 
 	return Item{
