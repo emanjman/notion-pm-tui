@@ -111,15 +111,8 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 
 	case FetchNoteContentMsg:
 		m.browser.SetItem(msg.Idx, *msg.Note)
-		m.reader.SetContent(m.getCurrContent()) // TODO: this isn't instant?
-
-		var emitState tea.Cmd
-		if msg.Err != nil {
-			emitState = m.emitItemState(msg.Idx, Failed)
-		} else {
-			emitState = m.emitItemState(msg.Idx, Success)
-		}
-		return m, emitState
+		m.reader.SetContent(m.getCurrContent())
+		return m, nil
 
 	case ItemStateMsg:
 		temp := m.browser.Items()[msg.Idx]
@@ -163,6 +156,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 					idx := m.browser.Index()
 					stateCmd := m.emitItemState(idx, Pending)
 					fetchCmd := m.fetchNoteContent(idx, note)
+					m.reader.SetContent(m.getCurrContent()) // show pending state
 					return m, tea.Batch(stateCmd, fetchCmd)
 				}
 				return m, nil
@@ -215,8 +209,10 @@ func (m Model) fetchNoteContent(idx int, note Item) tea.Cmd {
 
 		if err != nil {
 			note.Content = err.Error()
+			note.State = Failed
 		} else {
 			note.Content = notion.RenderBlocks(blocks, m.reader.Width, 0)
+			note.State = Success
 		}
 
 		return FetchNoteContentMsg{Idx: idx, Note: &note, Err: err}
@@ -231,7 +227,10 @@ func (m Model) emitItemState(idx int, state ItemState) tea.Cmd {
 
 func (m Model) getCurrContent() string {
 	content := "Unable to render"
-	if note, ok := m.browser.SelectedItem().(Item); ok {
+	i := m.browser.Index()
+
+	// pull from actual items, not filteredItems
+	if note, ok := m.browser.Items()[i].(Item); ok {
 		if note.State == Idle {
 			content = "[Enter] to fetch content"
 		} else if note.State == Pending {
