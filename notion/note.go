@@ -14,6 +14,7 @@ type NoteIDsMsg struct {
 type NotePage struct {
 	ID         string         `json:"id"`
 	Properties NoteProperties `json:"properties"`
+	Icon       *Icon          `json:"icon"`
 }
 
 type NoteProperties struct {

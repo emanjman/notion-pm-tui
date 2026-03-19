@@ -85,8 +85,10 @@ func (d ItemDelegate) Render(w io.Writer, m list.Model, index int, item list.Ite
 		dateStyle = dateStyle.Foreground(styles.MutedForeground)
 		stateStyle = stateStyle.Foreground(statusColors[item.State])
 
-		// render each field
-		title := titleStyle.Render(item.Title)
+		if item.Icon == "" {
+			item.Icon = "✦"
+		}
+		title := titleStyle.Render(item.Icon + " " + item.Title)
 
 		created := dateStyle.Render(item.CreatedLabel)
 		state := stateStyle.Render("●")

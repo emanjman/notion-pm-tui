@@ -19,6 +19,7 @@ type Item struct {
 	Title        string
 	CreatedDate  time.Time
 	CreatedLabel string
+	Icon         string
 
 	Content string // defined on fetch
 	State   ItemState
@@ -37,11 +38,17 @@ func NewItem(page notion.NotePage) Item {
 		date = time.Time{}
 	}
 
+	icon := ""
+	if page.Icon != nil && page.Icon.Emoji != nil {
+		icon = *page.Icon.Emoji
+	}
+
 	return Item{
 		ID:           page.ID,
 		Title:        notion.ExtractPlainText(page.Properties.Title.Title),
 		CreatedDate:  date,
 		CreatedLabel: label,
+		Icon:         icon,
 		Content:      "",
 		State:        Idle,
 	}
