@@ -64,6 +64,7 @@ func New(notion *notion.Client, projID, notesPropID string) Model {
 	ta := textarea.New()
 	ta.Focus()
 	ta.SetValue("init text")
+	ta.ShowLineNumbers = false
 
 	return Model{
 		projID:       projID,
@@ -153,9 +154,11 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		if m.State == Browsing {
 			switch {
 			case key.Matches(msg, m.browserKeyMap.Right):
-				m.State = Reading
-				m.ActiveKeyMap = ReaderKeys
-				m.browser.SetDelegate(NewItemDelegate(false))
+				if note, ok := m.browser.SelectedItem().(Item); ok && note.State == Success {
+					m.State = Reading
+					m.ActiveKeyMap = ReaderKeys
+					m.browser.SetDelegate(NewItemDelegate(false))
+				}
 				return m, nil
 
 			case key.Matches(msg, m.browserKeyMap.Down):
