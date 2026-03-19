@@ -21,8 +21,9 @@ type Item struct {
 	CreatedLabel string
 	Icon         string
 
-	Content string // defined on fetch
-	State   ItemState
+	Content  string // defined on fetch
+	Markdown string // defined on fetch
+	State    ItemState
 }
 
 func (x Item) FilterValue() string { return x.Title }
@@ -50,6 +51,7 @@ func NewItem(page notion.NotePage) Item {
 		CreatedLabel: label,
 		Icon:         icon,
 		Content:      "",
+		Markdown:     "",
 		State:        Idle,
 	}
 }

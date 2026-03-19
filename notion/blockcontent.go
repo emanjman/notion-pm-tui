@@ -8,7 +8,7 @@ import (
 	lg "github.com/charmbracelet/lipgloss"
 )
 
-func RenderBlocks(bs []Block, windowWidth int, depth int) string {
+func BlocksToContent(bs []Block, windowWidth int, depth int) string {
 	var s strings.Builder
 	counter := 0
 	var counterType *ListFormatType = nil
@@ -29,18 +29,18 @@ func RenderBlocks(bs []Block, windowWidth int, depth int) string {
 			counterType = nil
 		}
 
-		s.WriteString(renderBlock(b, windowWidth, depth, counter, counterType))
+		s.WriteString(blockToContent(b, windowWidth, depth, counter, counterType))
 		s.WriteString("\n")
 
 		if b.HasChildren && b.Type != Callout {
-			s.WriteString(RenderBlocks(b.Children, windowWidth, depth+1))
+			s.WriteString(BlocksToContent(b.Children, windowWidth, depth+1))
 		}
 	}
 
 	return s.String()
 }
 
-func renderBlock(b Block, windowWidth int, depth int, counter int, counterType *ListFormatType) string {
+func blockToContent(b Block, windowWidth int, depth int, counter int, counterType *ListFormatType) string {
 	var (
 		depthPadding     = depth * 3
 		containerPadding = 2
@@ -64,7 +64,7 @@ func renderBlock(b Block, windowWidth int, depth int, counter int, counterType *
 
 		if b.HasChildren {
 			for _, child := range b.Children {
-				content += renderBlock(child, windowWidth, depth, counter, counterType)
+				content += blockToContent(child, windowWidth, depth, counter, counterType)
 			}
 		}
 

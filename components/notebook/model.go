@@ -1,7 +1,6 @@
 package notebook
 
 import (
-	"log"
 	"notion-project-tui/notion"
 	"notion-project-tui/styles"
 	"slices"
@@ -63,7 +62,6 @@ func New(notion *notion.Client, projID, notesPropID string) Model {
 	// text area config
 	ta := textarea.New()
 	ta.Focus()
-	ta.SetValue("init text")
 	ta.ShowLineNumbers = false
 
 	return Model{
@@ -133,6 +131,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	case FetchNoteContentMsg:
 		m.browser.SetItem(msg.Idx, *msg.Note)
 		m.reader.SetContent(m.getCurrContent())
+		m.editor.SetValue(m.getCurrMarkdown())
 		return m, nil
 
 	case ItemStateMsg:
@@ -146,7 +145,10 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		leftw := msg.Width * 30 / 100
 		rightw := msg.Width - leftw - 1 // mind the border
+
 		m.browser.SetSize(leftw, msg.Height)
+		m.editor.SetWidth(rightw)
+		m.editor.SetHeight(msg.Height)
 		m.reader.Width, m.reader.Height = rightw, msg.Height
 		return m, nil
 
@@ -165,12 +167,14 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 				m.browser.CursorDown()
 				m.reader.YPosition = 0
 				m.reader.SetContent(m.getCurrContent())
+				m.editor.SetValue(m.getCurrMarkdown())
 				return m, nil
 
 			case key.Matches(msg, m.browserKeyMap.Up):
 				m.browser.CursorUp()
 				m.reader.YPosition = 0
 				m.reader.SetContent(m.getCurrContent())
+				m.editor.SetValue(m.getCurrMarkdown())
 				return m, nil
 
 			case key.Matches(msg, m.browserKeyMap.Enter):
@@ -260,16 +264,14 @@ func (m Model) View() string {
 func (m Model) fetchNoteContent(idx int, note Item) tea.Cmd {
 	return func() tea.Msg {
 		blocks, err := m.notion.FetchPageContent(note.ID)
-		log.Printf("fetching blocks for note: " + note.Title)
-
 		if err != nil {
 			note.Content = err.Error()
 			note.State = Failed
 		} else {
-			note.Content = notion.RenderBlocks(blocks, m.reader.Width, 0)
+			note.Content = notion.BlocksToContent(blocks, m.reader.Width, 0)
+			note.Markdown = notion.BlocksToMarkdown(blocks, 0)
 			note.State = Success
 		}
-
 		return FetchNoteContentMsg{Idx: idx, Note: &note, Err: err}
 	}
 }
@@ -295,6 +297,13 @@ func (m Model) getCurrContent() string {
 		}
 	}
 	return content
+}
+
+func (m Model) getCurrMarkdown() string {
+	if note, ok := m.browser.Items()[m.browser.Index()].(Item); ok {
+		return note.Markdown
+	}
+	return ""
 }
 
 func (m Model) buildNoteList(pages []notion.NotePage) []list.Item {
