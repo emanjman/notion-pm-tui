@@ -4,6 +4,7 @@ import (
 	"log"
 	"notion-project-tui/notion"
 	"notion-project-tui/styles"
+	"slices"
 
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
@@ -86,15 +87,9 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			m.loading = false
 			return m, nil
 		} else {
-			items := make([]list.Item, len(msg.Pages))
-			for i, page := range msg.Pages {
-				items[i] = NewItem(page)
-			}
+			items := m.buildNoteList(msg.Pages)
 			m.browser.SetItems(items)
 			m.loading = false
-
-			log.Printf("here we have received note pages")
-			// return m, m.fetchAllNoteContent()
 
 			reqCnt := 5
 			fetchCmds, stateCmds := make([]tea.Cmd, reqCnt), make([]tea.Cmd, reqCnt)
@@ -240,4 +235,22 @@ func (m Model) getCurrContent() string {
 		}
 	}
 	return content
+}
+
+func (m Model) buildNoteList(pages []notion.NotePage) []list.Item {
+	items := make([]list.Item, len(pages))
+	for i, page := range pages {
+		items[i] = NewItem(page)
+	}
+
+	// sort by desc (most recent, first)
+	slices.SortFunc(items, func(a, b list.Item) int {
+		noteA, okA := a.(Item)
+		noteB, okB := b.(Item)
+		if !okA || !okB {
+			return 0
+		}
+		return noteB.CreatedDate.Compare(noteA.CreatedDate)
+	})
+	return items
 }

@@ -1,6 +1,10 @@
 package notebook
 
-import "notion-project-tui/notion"
+import (
+	"log"
+	"notion-project-tui/notion"
+	"time"
+)
 
 type ItemState int
 
@@ -14,6 +18,7 @@ const (
 type Item struct {
 	ID           string
 	Title        string
+	CreatedDate  time.Time
 	CreatedLabel string
 
 	Content string // defined on fetch
@@ -23,15 +28,22 @@ type Item struct {
 func (x Item) FilterValue() string { return x.Title }
 
 func NewItem(page notion.NotePage) Item {
-	createdLabel := ""
+	label := ""
 	if page.Properties.CreatedLabel.Formula.String != nil {
-		createdLabel = *page.Properties.CreatedLabel.Formula.String
+		label = *page.Properties.CreatedLabel.Formula.String
+	}
+
+	date, err := time.Parse(time.RFC3339Nano, page.Properties.CreatedDate.CreatedTime)
+	if err != nil {
+		date = time.Time{}
+		log.Printf("invalid date from note item")
 	}
 
 	return Item{
 		ID:           page.ID,
 		Title:        notion.ExtractPlainText(page.Properties.Title.Title),
-		CreatedLabel: createdLabel,
+		CreatedDate:  date,
+		CreatedLabel: label,
 		Content:      "",
 		State:        Idle,
 	}

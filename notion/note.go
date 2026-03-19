@@ -17,9 +17,10 @@ type NotePage struct {
 }
 
 type NoteProperties struct {
-	Title        TitleProperty    `json:"name"`
-	Project      RelationProperty `json:"@project"`
-	CreatedLabel FormulaProperty  `json:"$created"` //type:string
+	Title        TitleProperty       `json:"name"`
+	Project      RelationProperty    `json:"@project"`
+	CreatedDate  CreatedTimeProperty `json:"created"`
+	CreatedLabel FormulaProperty     `json:"$created"` //type:string
 }
 
 type NoteSelectedMsg struct {

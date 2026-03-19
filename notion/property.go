@@ -52,8 +52,13 @@ type DateProperty struct {
 }
 
 type DateItem struct {
-	Start string `json:"start"`
-	End   string `json:"end"`
+	Start string  `json:"start"`
+	End   *string `json:"end"`
+}
+
+type CreatedTimeProperty struct {
+	ID          string `json:"id"`
+	CreatedTime string `json:"created_time"`
 }
 
 // ------------------------------
