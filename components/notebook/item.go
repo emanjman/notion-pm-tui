@@ -2,13 +2,13 @@ package notebook
 
 import "notion-project-tui/notion"
 
-type ItemState string
+type ItemState int
 
 const (
-	Idle    ItemState = "⚫"
-	Pending ItemState = "🔵"
-	Success ItemState = "🟢"
-	Failed  ItemState = "🔴"
+	Idle ItemState = iota
+	Pending
+	Success
+	Failed
 )
 
 type Item struct {
