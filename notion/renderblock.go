@@ -41,7 +41,15 @@ func RenderBlocks(bs []Block, windowWidth int, depth int) string {
 }
 
 func renderBlock(b Block, windowWidth int, depth int, counter int, counterType *ListFormatType) string {
-	base := lg.NewStyle().PaddingLeft(depth * 3)
+	var (
+		depthPadding     = depth * 3
+		containerPadding = 2
+		contentWidth     = windowWidth - depthPadding - containerPadding
+	)
+
+	base := lg.NewStyle().
+		PaddingLeft(depthPadding).
+		Width(contentWidth)
 
 	switch b.Type {
 	case Divider:

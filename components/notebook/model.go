@@ -118,14 +118,11 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		return m, nil
 
 	case tea.WindowSizeMsg:
-		var readerCmd tea.Cmd
 		leftw := msg.Width * 30 / 100
-		rightw := msg.Width - leftw - 1 // div border
-
+		rightw := msg.Width - leftw - 1 // mind the border
 		m.browser.SetSize(leftw, msg.Height)
 		m.reader.Width, m.reader.Height = rightw, msg.Height
-
-		return m, readerCmd
+		return m, nil
 
 	case tea.KeyMsg:
 		if m.browsing {
