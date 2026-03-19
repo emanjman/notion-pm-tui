@@ -67,6 +67,15 @@ func renderBlock(b Block, windowWidth int, depth int, counter int, counterType *
 	case Heading2:
 		txt := ExtractPlainText(b.Heading2.RichText)
 		parts := strings.Fields(txt)
+
+		// Handle case where heading doesn't have expected format
+		if len(parts) < 2 {
+			return base.
+				Bold(true).
+				Foreground(styles.PrimaryForeground).
+				Render(txt)
+		}
+
 		icon, header := parts[0], parts[1]
 
 		return base.
@@ -97,7 +106,9 @@ func renderBlock(b Block, windowWidth int, depth int, counter int, counterType *
 		case Numbers:
 			pt = fmt.Sprintf("%d ", counter)
 		case Letters:
-			pt = fmt.Sprintf("%s ", string(letterPoints[counter-1]))
+			// Wrap around if counter exceeds 26
+			idx := ((counter - 1) % 26)
+			pt = fmt.Sprintf("%s ", string(letterPoints[idx]))
 		case Roman:
 			pt = fmt.Sprintf("%s.", toRomanNumeral(counter))
 		}

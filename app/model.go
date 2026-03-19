@@ -67,7 +67,7 @@ func New() Model {
 		// overview:  overview.New(c),
 
 		//! hardoded for now
-		notebook: notebook.New(c, "25cc98516ab84a2cb0074d8b332b5847", "%7BGKi"),
+		notebook: notebook.New(c, "1d3b7273944b8024ac0ff449015a7d9b", "%7BGKi"),
 	}
 }
 
