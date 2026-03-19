@@ -44,9 +44,11 @@ func (k BrowserKeyMap) FullHelp() [][]key.Binding {
 // ---
 
 type ReaderKeyMap struct {
-	Left key.Binding
-	Up   key.Binding
-	Down key.Binding
+	Left  key.Binding
+	Up    key.Binding
+	Up5   key.Binding
+	Down  key.Binding
+	Down5 key.Binding
 }
 
 var ReaderKeys = ReaderKeyMap{
@@ -61,6 +63,14 @@ var ReaderKeys = ReaderKeyMap{
 	Down: key.NewBinding(
 		key.WithKeys("down", "j"),
 		key.WithHelp("↓/j", "down"),
+	),
+	Up5: key.NewBinding(
+		key.WithKeys("ctrl+up", "ctrl+k"),
+		key.WithHelp("ctrl+↑/ctrl+k", "up 5"),
+	),
+	Down5: key.NewBinding(
+		key.WithKeys("ctrl+down", "ctrl+j"),
+		key.WithHelp("ctrl+↓/ctrl+j", "down 5"),
 	),
 }
 

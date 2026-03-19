@@ -142,11 +142,13 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 
 			case key.Matches(msg, m.browserKeyMap.Down):
 				m.browser.CursorDown()
+				m.reader.YPosition = 0
 				m.reader.SetContent(m.getCurrContent())
 				return m, nil
 
 			case key.Matches(msg, m.browserKeyMap.Up):
 				m.browser.CursorUp()
+				m.reader.YPosition = 0
 				m.reader.SetContent(m.getCurrContent())
 				return m, nil
 
@@ -168,6 +170,10 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 				m.ActiveKeyMap = BrowserKeys
 				m.browser.SetDelegate(NewItemDelegate(true))
 				return m, nil
+			case key.Matches(msg, m.readerKeyMap.Up5):
+				m.reader.ScrollUp(5)
+			case key.Matches(msg, m.readerKeyMap.Down5):
+				m.reader.ScrollDown(5)
 			case key.Matches(msg, m.readerKeyMap.Up), key.Matches(msg, m.readerKeyMap.Down):
 				var cmd tea.Cmd
 				m.reader, cmd = m.reader.Update(msg)
