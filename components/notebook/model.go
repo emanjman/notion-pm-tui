@@ -111,7 +111,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 
 	case FetchNoteContentMsg:
 		m.browser.SetItem(msg.Idx, *msg.Note)
-		m.reader.SetContent(m.getCurrContent())
+		m.reader.SetContent(m.getCurrContent()) // TODO: this isn't instant?
 
 		var emitState tea.Cmd
 		if msg.Err != nil {
@@ -160,8 +160,10 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			case key.Matches(msg, m.keys.Enter):
 				selected := m.browser.SelectedItem()
 				if note, ok := selected.(Item); ok && note.State == Idle {
-					cmd := m.fetchNoteContent(m.browser.Index(), note)
-					return m, cmd
+					idx := m.browser.Index()
+					stateCmd := m.emitItemState(idx, Pending)
+					fetchCmd := m.fetchNoteContent(idx, note)
+					return m, tea.Batch(stateCmd, fetchCmd)
 				}
 				return m, nil
 			}
