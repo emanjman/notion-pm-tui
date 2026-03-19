@@ -96,7 +96,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			log.Printf("here we have received note pages")
 			// return m, m.fetchAllNoteContent()
 
-			reqCnt := 3
+			reqCnt := 5
 			fetchCmds, stateCmds := make([]tea.Cmd, reqCnt), make([]tea.Cmd, reqCnt)
 			for i := range reqCnt {
 				item := m.browser.Items()[i]
