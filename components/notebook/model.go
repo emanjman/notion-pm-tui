@@ -154,10 +154,10 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 				selected := m.browser.SelectedItem()
 				if note, ok := selected.(Item); ok && note.State == Idle {
 					idx := m.browser.Index()
-					stateCmd := m.emitItemState(idx, Pending)
-					fetchCmd := m.fetchNoteContent(idx, note)
+					note.State = Pending
+					m.browser.SetItem(idx, note)
 					m.reader.SetContent(m.getCurrContent()) // show pending state
-					return m, tea.Batch(stateCmd, fetchCmd)
+					return m, m.fetchNoteContent(idx, note)
 				}
 				return m, nil
 			}
