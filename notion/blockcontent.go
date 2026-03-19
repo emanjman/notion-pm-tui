@@ -84,12 +84,12 @@ func blockToContent(b Block, windowWidth int, depth int, counter int, counterTyp
 				Render(txt)
 		}
 
-		icon, header := parts[0], parts[1]
+		icon, header := parts[0], parts[1:]
 
 		return base.
 			Bold(true).
 			Foreground(styles.PrimaryForeground).
-			Render(fmt.Sprintf(" %s %s ", icon, header))
+			Render(fmt.Sprintf(" %s %s ", icon, strings.Join(header, " ")))
 
 	case Heading3:
 		return base.
