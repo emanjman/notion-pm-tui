@@ -43,6 +43,8 @@ func New(mstone notion.SelectedMilestone, clt *notion.Client) Model {
 	l.SetShowHelp(false)
 	l.SetShowStatusBar(false)
 	l.SetShowTitle(false)
+	l.SetShowFilter(false)
+	l.SetFilteringEnabled(false)
 	l.DisableQuitKeybindings()
 
 	m := Model{

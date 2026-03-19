@@ -35,6 +35,8 @@ func New() Model {
 	l.SetShowHelp(false)
 	l.SetShowStatusBar(false)
 	l.SetShowTitle(false)
+	l.SetShowFilter(false)
+	l.SetFilteringEnabled(false)
 	l.DisableQuitKeybindings()
 
 	m := Model{

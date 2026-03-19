@@ -46,6 +46,8 @@ func New(notion *notion.Client, projID, notesPropID string) Model {
 	l.SetShowHelp(false)
 	l.SetShowStatusBar(false)
 	l.SetShowTitle(false)
+	l.SetShowFilter(false)
+	l.SetFilteringEnabled(false)
 	l.DisableQuitKeybindings()
 
 	return Model{
