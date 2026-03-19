@@ -49,6 +49,7 @@ type ReaderKeyMap struct {
 	Up5   key.Binding
 	Down  key.Binding
 	Down5 key.Binding
+	Enter key.Binding
 }
 
 var ReaderKeys = ReaderKeyMap{
@@ -72,15 +73,43 @@ var ReaderKeys = ReaderKeyMap{
 		key.WithKeys("ctrl+down", "ctrl+j"),
 		key.WithHelp("ctrl+↓/ctrl+j", "down 5"),
 	),
+	Enter: key.NewBinding(
+		key.WithKeys("enter"),
+		key.WithHelp("enter", "edit mode"),
+	),
 }
 
 func (k ReaderKeyMap) ShortHelp() []key.Binding {
-	return []key.Binding{k.Left, k.Up, k.Down}
+	return []key.Binding{k.Left, k.Up, k.Down, k.Enter}
 }
 
 func (k ReaderKeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.Left, k.Up, k.Down},
+		{k.Left, k.Up, k.Down, k.Enter},
+		{},
+	}
+}
+
+// ---
+
+type EditorKeyMap struct {
+	Esc key.Binding
+}
+
+var EditorKeys = EditorKeyMap{
+	Esc: key.NewBinding(
+		key.WithKeys("esc"),
+		key.WithHelp("esc", "read mode"),
+	),
+}
+
+func (k EditorKeyMap) ShortHelp() []key.Binding {
+	return []key.Binding{k.Esc}
+}
+
+func (k EditorKeyMap) FullHelp() [][]key.Binding {
+	return [][]key.Binding{
+		{k.Esc},
 		{},
 	}
 }

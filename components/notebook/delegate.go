@@ -86,7 +86,7 @@ func (d ItemDelegate) Render(w io.Writer, m list.Model, index int, item list.Ite
 		stateStyle = stateStyle.Foreground(statusColors[item.State])
 
 		if item.Icon == "" {
-			item.Icon = "✦"
+			item.Icon = "✦ "
 		}
 		title := titleStyle.Render(item.Icon + " " + item.Title)
 

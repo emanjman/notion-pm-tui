@@ -9,6 +9,7 @@ import (
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
+	"github.com/charmbracelet/bubbles/textarea"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	lg "github.com/charmbracelet/lipgloss"
@@ -24,24 +25,33 @@ type ItemStateMsg struct {
 	State ItemState
 }
 
+type NotebookState int
+
+const (
+	Browsing NotebookState = iota
+	Reading
+	Editing
+)
+
 type Model struct {
 	projID       string
 	notesPropID  string
 	loading      bool
-	browsing     bool // focused on notes list
 	err          error
 	notion       *notion.Client
 	ActiveKeyMap help.KeyMap
 
+	State         NotebookState
 	browser       list.Model
 	browserKeyMap BrowserKeyMap
-
-	reader       viewport.Model
-	readerKeyMap ReaderKeyMap
+	reader        viewport.Model
+	readerKeyMap  ReaderKeyMap
+	editor        textarea.Model
+	editorKeyMap  EditorKeyMap
 }
 
 func New(notion *notion.Client, projID, notesPropID string) Model {
-	// list configs
+	// list config
 	l := list.New([]list.Item{}, NewItemDelegate(true), 0, 0)
 	l.SetShowHelp(false)
 	l.SetShowStatusBar(false)
@@ -50,20 +60,26 @@ func New(notion *notion.Client, projID, notesPropID string) Model {
 	l.SetFilteringEnabled(false)
 	l.DisableQuitKeybindings()
 
+	// text area config
+	ta := textarea.New()
+	ta.Focus()
+	ta.SetValue("init text")
+
 	return Model{
 		projID:       projID,
 		notesPropID:  notesPropID,
 		loading:      true,
-		browsing:     true,
 		err:          nil,
 		notion:       notion,
 		ActiveKeyMap: BrowserKeys,
 
+		State:         Browsing,
 		browser:       l,
 		browserKeyMap: BrowserKeys,
-
-		reader:       viewport.New(0, 0),
-		readerKeyMap: ReaderKeys,
+		reader:        viewport.New(0, 0),
+		readerKeyMap:  ReaderKeys,
+		editor:        ta,
+		editorKeyMap:  EditorKeys,
 	}
 }
 
@@ -134,10 +150,10 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		return m, nil
 
 	case tea.KeyMsg:
-		if m.browsing {
+		if m.State == Browsing {
 			switch {
 			case key.Matches(msg, m.browserKeyMap.Right):
-				m.browsing = false
+				m.State = Reading
 				m.ActiveKeyMap = ReaderKeys
 				m.browser.SetDelegate(NewItemDelegate(false))
 				return m, nil
@@ -165,20 +181,39 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 				}
 				return m, nil
 			}
-		} else {
+		} else if m.State == Reading {
 			switch {
 			case key.Matches(msg, m.readerKeyMap.Left):
-				m.browsing = true
+				m.State = Browsing
 				m.ActiveKeyMap = BrowserKeys
 				m.browser.SetDelegate(NewItemDelegate(true))
 				return m, nil
+
 			case key.Matches(msg, m.readerKeyMap.Up5):
 				m.reader.ScrollUp(5)
 			case key.Matches(msg, m.readerKeyMap.Down5):
 				m.reader.ScrollDown(5)
+
 			case key.Matches(msg, m.readerKeyMap.Up), key.Matches(msg, m.readerKeyMap.Down):
 				var cmd tea.Cmd
 				m.reader, cmd = m.reader.Update(msg)
+				return m, cmd
+
+			case key.Matches(msg, m.readerKeyMap.Enter):
+				m.State = Editing
+				m.ActiveKeyMap = EditorKeys
+			}
+		} else if m.State == Editing {
+			switch {
+			case key.Matches(msg, m.editorKeyMap.Esc):
+				m.State = Reading
+				m.ActiveKeyMap = ReaderKeys
+				// todo: submit changes to notion
+
+			// forward all keys into textarea model
+			default:
+				var cmd tea.Cmd
+				m.editor, cmd = m.editor.Update(msg)
 				return m, cmd
 			}
 		}
@@ -188,26 +223,34 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	var bcmd, rcmd tea.Cmd
 	m.browser, bcmd = m.browser.Update(msg)
 	m.reader, rcmd = m.reader.Update(msg)
+	// m.editor, ecmd = m.editor.Update(msg)
 	return m, tea.Batch(bcmd, rcmd)
 }
 
 func (m Model) View() string {
-	browserContent := m.browser.View()
+	leftContent := m.browser.View()
 	if m.loading {
-		browserContent = "Loading..."
+		leftContent = "Loading..."
 	}
 	if m.err != nil {
-		browserContent = m.err.Error()
+		leftContent = m.err.Error()
 	}
 
 	left := lg.NewStyle().
 		BorderRight(true).
 		BorderStyle(lg.NormalBorder()).
 		BorderForeground(styles.BorderForeground).
-		Render(browserContent)
+		Render(leftContent)
+
+	rightContent := m.reader.View()
+	if m.State == Editing {
+		rightContent = m.editor.View()
+	}
+
 	right := lg.NewStyle().
 		Padding(0, 1).
-		Render(m.reader.View())
+		Render(rightContent)
+
 	return lg.JoinHorizontal(lg.Top, left, right)
 }
 
