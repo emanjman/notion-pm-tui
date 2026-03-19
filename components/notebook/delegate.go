@@ -59,10 +59,10 @@ func (d ItemDelegate) Spacing() int                              { return 0 }
 func (d ItemDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd { return nil }
 
 var statusColors = []lg.Color{
-	styles.MutedForeground, // idle
-	lg.Color("#24a7ff"),    //  pending
-	lg.Color("#24ff7b"),    // success
-	lg.Color("#ff244c"),    // failed
+	lg.Color("#212121"), // idle
+	lg.Color("#3766d4"), // pending
+	lg.Color("#24ff7b"), // success
+	lg.Color("#ff244c"), // failed
 }
 
 func (d ItemDelegate) Render(w io.Writer, m list.Model, index int, item list.Item) {
