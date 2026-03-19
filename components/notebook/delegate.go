@@ -65,24 +65,31 @@ func (d ItemDelegate) Render(w io.Writer, m list.Model, index int, item list.Ite
 	case Item:
 		contStyle := d.style.itemContainer.base
 		segStyle := d.style.itemSegment.base
-		titleStyle, dateStyle := lg.Style{}, lg.Style{}
+		titleStyle, dateStyle, stateStyle := lg.Style{}, lg.Style{}, lg.Style{}
 
 		if focused {
 			segStyle = d.style.itemSegment.focused
 			contStyle = d.style.itemContainer.focused
-			titleStyle, dateStyle = segStyle, segStyle
+			titleStyle, dateStyle, stateStyle = segStyle, segStyle, segStyle
 		}
 
 		// apply field-specific styles
 		titleStyle = titleStyle.Foreground(styles.PrimaryForeground)
 		dateStyle = dateStyle.Foreground(styles.MutedForeground)
+		stateStyle = stateStyle.Foreground(styles.MutedForeground)
 
 		// render each field
 		title := titleStyle.Render(item.Title)
-		created := dateStyle.Render(item.CreatedLabel)
 
-		px := styles.GetPaddingBetween(title, created, m.Width(), contStyle)
-		content := title + styles.RenderPadding(segStyle, px) + created
+		created := dateStyle.Render(item.CreatedLabel)
+		state := stateStyle.Render(string(item.State))
+		space := segStyle.Render(" ")
+
+		left := title
+		right := created + space + state
+
+		px := styles.GetPaddingBetween(left, right, m.Width(), contStyle)
+		content := left + styles.RenderPadding(segStyle, px) + right
 
 		fmt.Fprint(w, contStyle.Width(m.Width()).Render(content))
 	}

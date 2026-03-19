@@ -8,6 +8,8 @@ type KeyMap struct {
 
 	Up   key.Binding
 	Down key.Binding
+
+	Enter key.Binding
 }
 
 var DefaultKeyMap = KeyMap{
@@ -27,6 +29,11 @@ var DefaultKeyMap = KeyMap{
 	Down: key.NewBinding(
 		key.WithKeys("down", "j"),
 		key.WithHelp("↓/j", "down"),
+	),
+
+	Enter: key.NewBinding(
+		key.WithKeys("enter"),
+		key.WithHelp("enter", "fetch content"),
 	),
 
 	// todo: i suppose there's top/down navs we can document

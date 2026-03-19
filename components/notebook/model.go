@@ -15,7 +15,12 @@ import (
 type SwitchContentMsg struct{ Content string }
 type FetchNoteContentMsg struct {
 	Idx  int
+	Err  error
 	Note *Item
+}
+type ItemStateMsg struct {
+	Idx   int
+	State ItemState
 }
 
 type Model struct {
@@ -92,18 +97,36 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			log.Printf("here we have received note pages")
 			// return m, m.fetchAllNoteContent()
 
-			cmds := make([]tea.Cmd, len(m.browser.Items()))
-			for i, item := range m.browser.Items() {
+			reqCnt := 3
+			fetchCmds, stateCmds := make([]tea.Cmd, reqCnt), make([]tea.Cmd, reqCnt)
+			for i := range reqCnt {
+				item := m.browser.Items()[i]
 				if note, ok := item.(Item); ok {
-					cmds[i] = m.fetchNoteContent(i, note)
+					stateCmds[i] = m.emitItemState(i, Pending)
+					fetchCmds[i] = m.fetchNoteContent(i, note)
 				}
 			}
+			cmds := append(fetchCmds, stateCmds...)
 			return m, tea.Batch(cmds...)
 		}
 
 	case FetchNoteContentMsg:
 		m.browser.SetItem(msg.Idx, *msg.Note)
-		return m, m.displayCurrentContent()
+		var emitState tea.Cmd
+		if msg.Err != nil {
+			emitState = m.emitItemState(msg.Idx, Failed)
+		} else {
+			emitState = m.emitItemState(msg.Idx, Success)
+		}
+		return m, tea.Batch(emitState, m.displayCurrentContent())
+
+	case ItemStateMsg:
+		temp := m.browser.Items()[msg.Idx]
+		if note, ok := temp.(Item); ok {
+			note.State = msg.State
+			m.browser.SetItem(msg.Idx, note)
+		}
+		return m, nil
 
 	case SwitchContentMsg:
 		m.reader.SetContent(msg.Content)
@@ -129,6 +152,13 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 				var cmd tea.Cmd
 				m.browser, cmd = m.browser.Update(msg)
 				return m, tea.Batch(m.displayCurrentContent(), cmd)
+			case key.Matches(msg, m.keys.Enter):
+				selected := m.browser.SelectedItem()
+				if note, ok := selected.(Item); ok && note.State == Idle {
+					cmd := m.fetchNoteContent(m.browser.Index(), note)
+					return m, cmd
+				}
+				return m, nil
 			}
 		} else {
 			switch {
@@ -182,8 +212,13 @@ func (m Model) fetchNoteContent(idx int, note Item) tea.Cmd {
 			note.Content = notion.RenderBlocks(blocks, m.reader.Width, 0)
 		}
 
-		note.Loading = false
 		return FetchNoteContentMsg{Idx: idx, Note: &note}
+	}
+}
+
+func (m Model) emitItemState(idx int, state ItemState) tea.Cmd {
+	return func() tea.Msg {
+		return ItemStateMsg{Idx: idx, State: state}
 	}
 }
 
@@ -191,8 +226,10 @@ func (m Model) displayCurrentContent() tea.Cmd {
 	return func() tea.Msg {
 		content := "Unable to render"
 		if note, ok := m.browser.SelectedItem().(Item); ok {
-			if note.Loading {
-				content = "Loading..."
+			if note.State == Idle {
+				content = "[Enter] to fetch content"
+			} else if note.State == Pending {
+				content = "Fetching..."
 			} else {
 				content = note.Content // may be blocks or the err msg
 			}

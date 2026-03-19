@@ -2,13 +2,22 @@ package notebook
 
 import "notion-project-tui/notion"
 
+type ItemState string
+
+const (
+	Idle    ItemState = "⚫"
+	Pending ItemState = "🔵"
+	Success ItemState = "🟢"
+	Failed  ItemState = "🔴"
+)
+
 type Item struct {
 	ID           string
 	Title        string
 	CreatedLabel string
 
 	Content string // defined on fetch
-	Loading bool
+	State   ItemState
 }
 
 func (x Item) FilterValue() string { return x.Title }
@@ -24,6 +33,6 @@ func NewItem(page notion.NotePage) Item {
 		Title:        notion.ExtractPlainText(page.Properties.Title.Title),
 		CreatedLabel: createdLabel,
 		Content:      "",
-		Loading:      true,
+		State:        Idle,
 	}
 }
