@@ -12,7 +12,6 @@ import (
 	lg "github.com/charmbracelet/lipgloss"
 )
 
-type SwitchContentMsg struct{ Content string }
 type FetchNoteContentMsg struct {
 	Idx  int
 	Err  error
@@ -112,13 +111,15 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 
 	case FetchNoteContentMsg:
 		m.browser.SetItem(msg.Idx, *msg.Note)
+		m.reader.SetContent(m.getCurrContent())
+
 		var emitState tea.Cmd
 		if msg.Err != nil {
 			emitState = m.emitItemState(msg.Idx, Failed)
 		} else {
 			emitState = m.emitItemState(msg.Idx, Success)
 		}
-		return m, tea.Batch(emitState, m.displayCurrentContent())
+		return m, emitState
 
 	case ItemStateMsg:
 		temp := m.browser.Items()[msg.Idx]
@@ -127,9 +128,6 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			m.browser.SetItem(msg.Idx, note)
 		}
 		return m, nil
-
-	case SwitchContentMsg:
-		m.reader.SetContent(msg.Content)
 
 	case tea.WindowSizeMsg:
 		var readerCmd tea.Cmd
@@ -148,10 +146,17 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 				m.browsing = false
 				m.browser.SetDelegate(NewItemDelegate(false))
 				return m, nil
-			case key.Matches(msg, m.keys.Up), key.Matches(msg, m.keys.Down):
-				var cmd tea.Cmd
-				m.browser, cmd = m.browser.Update(msg)
-				return m, tea.Batch(m.displayCurrentContent(), cmd)
+
+			case key.Matches(msg, m.keys.Down):
+				m.browser.CursorDown()
+				m.reader.SetContent(m.getCurrContent())
+				return m, nil
+
+			case key.Matches(msg, m.keys.Up):
+				m.browser.CursorUp()
+				m.reader.SetContent(m.getCurrContent())
+				return m, nil
+
 			case key.Matches(msg, m.keys.Enter):
 				selected := m.browser.SelectedItem()
 				if note, ok := selected.(Item); ok && note.State == Idle {
@@ -212,7 +217,7 @@ func (m Model) fetchNoteContent(idx int, note Item) tea.Cmd {
 			note.Content = notion.RenderBlocks(blocks, m.reader.Width, 0)
 		}
 
-		return FetchNoteContentMsg{Idx: idx, Note: &note}
+		return FetchNoteContentMsg{Idx: idx, Note: &note, Err: err}
 	}
 }
 
@@ -222,18 +227,16 @@ func (m Model) emitItemState(idx int, state ItemState) tea.Cmd {
 	}
 }
 
-func (m Model) displayCurrentContent() tea.Cmd {
-	return func() tea.Msg {
-		content := "Unable to render"
-		if note, ok := m.browser.SelectedItem().(Item); ok {
-			if note.State == Idle {
-				content = "[Enter] to fetch content"
-			} else if note.State == Pending {
-				content = "Fetching..."
-			} else {
-				content = note.Content // may be blocks or the err msg
-			}
+func (m Model) getCurrContent() string {
+	content := "Unable to render"
+	if note, ok := m.browser.SelectedItem().(Item); ok {
+		if note.State == Idle {
+			content = "[Enter] to fetch content"
+		} else if note.State == Pending {
+			content = "Fetching..."
+		} else {
+			content = note.Content // may be blocks or the err msg
 		}
-		return SwitchContentMsg{Content: content}
 	}
+	return content
 }
