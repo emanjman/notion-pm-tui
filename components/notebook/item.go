@@ -5,10 +5,10 @@ import (
 	"time"
 )
 
-type ItemState int
+type ContentState int
 
 const (
-	Idle ItemState = iota
+	Idle ContentState = iota
 	Pending
 	Success
 	Failed
@@ -21,9 +21,10 @@ type Item struct {
 	CreatedLabel string
 	Icon         string
 
-	Content  string // defined on fetch
-	Markdown string // defined on fetch
-	State    ItemState
+	Content       string // defined on fetch
+	Markdown      string // defined on fetch
+	BlocksState   ContentState
+	MarkdownState ContentState
 }
 
 func (x Item) FilterValue() string { return x.Title }
@@ -50,8 +51,10 @@ func NewItem(page notion.NotePage) Item {
 		CreatedDate:  date,
 		CreatedLabel: label,
 		Icon:         icon,
-		Content:      "",
-		Markdown:     "",
-		State:        Idle,
+
+		Content:       "",
+		Markdown:      "",
+		BlocksState:   Idle,
+		MarkdownState: Idle,
 	}
 }

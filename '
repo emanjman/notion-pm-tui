@@ -19,10 +19,10 @@ type FetchNoteContentMsg struct {
 	Err  error
 	Note *Item
 }
-type FetchNoteMarkdownMsg struct {
-	Idx  int
-	Err  error
-	Note *Item
+type ContentStateMsg struct {
+	Idx          int
+	State        ContentState
+	UpdateBlocks bool
 }
 
 type NotebookState int
@@ -117,42 +117,40 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			m.loading = false
 
 			reqCnt := 5
-			blxCmds, mdCmds := make([]tea.Cmd, reqCnt), make([]tea.Cmd, reqCnt)
+			fetchCmds, stateCmds := make([]tea.Cmd, reqCnt), make([]tea.Cmd, reqCnt)
 			for i := range reqCnt {
 				item := m.browser.Items()[i]
 				if note, ok := item.(Item); ok {
-					note.BlocksState = Pending
-					note.MarkdownState = Pending
-					m.browser.SetItem(i, note)
+					// stateCmds[i] = func() tea.Msg {
+					// 	return ContentStateMsg{Idx: i, State: Pending, UpdateBlocks: true}
+					// }
 
-					blxCmds[i] = m.fetchNoteBlocks(i, note)
-					mdCmds[i] = m.fetchNoteMarkdown(i, note)
+					note.BlocksState = Pending
+					m.browser.SetItem(i, note)
+					fetchCmds[i] = m.fetchNoteBlocks(i, note)
 				}
 			}
-			cmds := append(blxCmds, mdCmds...)
+			cmds := append(fetchCmds, stateCmds...)
 			return m, tea.Batch(cmds...)
 		}
 
 	case FetchNoteContentMsg:
-		if currentItem := m.browser.Items()[msg.Idx]; currentItem != nil {
-			if note, ok := currentItem.(Item); ok {
-				note.Content = msg.Note.Content
-				note.BlocksState = msg.Note.BlocksState
-				m.browser.SetItem(msg.Idx, note)
-			}
-		}
+		m.browser.SetItem(msg.Idx, *msg.Note)
 		m.reader.SetContent(m.getCurrContent())
+		m.editor.SetValue(m.getCurrMarkdown())
 		return m, nil
 
-	case FetchNoteMarkdownMsg:
-		if currentItem := m.browser.Items()[msg.Idx]; currentItem != nil {
-			if note, ok := currentItem.(Item); ok {
-				note.Markdown = msg.Note.Markdown
-				note.MarkdownState = msg.Note.MarkdownState
-				m.browser.SetItem(msg.Idx, note)
+	case ContentStateMsg:
+		temp := m.browser.Items()[msg.Idx]
+		if note, ok := temp.(Item); ok {
+			if msg.UpdateBlocks {
+				note.BlocksState = msg.State
+			} else {
+				note.MarkdownState = msg.State
 			}
+			m.browser.SetItem(msg.Idx, note)
 		}
-		m.editor.SetValue(m.getCurrMarkdown())
+		return m, nil
 
 	case tea.WindowSizeMsg:
 		leftw := msg.Width * 30 / 100
@@ -298,7 +296,7 @@ func (m Model) fetchNoteMarkdown(idx int, note Item) tea.Cmd {
 			note.Markdown = md
 			note.MarkdownState = Success
 		}
-		return FetchNoteMarkdownMsg{Idx: idx, Note: &note, Err: err}
+		return FetchNoteContentMsg{Idx: idx, Note: &note, Err: err}
 	}
 }
 
@@ -308,12 +306,11 @@ func (m Model) getCurrContent() string {
 
 	// pull from actual items, not filteredItems
 	if note, ok := m.browser.Items()[i].(Item); ok {
-		switch note.BlocksState {
-		case Idle:
+		if note.State == Idle {
 			content = "[Enter] to fetch content"
-		case Pending:
+		} else if note.State == Pending {
 			content = "Fetching..."
-		default:
+		} else {
 			content = note.Content // may be blocks or the err msg
 		}
 	}

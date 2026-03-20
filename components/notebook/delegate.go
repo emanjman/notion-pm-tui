@@ -83,7 +83,8 @@ func (d ItemDelegate) Render(w io.Writer, m list.Model, index int, item list.Ite
 		// apply field-specific styles
 		titleStyle = titleStyle.Foreground(styles.PrimaryForeground)
 		dateStyle = dateStyle.Foreground(styles.MutedForeground)
-		stateStyle = stateStyle.Foreground(statusColors[item.State])
+		stateStyle1 := stateStyle.Foreground(statusColors[item.BlocksState])
+		stateStyle2 := stateStyle.Foreground(statusColors[item.MarkdownState])
 
 		if item.Icon == "" {
 			item.Icon = "✦ "
@@ -91,11 +92,12 @@ func (d ItemDelegate) Render(w io.Writer, m list.Model, index int, item list.Ite
 		title := titleStyle.Render(item.Icon + " " + item.Title)
 
 		created := dateStyle.Render(item.CreatedLabel)
-		state := stateStyle.Render("●")
+		state1 := stateStyle1.Render("●")
+		state2 := stateStyle2.Render("●")
 		space := segStyle.Render(" ")
 
 		left := title
-		right := created + space + state
+		right := created + space + state1 + space + state2
 
 		px := styles.GetPaddingBetween(left, right, m.Width(), contStyle)
 		content := left + styles.RenderPadding(segStyle, px) + right
