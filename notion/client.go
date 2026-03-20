@@ -71,7 +71,7 @@ func (c *Client) FetchProject() tea.Cmd {
 	}
 }
 
-func (c *Client) FetchPageContent(pageID string) ([]Block, error) {
+func (c *Client) FetchPageBlocks(pageID string) ([]Block, error) {
 	blocks, err := c.fetchBlocksRecursive(pageID)
 	if err != nil {
 		return nil, err
@@ -194,4 +194,17 @@ func FetchPages[T any](c *Client, ids []string) ([]T, error) {
 		relations = append(relations, relation)
 	}
 	return relations, nil
+}
+
+func (c *Client) FetchPageMarkdown(pageID string) (string, error) {
+	url := baseURL + "/pages/" + pageID + "/markdown"
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return "", err
+	}
+	var res MarkdownSuccessResponse
+	if err = c.do(req, &res); err != nil {
+		return "", err
+	}
+	return res.Markdown, nil
 }

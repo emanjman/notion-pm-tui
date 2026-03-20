@@ -263,13 +263,15 @@ func (m Model) View() string {
 
 func (m Model) fetchNoteContent(idx int, note Item) tea.Cmd {
 	return func() tea.Msg {
-		blocks, err := m.notion.FetchPageContent(note.ID)
+		blocks, err := m.notion.FetchPageBlocks(note.ID)
+		md, err := m.notion.FetchPageMarkdown(note.ID)
+
 		if err != nil {
 			note.Content = err.Error()
 			note.State = Failed
 		} else {
 			note.Content = notion.BlocksToContent(blocks, m.reader.Width, 0)
-			note.Markdown = notion.BlocksToMarkdown(blocks, 0)
+			note.Markdown = md
 			note.State = Success
 		}
 		return FetchNoteContentMsg{Idx: idx, Note: &note, Err: err}
