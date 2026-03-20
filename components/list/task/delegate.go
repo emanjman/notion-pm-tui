@@ -108,16 +108,17 @@ func renderItemHeader(d ItemDelegate, item listutil.ListItemGroupHeader, selecte
 }
 
 type priority struct {
-	fg    lg.Color
-	label string
+	fg       lg.Color
+	severity string
 }
 
 var priorities = []priority{
-	{fg: styles.MutedForeground, label: "none"},
-	{fg: lg.Color("#7aa2f7"), label: "low"},
-	{fg: lg.Color("#9ece6a"), label: "medium"},
-	{fg: lg.Color("#ff9e64"), label: "high"},
-	{fg: lg.Color("#f7768e"), label: "critical"},
+	{fg: styles.MutedForeground, severity: "none"},
+	{fg: lg.Color("#7aa2f7"), severity: "minimal"},
+	{fg: lg.Color("#9ece6a"), severity: "low"},
+	{fg: lg.Color("#e0af68"), severity: "medium"},
+	{fg: lg.Color("#ff9e64"), severity: "high"},
+	{fg: lg.Color("#f7768e"), severity: "critical"},
 }
 
 func renderItem(d ItemDelegate, item Item, selected bool, windowWidth int) string {
@@ -179,7 +180,7 @@ func renderItem(d ItemDelegate, item Item, selected bool, windowWidth int) strin
 		titleStyle = titleStyle.Foreground(styles.MutedForeground)
 	}
 	title := titleStyle.Render(renderedTitle)
-	priority := priorityStyle.Render(fmt.Sprintf("[%d] %s", safePriorityIdx, priorities[safePriorityIdx].label))
+	priority := priorityStyle.Render(fmt.Sprintf("%s [%d]", priorities[safePriorityIdx].severity, safePriorityIdx))
 
 	// calculate max title width
 	leftOffset, rightOffset, fieldSpacing := 3, 2, 2
