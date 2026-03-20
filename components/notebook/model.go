@@ -206,10 +206,10 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 				return m, nil
 
 			case key.Matches(msg, m.browserKeyMap.Enter):
-				selected := m.browser.SelectedItem()
-				if note, ok := selected.(Item); ok {
+				curr := m.browser.SelectedItem()
+				if note, ok := curr.(Item); ok {
 					switch note.ContentState {
-					case Pending, Failed:
+					case Idle, Failed:
 						idx := m.browser.Index()
 						note.ContentState = Pending
 						m.browser.SetItem(idx, note)
