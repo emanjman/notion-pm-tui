@@ -67,8 +67,9 @@ func New(notion *notion.Client, projID, notesPropID string) Model {
 
 	// text area config
 	ta := textarea.New()
+	ta.FocusedStyle.LineNumber = ta.FocusedStyle.LineNumber.
+		Foreground(styles.MutedForeground)
 	ta.Focus()
-	ta.ShowLineNumbers = false
 
 	return Model{
 		projID:       projID,
