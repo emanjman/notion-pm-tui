@@ -1,6 +1,7 @@
 package notion
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -202,9 +203,32 @@ func (c *Client) FetchPageMarkdown(pageID string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	var res MarkdownSuccessResponse
+	var res MDSuccessRes
 	if err = c.do(req, &res); err != nil {
 		return "", err
 	}
 	return res.Markdown, nil
+}
+
+func (c *Client) UpdatePageByMarkdown(pageID string, md string) error {
+	url := baseURL + "/pages/" + pageID + "/markdown"
+
+	reqBody := MDUpdateReq{Markdown: md}
+	body, err := json.Marshal(reqBody)
+	if err != nil {
+		return fmt.Errorf("failed to marshal markdown: %w", err)
+	}
+
+	req, err := http.NewRequest("PATCH", url, bytes.NewReader(body))
+	if err != nil {
+		return fmt.Errorf("failed to create request: %w", err)
+	}
+	req.Header.Add("Content-Type", "application/json")
+
+	var res MDSuccessRes
+	if err := c.do(req, &res); err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -1,6 +1,10 @@
 package notion
 
-type MarkdownSuccessResponse struct {
+type MDUpdateReq struct {
+	Markdown string `json:"markdown"`
+}
+
+type MDSuccessRes struct {
 	Object          string   `json:"object"`
 	ID              string   `json:"id"`
 	Markdown        string   `json:"markdown"`
@@ -8,9 +12,9 @@ type MarkdownSuccessResponse struct {
 	UnknownBlockIDs []string `json:"unknown_block_ids"`
 }
 
-type MarkdownFailResponse struct {
-	Object  struct{} `json:"object"`
-	Message string   `json:"message"`
-	Code    string   `json:"code"`
-	Status  struct{} `json:"status"`
+type MDFailRes struct {
+	Object  string `json:"object"`
+	Message string `json:"message"`
+	Code    string `json:"code"`
+	Status  int    `json:"status"`
 }
