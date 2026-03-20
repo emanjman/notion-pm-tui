@@ -1,9 +1,5 @@
 package notion
 
-type MDUpdateReq struct {
-	Markdown string `json:"markdown"`
-}
-
 type MDSuccessRes struct {
 	Object          string   `json:"object"`
 	ID              string   `json:"id"`
@@ -17,4 +13,12 @@ type MDFailRes struct {
 	Message string `json:"message"`
 	Code    string `json:"code"`
 	Status  int    `json:"status"`
+}
+
+type ReplaceContent struct {
+	NewStr string `json:"new_str"`
+}
+type MDReplaceReq struct {
+	Type           string         `json:"type"` // replace_content
+	ReplaceContent ReplaceContent `json:"replace_content"`
 }

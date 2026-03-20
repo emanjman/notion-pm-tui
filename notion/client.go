@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"time"
@@ -210,25 +211,31 @@ func (c *Client) FetchPageMarkdown(pageID string) (string, error) {
 	return res.Markdown, nil
 }
 
-func (c *Client) UpdatePageByMarkdown(pageID string, md string) error {
+func (c *Client) ReplaceContentByMarkdown(pageID string, md string) (string, error) {
 	url := baseURL + "/pages/" + pageID + "/markdown"
 
-	reqBody := MDUpdateReq{Markdown: md}
+	log.Printf("entered replace content func")
+
+	reqBody := MDReplaceReq{
+		Type:           "replace_content",
+		ReplaceContent: ReplaceContent{NewStr: md}}
 	body, err := json.Marshal(reqBody)
 	if err != nil {
-		return fmt.Errorf("failed to marshal markdown: %w", err)
+		return md, fmt.Errorf("failed to marshal markdown: %w", err)
 	}
 
 	req, err := http.NewRequest("PATCH", url, bytes.NewReader(body))
 	if err != nil {
-		return fmt.Errorf("failed to create request: %w", err)
+		return md, fmt.Errorf("failed to create request: %w", err)
 	}
 	req.Header.Add("Content-Type", "application/json")
 
 	var res MDSuccessRes
 	if err := c.do(req, &res); err != nil {
-		return err
+		return md, err
 	}
 
-	return nil
+	log.Printf("replacing content")
+
+	return res.Markdown, nil
 }

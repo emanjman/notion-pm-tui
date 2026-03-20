@@ -24,6 +24,11 @@ type FetchNoteMarkdownMsg struct {
 	Err  error
 	Note *Item
 }
+type ReplaceContentMsg struct {
+	Idx  int
+	Err  error
+	Note *Item
+}
 
 type NotebookState int
 
@@ -169,6 +174,20 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		}
 		m.editor.SetValue(m.getCurrMarkdown())
 
+	case ReplaceContentMsg:
+		if msg.Note != nil {
+			// Update the item with new markdown from API
+			m.browser.SetItem(msg.Idx, *msg.Note)
+
+			// Re-fetch blocks to reflect the new content
+			if msg.Err == nil {
+				return m, m.fetchNoteBlocks(msg.Idx, *msg.Note)
+			}
+		}
+		m.reader.SetContent(m.getCurrContent())
+		m.editor.SetValue(m.getCurrMarkdown())
+		return m, nil
+
 	case tea.WindowSizeMsg:
 		leftw := msg.Width * 30 / 100
 		rightw := msg.Width - leftw - 1 // mind the border
@@ -253,7 +272,19 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 				m.ActiveKeyMap = BrowserKeys
 				m.browser.SetDelegate(NewItemDelegate(true))
 
-				// todo: submit changes to notion
+				// submit changes to notion
+				if item, ok := m.browser.SelectedItem().(Item); ok {
+					idx := m.browser.Index()
+
+					return m, func() tea.Msg {
+						md, err := m.notion.ReplaceContentByMarkdown(item.ID, m.editor.Value())
+						item.Markdown = md
+						if err != nil {
+							return ReplaceContentMsg{Idx: idx, Note: &item, Err: err}
+						}
+						return ReplaceContentMsg{Idx: idx, Note: &item, Err: nil}
+					}
+				}
 
 			// forward all keys into textarea model
 			default:
