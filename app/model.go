@@ -32,9 +32,9 @@ const tabCount = 5
 var labels = []string{
 	"Objective (n%)",
 	"Overview",
-	"Notes (n)",
-	"Bugs (n)",
-	"Tech (n)",
+	"Notebook (n)",
+	"Bug Report (n)",
+	"Technology (n)",
 }
 
 type Model struct {
