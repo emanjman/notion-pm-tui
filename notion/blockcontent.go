@@ -5,6 +5,9 @@ import (
 	"notion-project-tui/styles"
 	"strings"
 
+	"github.com/alecthomas/chroma/v2/formatters"
+	"github.com/alecthomas/chroma/v2/lexers"
+	chromastyles "github.com/alecthomas/chroma/v2/styles"
 	lg "github.com/charmbracelet/lipgloss"
 )
 
@@ -135,6 +138,9 @@ func blockToContent(b Block, windowWidth int, depth int, counter int, counterTyp
 
 	case Paragraph:
 		return base.Render(ExtractPlainText(b.Paragraph.RichText))
+
+	case Code:
+		return renderCode(b, base)
 	}
 
 	return lg.NewStyle().
@@ -176,4 +182,54 @@ func toRomanNumeral(num int) string {
 		}
 	}
 	return result.String()
+}
+
+func renderCode(b Block, base lg.Style) string {
+	code := ExtractPlainText(b.Code.RichText)
+	lang := b.Code.Language
+
+	lxr := lexers.Get(lang)
+	if lxr == nil {
+		lxr = lexers.Fallback
+	}
+
+	style := chromastyles.Get("monokai")
+	if style == nil {
+		style = chromastyles.Fallback
+	}
+
+	fmtr := formatters.Get("terminal256")
+	if fmtr == nil {
+		fmtr = formatters.Fallback
+	}
+
+	itr, err := lxr.Tokenise(nil, code)
+	if err != nil {
+		return base.
+			Foreground(styles.TechForeground).
+			Render(code)
+	}
+
+	var colored strings.Builder
+	err = fmtr.Format(&colored, style, itr)
+	if err != nil {
+		return base.
+			Foreground(styles.TechForeground).
+			Render(code)
+	}
+
+	label := ""
+	if lang != "" && lang != "plain text" {
+		label = lg.NewStyle().
+			Foreground(styles.MutedForeground).
+			Render(fmt.Sprintf("┌─ %s ", lang)) + "\n"
+	}
+
+	codeBlock := lg.NewStyle().
+		PaddingLeft(1).
+		Border(lg.NormalBorder(), false, false, true, true).
+		BorderForeground(styles.BorderForeground).
+		Render(colored.String())
+
+	return base.Render(label + codeBlock)
 }
