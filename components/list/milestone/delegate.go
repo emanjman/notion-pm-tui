@@ -102,10 +102,10 @@ func createProgressBar(progress float64, width int, baseStyle lg.Style) string {
 	wempty := width - wfilled
 
 	filled := strings.Repeat("▬", wfilled)
-	empty := strings.Repeat("▭", wempty)
+	empty := strings.Repeat("▬", wempty)
 
 	return baseStyle.Foreground(styles.TechForeground).Render(filled) +
-		baseStyle.Foreground(styles.MutedForeground).Render(empty)
+		baseStyle.Foreground(lg.Color("#2a2a2a")).Render(empty)
 }
 
 func renderItemHeader(d ItemDelegate, item listutil.ListItemGroupHeader, selected bool, windowWidth int) string {
