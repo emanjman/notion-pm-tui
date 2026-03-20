@@ -107,13 +107,17 @@ func renderItemHeader(d ItemDelegate, item listutil.ListItemGroupHeader, selecte
 	return style.Width(windowWidth).Render(content)
 }
 
-var priorityColors = []lg.Color{
-	styles.MutedForeground, // p0 - none/gray
-	lg.Color("#7aa2f7"),    // p1 - blue (low, calm)
-	lg.Color("#9ece6a"),    // p2 - green (medium-low)
-	lg.Color("#e0af68"),    // p3 - yellow (medium, caution)
-	lg.Color("#ff9e64"),    // p4 - orange (high, warning)
-	lg.Color("#f7768e"),    // p5 - red (critical, urgent)
+type priority struct {
+	fg    lg.Color
+	label string
+}
+
+var priorities = []priority{
+	{fg: styles.MutedForeground, label: "none"},
+	{fg: lg.Color("#7aa2f7"), label: "low"},
+	{fg: lg.Color("#9ece6a"), label: "medium"},
+	{fg: lg.Color("#ff9e64"), label: "high"},
+	{fg: lg.Color("#f7768e"), label: "critical"},
 }
 
 func renderItem(d ItemDelegate, item Item, selected bool, windowWidth int) string {
@@ -153,14 +157,16 @@ func renderItem(d ItemDelegate, item Item, selected bool, windowWidth int) strin
 
 	// guard against unhandled priority values
 	safePriorityIdx := item.Priority
-	if safePriorityIdx < 0 || safePriorityIdx >= len(priorityColors) {
+	if safePriorityIdx < 0 || safePriorityIdx >= len(priorities) {
 		safePriorityIdx = 0
 	}
 
 	// apply final field-specific styles
 	typStyle = typStyle.Foreground(styles.MutedForeground)
 	titleStyle = titleStyle.Foreground(styles.PrimaryForeground)
-	priorityStyle = priorityStyle.Foreground(priorityColors[safePriorityIdx])
+	priorityStyle = priorityStyle.
+		Foreground(priorities[safePriorityIdx].fg).
+		Padding(0, 1)
 
 	// render each field
 	typ := typStyle.Render(item.Type)
@@ -173,7 +179,7 @@ func renderItem(d ItemDelegate, item Item, selected bool, windowWidth int) strin
 		titleStyle = titleStyle.Foreground(styles.MutedForeground)
 	}
 	title := titleStyle.Render(renderedTitle)
-	priority := priorityStyle.Render(fmt.Sprintf("[%d]", safePriorityIdx))
+	priority := priorityStyle.Render(fmt.Sprintf("[%d] %s", safePriorityIdx, priorities[safePriorityIdx].label))
 
 	// calculate max title width
 	leftOffset, rightOffset, fieldSpacing := 3, 2, 2
