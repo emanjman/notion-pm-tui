@@ -25,11 +25,22 @@ func ExtractPlainText(richTexts []RichText) string {
 	for _, txt := range richTexts {
 		style := lg.NewStyle()
 
+		if txt.Annotations.Italic {
+			style = style.Italic(true)
+		}
+		if txt.Annotations.Bold {
+			style = style.Bold(true)
+		}
+		if txt.Annotations.Underline {
+			style = style.Underline(true)
+		}
+		if txt.Annotations.Strikethrough {
+			style = style.Strikethrough(true)
+		}
 		if txt.Annotations.InlineCode {
 			style = style.
 				Background(styles.SelectedBackground).
 				Foreground(styles.RedForeground)
-
 		}
 
 		switch txt.Annotations.Color {
