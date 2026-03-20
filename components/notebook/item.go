@@ -21,10 +21,13 @@ type Item struct {
 	CreatedLabel string
 	Icon         string
 
-	Content       string // defined on fetch
-	Markdown      string // defined on fetch
-	BlocksState   ContentState
-	MarkdownState ContentState
+	Content      string // defined on fetch
+	Markdown     string // defined on fetch
+	ContentState ContentState
+
+	// internal tracking for combined state
+	blocksReady   bool
+	markdownReady bool
 }
 
 func (x Item) FilterValue() string { return x.Title }
@@ -52,9 +55,11 @@ func NewItem(page notion.NotePage) Item {
 		CreatedLabel: label,
 		Icon:         icon,
 
-		Content:       "",
-		Markdown:      "",
-		BlocksState:   Idle,
-		MarkdownState: Idle,
+		Content:      "",
+		Markdown:     "",
+		ContentState: Idle,
+
+		blocksReady:   false,
+		markdownReady: false,
 	}
 }

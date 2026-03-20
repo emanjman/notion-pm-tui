@@ -121,8 +121,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			for i := range reqCnt {
 				item := m.browser.Items()[i]
 				if note, ok := item.(Item); ok {
-					note.BlocksState = Pending
-					note.MarkdownState = Pending
+					note.ContentState = Pending
 					m.browser.SetItem(i, note)
 
 					blxCmds[i] = m.fetchNoteBlocks(i, note)
@@ -134,10 +133,18 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		}
 
 	case FetchNoteContentMsg:
-		if currentItem := m.browser.Items()[msg.Idx]; currentItem != nil {
-			if note, ok := currentItem.(Item); ok {
+		if curr := m.browser.Items()[msg.Idx]; curr != nil {
+			if note, ok := curr.(Item); ok {
 				note.Content = msg.Note.Content
-				note.BlocksState = msg.Note.BlocksState
+				note.blocksReady = true
+
+				// Update combined state
+				if msg.Err != nil {
+					note.ContentState = Failed
+				} else if note.markdownReady {
+					note.ContentState = Success
+				}
+
 				m.browser.SetItem(msg.Idx, note)
 			}
 		}
@@ -145,10 +152,18 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		return m, nil
 
 	case FetchNoteMarkdownMsg:
-		if currentItem := m.browser.Items()[msg.Idx]; currentItem != nil {
-			if note, ok := currentItem.(Item); ok {
+		if curr := m.browser.Items()[msg.Idx]; curr != nil {
+			if note, ok := curr.(Item); ok {
 				note.Markdown = msg.Note.Markdown
-				note.MarkdownState = msg.Note.MarkdownState
+				note.markdownReady = true
+
+				// update combined state
+				if msg.Err != nil {
+					note.ContentState = Failed
+				} else if note.blocksReady {
+					note.ContentState = Success
+				}
+
 				m.browser.SetItem(msg.Idx, note)
 			}
 		}
@@ -169,7 +184,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		case Browsing:
 			switch {
 			case key.Matches(msg, m.browserKeyMap.Right):
-				if note, ok := m.browser.SelectedItem().(Item); ok && note.BlocksState == Success {
+				if note, ok := m.browser.SelectedItem().(Item); ok && note.ContentState == Success {
 					m.State = Reading
 					m.ActiveKeyMap = ReaderKeys
 					m.browser.SetDelegate(NewItemDelegate(false))
@@ -192,12 +207,12 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 
 			case key.Matches(msg, m.browserKeyMap.Enter):
 				selected := m.browser.SelectedItem()
-				if note, ok := selected.(Item); ok && note.BlocksState == Idle {
+				if note, ok := selected.(Item); ok && note.ContentState == Idle {
 					idx := m.browser.Index()
-					note.BlocksState = Pending
+					note.ContentState = Pending
 					m.browser.SetItem(idx, note)
 					m.reader.SetContent(m.getCurrContent()) // show pending state
-					return m, m.fetchNoteBlocks(idx, note)
+					return m, tea.Batch(m.fetchNoteBlocks(idx, note), m.fetchNoteMarkdown(idx, note))
 				}
 				return m, nil
 			}
@@ -279,10 +294,8 @@ func (m Model) fetchNoteBlocks(idx int, note Item) tea.Cmd {
 		blocks, err := m.notion.FetchPageBlocks(note.ID)
 		if err != nil {
 			note.Content = err.Error()
-			note.BlocksState = Failed
 		} else {
 			note.Content = notion.BlocksToContent(blocks, m.reader.Width, 0)
-			note.BlocksState = Success
 		}
 		return FetchNoteContentMsg{Idx: idx, Note: &note, Err: err}
 	}
@@ -292,11 +305,9 @@ func (m Model) fetchNoteMarkdown(idx int, note Item) tea.Cmd {
 	return func() tea.Msg {
 		md, err := m.notion.FetchPageMarkdown(note.ID)
 		if err != nil {
-			note.Content = err.Error()
-			note.MarkdownState = Failed
+			note.Markdown = err.Error()
 		} else {
 			note.Markdown = md
-			note.MarkdownState = Success
 		}
 		return FetchNoteMarkdownMsg{Idx: idx, Note: &note, Err: err}
 	}
@@ -308,7 +319,7 @@ func (m Model) getCurrContent() string {
 
 	// pull from actual items, not filteredItems
 	if note, ok := m.browser.Items()[i].(Item); ok {
-		switch note.BlocksState {
+		switch note.ContentState {
 		case Idle:
 			content = "[Enter] to fetch content"
 		case Pending:
