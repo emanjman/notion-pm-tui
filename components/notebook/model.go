@@ -53,6 +53,8 @@ type Model struct {
 	readerKeyMap  ReaderKeyMap
 	editor        textarea.Model
 	editorKeyMap  EditorKeyMap
+	vimMode       VimMode
+	pendingVimKey string
 }
 
 func New(notion *notion.Client, projID, notesPropID string) Model {
@@ -238,6 +240,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 					case Success:
 						m.State = Editing
 						m.ActiveKeyMap = EditorKeys
+						m.vimMode = NormalMode
 						m.browser.SetDelegate(NewItemDelegate(false))
 					}
 				}
@@ -264,19 +267,24 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			case key.Matches(msg, m.readerKeyMap.Enter):
 				m.State = Editing
 				m.ActiveKeyMap = EditorKeys
+				m.vimMode = NormalMode
 				m.browser.SetDelegate(NewItemDelegate(false))
 			}
 		case Editing:
 			switch {
 			case key.Matches(msg, m.editorKeyMap.Esc):
+				if m.vimMode == InsertMode {
+					// Esc in insert mode → back to normal mode
+					m.vimMode = NormalMode
+					return m, nil
+				}
+				// Esc in normal mode → save and exit to browsing
 				m.State = Browsing
 				m.ActiveKeyMap = BrowserKeys
 				m.browser.SetDelegate(NewItemDelegate(true))
 
-				// submit changes to notion
 				if item, ok := m.browser.SelectedItem().(Item); ok {
 					idx := m.browser.Index()
-
 					return m, func() tea.Msg {
 						md, err := m.notion.ReplaceContentByMarkdown(item.ID, m.editor.Value())
 						item.Markdown = md
@@ -287,8 +295,11 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 					}
 				}
 
-			// forward all keys into textarea model
 			default:
+				if m.vimMode == NormalMode {
+					return handleNormalMode(m, msg)
+				}
+				// InsertMode: pass through to textarea
 				var cmd tea.Cmd
 				m.editor, cmd = m.editor.Update(msg)
 				return m, cmd
@@ -321,7 +332,19 @@ func (m Model) View() string {
 
 	rightContent := m.reader.View()
 	if m.State == Editing {
-		rightContent = m.editor.View()
+		modeLabel := " NORMAL "
+		modeStyle := lg.NewStyle().
+			Background(styles.MutedForeground).
+			Foreground(lg.Color("#000000")).
+			Bold(true)
+		if m.vimMode == InsertMode {
+			modeLabel = " INSERT "
+			modeStyle = modeStyle.Background(lg.Color("#6fb7b7"))
+		}
+		rightContent = lg.JoinVertical(lg.Left,
+			m.editor.View(),
+			modeStyle.Render(modeLabel),
+		)
 	}
 
 	right := lg.NewStyle().
