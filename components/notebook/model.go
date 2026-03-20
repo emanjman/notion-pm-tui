@@ -153,7 +153,8 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		return m, nil
 
 	case tea.KeyMsg:
-		if m.State == Browsing {
+		switch m.State {
+		case Browsing:
 			switch {
 			case key.Matches(msg, m.browserKeyMap.Right):
 				if note, ok := m.browser.SelectedItem().(Item); ok && note.State == Success {
@@ -188,7 +189,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 				}
 				return m, nil
 			}
-		} else if m.State == Reading {
+		case Reading:
 			switch {
 			case key.Matches(msg, m.readerKeyMap.Left):
 				m.State = Browsing
@@ -210,7 +211,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 				m.State = Editing
 				m.ActiveKeyMap = EditorKeys
 			}
-		} else if m.State == Editing {
+		case Editing:
 			switch {
 			case key.Matches(msg, m.editorKeyMap.Esc):
 				m.State = Reading
