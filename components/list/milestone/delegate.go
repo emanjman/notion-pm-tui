@@ -97,17 +97,15 @@ func (d ItemDelegate) Render(w io.Writer, m list.Model, index int, item list.Ite
 
 // -- helper funcs
 
-func createProgressBar(progress float64, width int) string {
-	s := lg.NewStyle()
-
+func createProgressBar(progress float64, width int, baseStyle lg.Style) string {
 	wfilled := int(progress * float64(width))
 	wempty := width - wfilled
 
-	filled := strings.Repeat("█", wfilled)
-	empty := strings.Repeat("░", wempty)
+	filled := strings.Repeat("▬", wfilled)
+	empty := strings.Repeat("▭", wempty)
 
-	return s.Foreground(styles.PrimaryForeground).Render(filled) +
-		s.Foreground(styles.MutedForeground).Render(empty)
+	return baseStyle.Foreground(styles.TechForeground).Render(filled) +
+		baseStyle.Foreground(styles.MutedForeground).Render(empty)
 }
 
 func renderItemHeader(d ItemDelegate, item listutil.ListItemGroupHeader, selected bool, windowWidth int) string {
@@ -166,8 +164,7 @@ func renderItem(d ItemDelegate, item Item, selected bool, windowWidth int) strin
 		completion := segStyle.
 			Foreground(styles.MutedForeground).
 			Render(fmt.Sprintf("%.0f%%", item.Progress*100))
-		pbar := segStyle.
-			Render(createProgressBar(item.Progress, windowWidth/3))
+		pbar := createProgressBar(item.Progress, windowWidth/3, segStyle)
 		progress = completion + segStyle.Render(" ") + pbar
 	}
 
