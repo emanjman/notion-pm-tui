@@ -26,7 +26,7 @@ var BrowserKeys = BrowserKeyMap{
 	),
 	Enter: key.NewBinding(
 		key.WithKeys("enter"),
-		key.WithHelp("enter", "fetch content"),
+		key.WithHelp("enter", "fetch/edit content"),
 	),
 }
 

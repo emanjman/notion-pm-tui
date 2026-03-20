@@ -207,12 +207,19 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 
 			case key.Matches(msg, m.browserKeyMap.Enter):
 				selected := m.browser.SelectedItem()
-				if note, ok := selected.(Item); ok && note.ContentState == Idle {
-					idx := m.browser.Index()
-					note.ContentState = Pending
-					m.browser.SetItem(idx, note)
-					m.reader.SetContent(m.getCurrContent()) // show pending state
-					return m, tea.Batch(m.fetchNoteBlocks(idx, note), m.fetchNoteMarkdown(idx, note))
+				if note, ok := selected.(Item); ok {
+					switch note.ContentState {
+					case Pending, Failed:
+						idx := m.browser.Index()
+						note.ContentState = Pending
+						m.browser.SetItem(idx, note)
+						m.reader.SetContent(m.getCurrContent()) // show pending state
+						return m, tea.Batch(m.fetchNoteBlocks(idx, note), m.fetchNoteMarkdown(idx, note))
+					case Success:
+						m.State = Editing
+						m.ActiveKeyMap = EditorKeys
+						m.browser.SetDelegate(NewItemDelegate(false))
+					}
 				}
 				return m, nil
 			}
@@ -237,12 +244,15 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			case key.Matches(msg, m.readerKeyMap.Enter):
 				m.State = Editing
 				m.ActiveKeyMap = EditorKeys
+				m.browser.SetDelegate(NewItemDelegate(false))
 			}
 		case Editing:
 			switch {
 			case key.Matches(msg, m.editorKeyMap.Esc):
-				m.State = Reading
-				m.ActiveKeyMap = ReaderKeys
+				m.State = Browsing
+				m.ActiveKeyMap = BrowserKeys
+				m.browser.SetDelegate(NewItemDelegate(true))
+
 				// todo: submit changes to notion
 
 			// forward all keys into textarea model
