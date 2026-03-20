@@ -261,6 +261,7 @@ func (m Model) View() string {
 	return lg.JoinHorizontal(lg.Top, left, right)
 }
 
+// todo: need to better handle this to serve separate states on blocks vs markdown
 func (m Model) fetchNoteContent(idx int, note Item) tea.Cmd {
 	return func() tea.Msg {
 		blocks, err := m.notion.FetchPageBlocks(note.ID)
