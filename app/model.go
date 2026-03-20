@@ -25,14 +25,16 @@ const (
 	OverviewTab
 	NotebookTab
 	BugsTab
+	TechTab
 )
-const tabCount = 4
+const tabCount = 5
 
 var labels = []string{
 	"Objective (n%)",
 	"Overview",
 	"Notes (n)",
 	"Bugs (n)",
+	"Tech (n)",
 }
 
 type Model struct {
@@ -236,6 +238,8 @@ func (m Model) View() string {
 		main = m.notebook.View()
 	case BugsTab:
 		main = "Debug notes (coming soon)"
+	case TechTab:
+		main = "Tech notes (coming soon)"
 
 	}
 
@@ -287,6 +291,8 @@ func (m Model) getActiveKeyMap() help.KeyMap {
 	case NotebookTab:
 		return m.notebook.ActiveKeyMap
 	case BugsTab:
+		return m.objective.KeyMap()
+	case TechTab:
 		return m.objective.KeyMap()
 
 	default:
