@@ -53,9 +53,10 @@ type Model struct {
 	readerKeyMap  ReaderKeyMap
 	editor        textarea.Model
 	editorKeyMap  EditorKeyMap
-	vimMode       VimMode
-	pendingVimKey string
-	vimCount      string
+	vimMode          VimMode
+	pendingVimKey    string
+	vimCount         string
+	pendingInsertEsc bool
 }
 
 func New(notion *notion.Client, projID, notesPropID string) Model {
@@ -192,6 +193,17 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		m.editor.SetValue(m.getCurrMarkdown())
 		return m, nil
 
+	case insertEscTimeoutMsg:
+		if m.pendingInsertEsc {
+			m.pendingInsertEsc = false
+			if m.State == Editing && m.vimMode == InsertMode {
+				var cmd tea.Cmd
+				m.editor, cmd = m.editor.Update(runeK('j'))
+				return m, cmd
+			}
+		}
+		return m, nil
+
 	case tea.WindowSizeMsg:
 		leftw := msg.Width * 30 / 100
 		rightw := msg.Width - leftw - 1 // mind the border
@@ -314,7 +326,20 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 				if m.vimMode == NormalMode {
 					return handleNormalMode(m, msg)
 				}
-				// InsertMode: pass through to textarea
+				// InsertMode: check for jk escape sequence
+				if m.pendingInsertEsc {
+					m.pendingInsertEsc = false
+					if msg.String() == "k" {
+						m.vimMode = NormalMode
+						return m, nil
+					}
+					// not jk — flush the held j, then fall through to handle current key
+					m.editor, _ = m.editor.Update(runeK('j'))
+				}
+				if msg.String() == "j" {
+					m.pendingInsertEsc = true
+					return m, insertEscTimeout()
+				}
 				var cmd tea.Cmd
 				m.editor, cmd = m.editor.Update(msg)
 				return m, cmd

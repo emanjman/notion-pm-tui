@@ -2,10 +2,19 @@ package notebook
 
 import (
 	"strconv"
+	"time"
 
 	"github.com/charmbracelet/bubbles/textarea"
 	tea "github.com/charmbracelet/bubbletea"
 )
+
+type insertEscTimeoutMsg struct{}
+
+func insertEscTimeout() tea.Cmd {
+	return tea.Tick(300*time.Millisecond, func(time.Time) tea.Msg {
+		return insertEscTimeoutMsg{}
+	})
+}
 
 type VimMode int
 
