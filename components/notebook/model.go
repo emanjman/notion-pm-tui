@@ -273,6 +273,20 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			}
 		case Editing:
 			switch {
+			case msg.String() == "ctrl+j":
+				var cmd tea.Cmd
+				m.editor, cmd = sendKeys(m.editor,
+					k(tea.KeyDown), k(tea.KeyDown), k(tea.KeyDown), k(tea.KeyDown), k(tea.KeyDown),
+				)
+				return m, cmd
+
+			case msg.String() == "ctrl+k":
+				var cmd tea.Cmd
+				m.editor, cmd = sendKeys(m.editor,
+					k(tea.KeyUp), k(tea.KeyUp), k(tea.KeyUp), k(tea.KeyUp), k(tea.KeyUp),
+				)
+				return m, cmd
+
 			case key.Matches(msg, m.editorKeyMap.Esc):
 				if m.vimMode == InsertMode {
 					// Esc in insert mode → back to normal mode
