@@ -1,6 +1,8 @@
 package notebook
 
 import (
+	"strconv"
+
 	"github.com/charmbracelet/bubbles/textarea"
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -32,6 +34,18 @@ func sendKeys(ta textarea.Model, keys ...tea.KeyMsg) (textarea.Model, tea.Cmd) {
 // model and whether a state transition to InsertMode occurred.
 func handleNormalMode(m Model, msg tea.KeyMsg) (Model, tea.Cmd) {
 	ch := msg.String()
+
+	// --- count prefix accumulation (digits, except bare "0" which is line-start) ---
+	if len(ch) == 1 && ch[0] >= '0' && ch[0] <= '9' {
+		if ch != "0" || m.vimCount != "" {
+			m.vimCount += ch
+			return m, nil
+		}
+	}
+
+	// consume and reset count before any command
+	countStr := m.vimCount
+	m.vimCount = ""
 
 	// --- pending two-key sequences ---
 	if m.pendingVimKey != "" {
@@ -116,7 +130,18 @@ func handleNormalMode(m Model, msg tea.KeyMsg) (Model, tea.Cmd) {
 		var cmd tea.Cmd
 		m.editor, cmd = sendKeys(m.editor, k(tea.KeyCtrlE))
 		return m, cmd
-	case "G": // go to input end
+	case "G": // go to line N (with count) or end of input
+		if n, err := strconv.Atoi(countStr); err == nil && n >= 1 {
+			// jump to line n: go to top then move down n-1 lines
+			keys := make([]tea.KeyMsg, n)
+			keys[0] = k(tea.KeyCtrlHome)
+			for i := 1; i < n; i++ {
+				keys[i] = k(tea.KeyDown)
+			}
+			var cmd tea.Cmd
+			m.editor, cmd = sendKeys(m.editor, keys...)
+			return m, cmd
+		}
 		var cmd tea.Cmd
 		m.editor, cmd = sendKeys(m.editor, k(tea.KeyCtrlEnd))
 		return m, cmd

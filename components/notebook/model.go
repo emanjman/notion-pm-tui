@@ -55,6 +55,7 @@ type Model struct {
 	editorKeyMap  EditorKeyMap
 	vimMode       VimMode
 	pendingVimKey string
+	vimCount      string
 }
 
 func New(notion *notion.Client, projID, notesPropID string) Model {
