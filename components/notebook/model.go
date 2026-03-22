@@ -1,14 +1,16 @@
 package notebook
 
 import (
+	"fmt"
 	"notion-project-tui/notion"
 	"notion-project-tui/styles"
+	"os"
+	"os/exec"
 	"slices"
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
-	"github.com/charmbracelet/bubbles/textarea"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	lg "github.com/charmbracelet/lipgloss"
@@ -29,13 +31,18 @@ type ReplaceContentMsg struct {
 	Err  error
 	Note *Item
 }
+type EditorFinishedMsg struct {
+	Idx      int
+	Note     *Item
+	Markdown string
+	Err      error
+}
 
 type NotebookState int
 
 const (
 	Browsing NotebookState = iota
 	Reading
-	Editing
 )
 
 type Model struct {
@@ -51,12 +58,9 @@ type Model struct {
 	browserKeyMap BrowserKeyMap
 	reader        viewport.Model
 	readerKeyMap  ReaderKeyMap
-	editor        textarea.Model
-	editorKeyMap  EditorKeyMap
 }
 
 func New(notion *notion.Client, projID, notesPropID string) Model {
-	// list config
 	l := list.New([]list.Item{}, NewItemDelegate(true), 0, 0)
 	l.SetShowHelp(false)
 	l.SetShowStatusBar(false)
@@ -64,12 +68,6 @@ func New(notion *notion.Client, projID, notesPropID string) Model {
 	l.SetShowFilter(false)
 	l.SetFilteringEnabled(false)
 	l.DisableQuitKeybindings()
-
-	// text area config
-	ta := textarea.New()
-	ta.FocusedStyle.LineNumber = ta.FocusedStyle.LineNumber.
-		Foreground(styles.MutedForeground)
-	ta.Focus()
 
 	return Model{
 		projID:       projID,
@@ -84,8 +82,6 @@ func New(notion *notion.Client, projID, notesPropID string) Model {
 		browserKeyMap: BrowserKeys,
 		reader:        viewport.New(0, 0),
 		readerKeyMap:  ReaderKeys,
-		editor:        ta,
-		editorKeyMap:  EditorKeys,
 	}
 }
 
@@ -144,7 +140,6 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 				note.Content = msg.Note.Content
 				note.blocksReady = true
 
-				// Update combined state
 				if msg.Err != nil {
 					note.ContentState = Failed
 				} else if note.markdownReady {
@@ -163,7 +158,6 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 				note.Markdown = msg.Note.Markdown
 				note.markdownReady = true
 
-				// update combined state
 				if msg.Err != nil {
 					note.ContentState = Failed
 				} else if note.blocksReady {
@@ -173,29 +167,44 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 				m.browser.SetItem(msg.Idx, note)
 			}
 		}
-		m.editor.SetValue(m.getCurrMarkdown())
+		return m, nil
+
+	case EditorFinishedMsg:
+		if msg.Err != nil {
+			m.err = msg.Err
+			m.State = Reading
+			m.ActiveKeyMap = ReaderKeys
+			return m, nil
+		}
+		if msg.Note != nil {
+			note := *msg.Note
+			idx := msg.Idx
+			return m, func() tea.Msg {
+				md, err := m.notion.ReplaceContentByMarkdown(note.ID, msg.Markdown)
+				note.Markdown = md
+				return ReplaceContentMsg{Idx: idx, Note: &note, Err: err}
+			}
+		}
+		return m, nil
 
 	case ReplaceContentMsg:
 		if msg.Note != nil {
-			// Update the item with new markdown from API
 			m.browser.SetItem(msg.Idx, *msg.Note)
-
-			// Re-fetch blocks to reflect the new content
 			if msg.Err == nil {
 				return m, m.fetchNoteBlocks(msg.Idx, *msg.Note)
 			}
 		}
+		m.State = Reading
+		m.ActiveKeyMap = ReaderKeys
+		m.browser.SetDelegate(NewItemDelegate(false))
 		m.reader.SetContent(m.getCurrContent())
-		m.editor.SetValue(m.getCurrMarkdown())
 		return m, nil
 
 	case tea.WindowSizeMsg:
 		leftw := msg.Width * 30 / 100
-		rightw := msg.Width - leftw - 1 // mind the border
+		rightw := msg.Width - leftw - 1
 
 		m.browser.SetSize(leftw, msg.Height)
-		m.editor.SetWidth(rightw)
-		m.editor.SetHeight(msg.Height)
 		m.reader.Width, m.reader.Height = rightw, msg.Height
 		return m, nil
 
@@ -215,14 +224,12 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 				m.browser.CursorDown()
 				m.reader.YPosition = 0
 				m.reader.SetContent(m.getCurrContent())
-				m.editor.SetValue(m.getCurrMarkdown())
 				return m, nil
 
 			case key.Matches(msg, m.browserKeyMap.Up):
 				m.browser.CursorUp()
 				m.reader.YPosition = 0
 				m.reader.SetContent(m.getCurrContent())
-				m.editor.SetValue(m.getCurrMarkdown())
 				return m, nil
 
 			case key.Matches(msg, m.browserKeyMap.Enter):
@@ -233,12 +240,10 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 						idx := m.browser.Index()
 						note.ContentState = Pending
 						m.browser.SetItem(idx, note)
-						m.reader.SetContent(m.getCurrContent()) // show pending state
+						m.reader.SetContent(m.getCurrContent())
 						return m, tea.Batch(m.fetchNoteBlocks(idx, note), m.fetchNoteMarkdown(idx, note))
 					case Success:
-						m.State = Editing
-						m.ActiveKeyMap = EditorKeys
-						m.browser.SetDelegate(NewItemDelegate(false))
+						return m.launchEditor()
 					}
 				}
 				return m, nil
@@ -262,45 +267,14 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 				return m, cmd
 
 			case key.Matches(msg, m.readerKeyMap.Enter):
-				m.State = Editing
-				m.ActiveKeyMap = EditorKeys
-				m.browser.SetDelegate(NewItemDelegate(false))
-			}
-		case Editing:
-			switch {
-			case key.Matches(msg, m.editorKeyMap.Esc):
-				m.State = Browsing
-				m.ActiveKeyMap = BrowserKeys
-				m.browser.SetDelegate(NewItemDelegate(true))
-
-				// submit changes to notion
-				if item, ok := m.browser.SelectedItem().(Item); ok {
-					idx := m.browser.Index()
-
-					return m, func() tea.Msg {
-						md, err := m.notion.ReplaceContentByMarkdown(item.ID, m.editor.Value())
-						item.Markdown = md
-						if err != nil {
-							return ReplaceContentMsg{Idx: idx, Note: &item, Err: err}
-						}
-						return ReplaceContentMsg{Idx: idx, Note: &item, Err: nil}
-					}
-				}
-
-			// forward all keys into textarea model
-			default:
-				var cmd tea.Cmd
-				m.editor, cmd = m.editor.Update(msg)
-				return m, cmd
+				return m.launchEditor()
 			}
 		}
 	}
 
-	// foward rest of commands to children
 	var bcmd, rcmd tea.Cmd
 	m.browser, bcmd = m.browser.Update(msg)
 	m.reader, rcmd = m.reader.Update(msg)
-	// m.editor, ecmd = m.editor.Update(msg)
 	return m, tea.Batch(bcmd, rcmd)
 }
 
@@ -319,16 +293,57 @@ func (m Model) View() string {
 		BorderForeground(styles.BorderForeground).
 		Render(leftContent)
 
-	rightContent := m.reader.View()
-	if m.State == Editing {
-		rightContent = m.editor.View()
-	}
-
 	right := lg.NewStyle().
 		Padding(0, 1).
-		Render(rightContent)
+		Render(m.reader.View())
 
 	return lg.JoinHorizontal(lg.Top, left, right)
+}
+
+func (m Model) launchEditor() (Model, tea.Cmd) {
+	note, ok := m.browser.SelectedItem().(Item)
+	if !ok {
+		return m, nil
+	}
+	idx := m.browser.Index()
+
+	f, err := os.CreateTemp("", "notion-*.md")
+	if err != nil {
+		m.err = fmt.Errorf("could not create temp file: %w", err)
+		return m, nil
+	}
+	if _, err := f.WriteString(note.Markdown); err != nil {
+		f.Close()
+		os.Remove(f.Name())
+		m.err = fmt.Errorf("could not write temp file: %w", err)
+		return m, nil
+	}
+	f.Close()
+
+	tmpPath := f.Name()
+	cmd := exec.Command(resolveEditor(), tmpPath)
+
+	return m, tea.ExecProcess(cmd, func(err error) tea.Msg {
+		defer os.Remove(tmpPath)
+		if err != nil {
+			return EditorFinishedMsg{Idx: idx, Note: &note, Err: fmt.Errorf("editor exited with error: %w", err)}
+		}
+		content, readErr := os.ReadFile(tmpPath)
+		if readErr != nil {
+			return EditorFinishedMsg{Idx: idx, Note: &note, Err: fmt.Errorf("could not read temp file: %w", readErr)}
+		}
+		return EditorFinishedMsg{Idx: idx, Note: &note, Markdown: string(content)}
+	})
+}
+
+func resolveEditor() string {
+	if v := os.Getenv("VISUAL"); v != "" {
+		return v
+	}
+	if e := os.Getenv("EDITOR"); e != "" {
+		return e
+	}
+	return "vi"
 }
 
 func (m Model) fetchNoteBlocks(idx int, note Item) tea.Cmd {
@@ -359,7 +374,6 @@ func (m Model) getCurrContent() string {
 	content := "Unable to render"
 	i := m.browser.Index()
 
-	// pull from actual items, not filteredItems
 	if note, ok := m.browser.Items()[i].(Item); ok {
 		switch note.ContentState {
 		case Idle:
@@ -367,17 +381,10 @@ func (m Model) getCurrContent() string {
 		case Pending:
 			content = "Fetching..."
 		default:
-			content = note.Content // may be blocks or the err msg
+			content = note.Content
 		}
 	}
 	return content
-}
-
-func (m Model) getCurrMarkdown() string {
-	if note, ok := m.browser.Items()[m.browser.Index()].(Item); ok {
-		return note.Markdown
-	}
-	return ""
 }
 
 func (m Model) buildNoteList(pages []notion.NotePage) []list.Item {
@@ -386,7 +393,6 @@ func (m Model) buildNoteList(pages []notion.NotePage) []list.Item {
 		items[i] = NewItem(page)
 	}
 
-	// sort by desc (most recent, first)
 	slices.SortFunc(items, func(a, b list.Item) int {
 		noteA, okA := a.(Item)
 		noteB, okB := b.(Item)

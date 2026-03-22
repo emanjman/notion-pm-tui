@@ -75,7 +75,7 @@ var ReaderKeys = ReaderKeyMap{
 	),
 	Enter: key.NewBinding(
 		key.WithKeys("enter"),
-		key.WithHelp("enter", "edit mode"),
+		key.WithHelp("enter", "edit in $EDITOR"),
 	),
 }
 
@@ -90,26 +90,3 @@ func (k ReaderKeyMap) FullHelp() [][]key.Binding {
 	}
 }
 
-// ---
-
-type EditorKeyMap struct {
-	Esc key.Binding
-}
-
-var EditorKeys = EditorKeyMap{
-	Esc: key.NewBinding(
-		key.WithKeys("esc"),
-		key.WithHelp("esc", "read mode"),
-	),
-}
-
-func (k EditorKeyMap) ShortHelp() []key.Binding {
-	return []key.Binding{k.Esc}
-}
-
-func (k EditorKeyMap) FullHelp() [][]key.Binding {
-	return [][]key.Binding{
-		{k.Esc},
-		{},
-	}
-}
