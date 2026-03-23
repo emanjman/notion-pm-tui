@@ -46,14 +46,18 @@ type Model struct {
 	notion       *notion.Client
 	ActiveKeyMap help.KeyMap
 
-	State         NotebookState
-	browser       list.Model
-	browserKeyMap BrowserKeyMap
-	reader        viewport.Model
-	readerKeyMap  ReaderKeyMap
-	editor        textarea.Model
-	editorKeyMap  EditorKeyMap
-	ogMarkdown    string
+	State            NotebookState
+	browser          list.Model
+	browserKeyMap    BrowserKeyMap
+	reader           viewport.Model
+	readerKeyMap     ReaderKeyMap
+	editor           textarea.Model
+	editorKeyMap     EditorKeyMap
+	vimMode          VimMode
+	pendingVimKey    string
+	vimCount         string
+	pendingInsertEsc bool
+	ogMarkdown       string
 }
 
 func New(notion *notion.Client, projID, notesPropID string) Model {
@@ -87,7 +91,6 @@ func New(notion *notion.Client, projID, notesPropID string) Model {
 		readerKeyMap:  ReaderKeys,
 		editor:        ta,
 		editorKeyMap:  EditorKeys,
-		ogMarkdown:    "",
 	}
 }
 
@@ -191,6 +194,17 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		m.editor.SetValue(m.getCurrMarkdown())
 		return m, nil
 
+	case insertEscTimeoutMsg:
+		if m.pendingInsertEsc {
+			m.pendingInsertEsc = false
+			if m.State == Editing && m.vimMode == InsertMode {
+				var cmd tea.Cmd
+				m.editor, cmd = m.editor.Update(runeK('j'))
+				return m, cmd
+			}
+		}
+		return m, nil
+
 	case tea.WindowSizeMsg:
 		leftw := msg.Width * 30 / 100
 		rightw := msg.Width - leftw - 1 // mind the border
@@ -266,15 +280,33 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			}
 		case Editing:
 			switch {
+			case msg.String() == "ctrl+j":
+				var cmd tea.Cmd
+				m.editor, cmd = sendKeys(m.editor,
+					k(tea.KeyDown), k(tea.KeyDown), k(tea.KeyDown), k(tea.KeyDown), k(tea.KeyDown),
+				)
+				return m, cmd
+
+			case msg.String() == "ctrl+k":
+				var cmd tea.Cmd
+				m.editor, cmd = sendKeys(m.editor,
+					k(tea.KeyUp), k(tea.KeyUp), k(tea.KeyUp), k(tea.KeyUp), k(tea.KeyUp),
+				)
+				return m, cmd
+
 			case key.Matches(msg, m.editorKeyMap.Esc):
+				if m.vimMode == InsertMode {
+					// Esc in insert mode → back to normal mode
+					m.vimMode = NormalMode
+					return m, nil
+				}
+				// Esc in normal mode → save and exit to browsing
 				m.State = Browsing
 				m.ActiveKeyMap = BrowserKeys
 				m.browser.SetDelegate(NewItemDelegate(true))
 
-				// submit changes to notion
 				if item, ok := m.browser.SelectedItem().(Item); ok && m.editor.Value() != m.ogMarkdown {
 					idx := m.browser.Index()
-
 					return m, func() tea.Msg {
 						md, err := m.notion.ReplaceContentByMarkdown(item.ID, m.editor.Value())
 						item.Markdown = md
@@ -285,8 +317,24 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 					}
 				}
 
-			// forward all keys into textarea model
 			default:
+				if m.vimMode == NormalMode {
+					return handleNormalMode(m, msg)
+				}
+				// InsertMode: check for jk escape sequence
+				if m.pendingInsertEsc {
+					m.pendingInsertEsc = false
+					if msg.String() == "k" {
+						m.vimMode = NormalMode
+						return m, nil
+					}
+					// not jk — flush the held j, then fall through to handle current key
+					m.editor, _ = m.editor.Update(runeK('j'))
+				}
+				if msg.String() == "j" {
+					m.pendingInsertEsc = true
+					return m, insertEscTimeout()
+				}
 				var cmd tea.Cmd
 				m.editor, cmd = m.editor.Update(msg)
 				return m, cmd
@@ -319,7 +367,19 @@ func (m Model) View() string {
 
 	rightContent := m.reader.View()
 	if m.State == Editing {
-		rightContent = m.editor.View()
+		modeLabel := " NORMAL "
+		modeStyle := lg.NewStyle().
+			Background(styles.MutedForeground).
+			Foreground(lg.Color("#000000")).
+			Bold(true)
+		if m.vimMode == InsertMode {
+			modeLabel = " INSERT "
+			modeStyle = modeStyle.Background(lg.Color("#6fb7b7"))
+		}
+		rightContent = lg.JoinVertical(lg.Left,
+			m.editor.View(),
+			modeStyle.Render(modeLabel),
+		)
 	}
 
 	right := lg.NewStyle().
@@ -401,5 +461,6 @@ func (m Model) enterEditMode() Model {
 	m.ActiveKeyMap = EditorKeys
 	m.browser.SetDelegate(NewItemDelegate(false))
 	m.ogMarkdown = m.editor.Value()
+	m.vimMode = NormalMode
 	return m
 }
