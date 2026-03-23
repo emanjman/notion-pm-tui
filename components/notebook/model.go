@@ -1,7 +1,6 @@
 package notebook
 
 import (
-	"log"
 	"notion-project-tui/notion"
 	"notion-project-tui/styles"
 	"slices"
@@ -274,8 +273,6 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 
 				// submit changes to notion
 				if item, ok := m.browser.SelectedItem().(Item); ok && m.editor.Value() != m.ogMarkdown {
-					log.Printf(m.editor.Value())
-					log.Printf(m.ogMarkdown)
 					idx := m.browser.Index()
 
 					return m, func() tea.Msg {
