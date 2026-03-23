@@ -4,6 +4,15 @@ import (
 	"notion-project-tui/notion"
 )
 
+type FetchState int
+
+const (
+	Idle FetchState = iota
+	Pending
+	Success
+	Failed
+)
+
 // implementation for the `list.Item` interface
 type Item struct {
 	ID                  string
@@ -13,6 +22,9 @@ type Item struct {
 	LatestActivityLabel string
 	Progress            float64
 	Tag                 string
+
+	Tasks []notion.TaskPage
+	Type  FetchState
 }
 
 func (m Item) FilterValue() string { return m.Name }
@@ -46,5 +58,8 @@ func NewItem(page notion.MilestonePage) Item {
 		LatestActivityLabel: label,
 		Progress:            progress,
 		Tag:                 tag,
+
+		Tasks: []notion.TaskPage{},
+		Type:  Pending,
 	}
 }
