@@ -1,6 +1,7 @@
 package notebook
 
 import (
+	"log"
 	"notion-project-tui/notion"
 	"notion-project-tui/styles"
 	"slices"
@@ -53,6 +54,7 @@ type Model struct {
 	readerKeyMap  ReaderKeyMap
 	editor        textarea.Model
 	editorKeyMap  EditorKeyMap
+	ogMarkdown    string
 }
 
 func New(notion *notion.Client, projID, notesPropID string) Model {
@@ -86,6 +88,7 @@ func New(notion *notion.Client, projID, notesPropID string) Model {
 		readerKeyMap:  ReaderKeys,
 		editor:        ta,
 		editorKeyMap:  EditorKeys,
+		ogMarkdown:    "",
 	}
 }
 
@@ -236,9 +239,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 						m.reader.SetContent(m.getCurrContent()) // show pending state
 						return m, tea.Batch(m.fetchNoteBlocks(idx, note), m.fetchNoteMarkdown(idx, note))
 					case Success:
-						m.State = Editing
-						m.ActiveKeyMap = EditorKeys
-						m.browser.SetDelegate(NewItemDelegate(false))
+						m = m.enterEditMode()
 					}
 				}
 				return m, nil
@@ -262,9 +263,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 				return m, cmd
 
 			case key.Matches(msg, m.readerKeyMap.Enter):
-				m.State = Editing
-				m.ActiveKeyMap = EditorKeys
-				m.browser.SetDelegate(NewItemDelegate(false))
+				m = m.enterEditMode()
 			}
 		case Editing:
 			switch {
@@ -274,7 +273,9 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 				m.browser.SetDelegate(NewItemDelegate(true))
 
 				// submit changes to notion
-				if item, ok := m.browser.SelectedItem().(Item); ok {
+				if item, ok := m.browser.SelectedItem().(Item); ok && m.editor.Value() != m.ogMarkdown {
+					log.Printf(m.editor.Value())
+					log.Printf(m.ogMarkdown)
 					idx := m.browser.Index()
 
 					return m, func() tea.Msg {
@@ -396,4 +397,12 @@ func (m Model) buildNoteList(pages []notion.NotePage) []list.Item {
 		return noteB.CreatedDate.Compare(noteA.CreatedDate)
 	})
 	return items
+}
+
+func (m Model) enterEditMode() Model {
+	m.State = Editing
+	m.ActiveKeyMap = EditorKeys
+	m.browser.SetDelegate(NewItemDelegate(false))
+	m.ogMarkdown = m.getCurrMarkdown()
+	return m
 }
