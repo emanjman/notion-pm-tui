@@ -403,6 +403,6 @@ func (m Model) enterEditMode() Model {
 	m.State = Editing
 	m.ActiveKeyMap = EditorKeys
 	m.browser.SetDelegate(NewItemDelegate(false))
-	m.ogMarkdown = m.getCurrMarkdown()
+	m.ogMarkdown = m.editor.Value()
 	return m
 }
