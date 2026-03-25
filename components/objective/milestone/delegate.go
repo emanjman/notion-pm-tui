@@ -81,6 +81,13 @@ func (d ItemDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd {
 	return nil
 }
 
+var statusColors = []lg.Color{
+	lg.Color("#212121"), // idle
+	lg.Color("#3766d4"), // pending
+	lg.Color("#24ff7b"), // success
+	lg.Color("#ff244c"), // failed
+}
+
 // render items (based on the list item type => header vs milestone)
 func (d ItemDelegate) Render(w io.Writer, m list.Model, index int, item list.Item) {
 	selected := index == m.Index() && d.focused
@@ -126,7 +133,7 @@ func renderItemHeader(d ItemDelegate, item listutil.ListItemGroupHeader, selecte
 func renderItem(d ItemDelegate, item Item, selected bool, windowWidth int) string {
 	contStyle := d.style.itemContainer.base
 	segStyle := d.style.itemSegment.base
-	nameStyle, tagStyle := lg.Style{}, lg.Style{}
+	nameStyle, tagStyle, stateStyle := lg.Style{}, lg.Style{}, lg.Style{}
 
 	// handle field highlighting by mode
 	if selected {
@@ -135,7 +142,7 @@ func renderItem(d ItemDelegate, item Item, selected bool, windowWidth int) strin
 			contStyle = d.style.itemContainer.selected
 
 			// apply select highlight row-wide
-			nameStyle, tagStyle = segStyle, segStyle
+			nameStyle, tagStyle, stateStyle = segStyle, segStyle, segStyle
 		} else {
 			// apply select highlight by field
 			switch d.focus.field {
@@ -150,6 +157,7 @@ func renderItem(d ItemDelegate, item Item, selected bool, windowWidth int) strin
 	// apply final field-specific styles
 	nameStyle = nameStyle.Foreground(styles.PrimaryForeground)
 	tagStyle = tagStyle.Foreground(styles.MutedForeground)
+	stateStyle = stateStyle.Foreground(statusColors[item.FetchState])
 
 	// render each field
 	name := nameStyle.Render(item.Name)
@@ -157,6 +165,8 @@ func renderItem(d ItemDelegate, item Item, selected bool, windowWidth int) strin
 	activity := segStyle.
 		Foreground(styles.MutedForeground).
 		Render(item.LatestActivityLabel)
+	state := stateStyle.Render("●")
+	space := segStyle.Render(" ")
 
 	// hide progress bar for completed milestones
 	var progress string
@@ -187,9 +197,9 @@ func renderItem(d ItemDelegate, item Item, selected bool, windowWidth int) strin
 		name = nameStyle.Render(n)
 	}
 
-	r1px := styles.GetPaddingBetween(name, activity, windowWidth, contStyle)
+	r1px := styles.GetPaddingBetween(name, activity+space+state, windowWidth, contStyle)
 	r2px := styles.GetPaddingBetween(tag, progress, windowWidth, contStyle)
-	r1 := name + styles.RenderPadding(segStyle, r1px) + activity
+	r1 := name + styles.RenderPadding(segStyle, r1px) + activity + space + state
 	r2 := tag + styles.RenderPadding(segStyle, r2px) + progress
 
 	return contStyle.Width(windowWidth).Render(r1 + "\n" + r2)

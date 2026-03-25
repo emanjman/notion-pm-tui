@@ -145,6 +145,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		item := m.list.Items()[msg.MilestoneIdx]
 		if mstone, ok := item.(Item); ok {
 			mstone.Tasks = msg.Pages
+			mstone.FetchState = Success
 			m.list.SetItem(msg.MilestoneIdx, mstone)
 		}
 		return m, nil

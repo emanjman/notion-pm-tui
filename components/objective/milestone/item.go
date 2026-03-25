@@ -60,6 +60,6 @@ func NewItem(page notion.MilestonePage) Item {
 		Tag:                 tag,
 
 		Tasks:      []notion.TaskPage{},
-		FetchState: Pending,
+		FetchState: Idle,
 	}
 }
