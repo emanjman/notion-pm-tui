@@ -1,0 +1,9 @@
+name: retrieve page
+url: $NOTION_API_URL/pages/$NOTION_HOOP_ARCHIVES_ID
+auth:
+  type: bearer_token
+  bearer_token:
+    token: $NOTION_API_TOKEN
+headers:
+- name: Notion-Version
+  value: $NOTION_VERSION
