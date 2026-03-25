@@ -4,7 +4,7 @@ import (
 	// ! temp, styling ui
 	// "fmt"
 	"notion-project-tui/components/notebook"
-	"notion-project-tui/components/tab/objective"
+	"notion-project-tui/components/objective"
 	"notion-project-tui/notion"
 	"notion-project-tui/styles"
 	"notion-project-tui/util/keymap"

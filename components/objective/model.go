@@ -1,8 +1,8 @@
 package objective
 
 import (
-	"notion-project-tui/components/list/milestone"
-	"notion-project-tui/components/list/task"
+	"notion-project-tui/components/objective/milestone"
+	"notion-project-tui/components/objective/task"
 	"notion-project-tui/notion"
 	"notion-project-tui/styles"
 	"notion-project-tui/util/keymap"
