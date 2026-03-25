@@ -34,11 +34,6 @@ type Model struct {
 	Focus *FocusState
 }
 
-/*
-should consider refactor where objective-model represents milestone
-on the surface, then each milestone represents the tasklist's state/data
-*/
-
 var statusOrder = []string{"🚧 under development", "😴 idle", "🎉 complete"}
 
 func New(n *notion.Client, projID, propID string) Model {

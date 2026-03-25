@@ -1,0 +1,29 @@
+name: update task (priority -> 5-purple)
+method: PATCH
+url: $NOTION_API_URL/pages/32eb7273944b80b28106f9c29f330007
+body:
+  content: |-
+    {
+      "properties": {
+        "priority": {
+          "id": "%3BYXd",
+          "type": "select",
+          "select": {
+            "id": "45c9f0be-45ae-4ae3-8e81-5400b0321f09",
+            "name": "5",
+            "color": "purple",
+            "description": null
+          }
+        }
+      }
+    }
+  content_type: application/json
+auth:
+  type: bearer_token
+  bearer_token:
+    token: $NOTION_API_TOKEN
+headers:
+- name: Notion-Version
+  value: $NOTION_VERSION
+- name: content-type
+  value: application/json

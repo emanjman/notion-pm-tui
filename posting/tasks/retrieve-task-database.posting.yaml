@@ -1,0 +1,9 @@
+name: retrieve task database
+url: $NOTION_API_URL/data_sources/f6d9c3b9-137f-44f1-b45e-cf24e8c88cb6
+auth:
+  type: bearer_token
+  bearer_token:
+    token: $NOTION_API_TOKEN
+headers:
+- name: Notion-Version
+  value: $NOTION_VERSION
