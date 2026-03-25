@@ -1,0 +1,12 @@
+name: retrieve page relation ids (milestone)
+url: $NOTION_API_URL/pages/$NOTION_HOOP_ARCHIVES_ID/properties/P%60%60s
+auth:
+  type: bearer_token
+  bearer_token:
+    token: $NOTION_API_TOKEN
+headers:
+- name: Notion-Version
+  value: $NOTION_VERSION
+params:
+- name: page_size
+  value: '100'
