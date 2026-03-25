@@ -2,7 +2,7 @@ package task
 
 import (
 	"fmt"
-	"notion-project-tui/components/list/milestone"
+	"notion-project-tui/components/objective/milestone"
 	"notion-project-tui/notion"
 	listutil "notion-project-tui/util/list"
 
