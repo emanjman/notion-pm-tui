@@ -23,8 +23,8 @@ type Item struct {
 	Progress            float64
 	Tag                 string
 
-	Tasks []notion.TaskPage
-	Type  FetchState
+	Tasks      []notion.TaskPage
+	FetchState FetchState
 }
 
 func (m Item) FilterValue() string { return m.Name }
@@ -59,7 +59,7 @@ func NewItem(page notion.MilestonePage) Item {
 		Progress:            progress,
 		Tag:                 tag,
 
-		Tasks: []notion.TaskPage{},
-		Type:  Pending,
+		Tasks:      []notion.TaskPage{},
+		FetchState: Pending,
 	}
 }

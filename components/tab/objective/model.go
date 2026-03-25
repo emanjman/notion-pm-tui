@@ -21,35 +21,41 @@ const (
 )
 
 type Model struct {
-	focus     Panel
-	milestone milestone.Model
-	task      task.Model
-	keys      KeyMap
+	projID           string
+	milestonesPropID string
+	loading          bool
+	err              error
+	focus            Panel
+	notion           *notion.Client
+	milestone        milestone.Model
+	task             task.Model
+	keys             KeyMap
 }
 
-func New(c *notion.Client) Model {
-	ms := milestone.New()
-	t := task.New(ms.SelectedMilestone(), c)
+func New(n *notion.Client, projID, milestonesPropID string) Model {
+	ms := milestone.New(n, projID, milestonesPropID)
+	t := task.New(n)
 
 	return Model{
-		focus:     MilestonePanel,
-		milestone: ms,
-		task:      t,
-		keys:      DefaultKeyMap,
+		projID:           projID,
+		milestonesPropID: milestonesPropID,
+		loading:          true,
+		err:              nil,
+		focus:            MilestonePanel,
+		notion:           n,
+		milestone:        ms,
+		task:             t,
+		keys:             DefaultKeyMap,
 	}
 }
 
 func (m Model) Init() tea.Cmd {
-	return tea.Batch(
-		m.milestone.Init(),
-		m.task.Init(),
-	)
+	return tea.Batch(m.milestone.Init(), m.task.Init())
 }
 
 func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-
 		if m.InFocusMode() {
 			var cmd tea.Cmd
 			if m.focus == MilestonePanel {
@@ -61,7 +67,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		} else {
 			switch {
 			case key.Matches(msg, m.keys.LeftFocus):
-				m.task.Milestone = m.milestone.SelectedMilestone()
+				// m.task.Milestone = m.milestone.SelectedMilestone()
 				m.focus = MilestonePanel
 
 				m.task.SetItemDelegate(task.NewItemDelegate(false, m.task.Focus))

@@ -26,12 +26,3 @@ type MilestoneProperties struct {
 	// LatestActivityAt    FormulaProperty     `json:"$latest-activity-at"`    // type:date
 	Tasks RelationProperty `json:"@tasks"`
 }
-
-type SelectedMilestone struct {
-	ID          string
-	TasksPropID string
-}
-
-type MilestoneSelectedMsg struct {
-	Milestone SelectedMilestone
-}

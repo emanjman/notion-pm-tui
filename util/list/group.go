@@ -21,12 +21,10 @@ type Groupable interface {
 // maps each item by their group-key
 func GroupByKey[T Groupable](items []T) map[string][]T {
 	groups := map[string][]T{}
-
 	for _, item := range items {
 		key := item.GroupKey()
 		groups[key] = append(groups[key], item)
 	}
-
 	return groups
 }
 

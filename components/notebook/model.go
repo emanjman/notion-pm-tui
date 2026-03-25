@@ -60,7 +60,7 @@ type Model struct {
 	ogMarkdown       string
 }
 
-func New(notion *notion.Client, projID, notesPropID string) Model {
+func New(notion *notion.Client, projID, propID string) Model {
 	// list config
 	l := list.New([]list.Item{}, NewItemDelegate(true), 0, 0)
 	l.SetShowHelp(false)
@@ -78,7 +78,7 @@ func New(notion *notion.Client, projID, notesPropID string) Model {
 
 	return Model{
 		projID:       projID,
-		notesPropID:  notesPropID,
+		notesPropID:  propID,
 		loading:      true,
 		err:          nil,
 		notion:       notion,
@@ -108,40 +108,39 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	case notion.NoteIDsMsg:
 		if msg.Err != nil {
 			m.err = msg.Err
-		} else {
-			return m, func() tea.Msg {
-				pages, err := notion.FetchPages[notion.NotePage](m.notion, msg.IDs)
-				return notion.NotePagesMsg{Pages: pages, Err: err}
-			}
+			m.loading = false
+			return m, nil
 		}
-		m.loading = false
-		return m, nil
+		return m, func() tea.Msg {
+			pages, err := notion.FetchPages[notion.NotePage](m.notion, msg.IDs)
+			return notion.NotePagesMsg{Pages: pages, Err: err}
+		}
 
 	case notion.NotePagesMsg:
 		if msg.Err != nil {
 			m.err = msg.Err
 			m.loading = false
 			return m, nil
-		} else {
-			items := m.buildNoteList(msg.Pages)
-			m.browser.SetItems(items)
-			m.loading = false
-
-			reqCnt := 5
-			blxCmds, mdCmds := make([]tea.Cmd, reqCnt), make([]tea.Cmd, reqCnt)
-			for i := range reqCnt {
-				item := m.browser.Items()[i]
-				if note, ok := item.(Item); ok {
-					note.ContentState = Pending
-					m.browser.SetItem(i, note)
-
-					blxCmds[i] = m.fetchNoteBlocks(i, note)
-					mdCmds[i] = m.fetchNoteMarkdown(i, note)
-				}
-			}
-			cmds := append(blxCmds, mdCmds...)
-			return m, tea.Batch(cmds...)
 		}
+
+		items := m.buildNoteList(msg.Pages)
+		m.browser.SetItems(items)
+		m.loading = false
+
+		reqCnt := 5
+		blxCmds, mdCmds := make([]tea.Cmd, reqCnt), make([]tea.Cmd, reqCnt)
+		for i := range reqCnt {
+			item := m.browser.Items()[i]
+			if note, ok := item.(Item); ok {
+				note.ContentState = Pending
+				m.browser.SetItem(i, note)
+
+				blxCmds[i] = m.fetchNoteBlocks(i, note)
+				mdCmds[i] = m.fetchNoteMarkdown(i, note)
+			}
+		}
+		cmds := append(blxCmds, mdCmds...)
+		return m, tea.Batch(cmds...)
 
 	case FetchNoteContentMsg:
 		if curr := m.browser.Items()[msg.Idx]; curr != nil {

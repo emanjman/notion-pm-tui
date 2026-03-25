@@ -155,29 +155,23 @@ func (c *Client) FetchRelationIDs(pageID string, propID string) ([]string, error
 		if cursor != "" {
 			url += "&start_cursor=" + cursor
 		}
-
 		req, err := http.NewRequest("GET", url, nil)
 		if err != nil {
 			return nil, err
 		}
-
 		var res RelationListResponse
 		if err := c.do(req, &res); err != nil {
 			return nil, err
 		}
-
 		for _, result := range res.Results {
 			ids = append(ids, result.Relation.ID)
 		}
-
 		// exit if we've exhausted all relations
 		if !res.HasMore || res.NextCursor == nil {
 			break
 		}
-
 		cursor = *res.NextCursor
 	}
-
 	return ids, nil
 }
 

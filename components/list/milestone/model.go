@@ -11,8 +11,17 @@ import (
 	lg "github.com/charmbracelet/lipgloss"
 )
 
+type TaskViewMsg struct {
+	Tasks []notion.TaskPage
+}
+
 type Model struct {
+	notion *notion.Client
+	projID string
+	propID string
+
 	list    list.Model
+	err     error
 	loading bool
 	groups  map[string][]Item // header to items
 	hidden  map[string]bool   // hidden group
@@ -25,9 +34,14 @@ type Model struct {
 	Focus *FocusState
 }
 
+/*
+should consider refactor where objective-model represents milestone
+on the surface, then each milestone represents the tasklist's state/data
+*/
+
 var statusOrder = []string{"🚧 under development", "😴 idle", "🎉 complete"}
 
-func New() Model {
+func New(n *notion.Client, projID, propID string) Model {
 	f := FocusState{}
 
 	l := list.New([]list.Item{}, NewItemDelegate(true, &f), 0, 0)
@@ -40,7 +54,12 @@ func New() Model {
 	l.DisableQuitKeybindings()
 
 	m := Model{
+		notion: n,
+		projID: projID,
+		propID: propID,
+
 		list:    l,
+		err:     nil,
 		loading: true,
 		groups:  listutil.GroupByKey(mockItems()),
 		hidden:  map[string]bool{},
@@ -57,13 +76,83 @@ func New() Model {
 	return m
 }
 
-// todo: will need to update this to kickoff the actual fetch task/msg (and call in parent)
 func (m Model) Init() tea.Cmd {
-	return nil
+	return func() tea.Msg {
+		ids, err := m.notion.FetchRelationIDs(m.projID, m.propID)
+		return notion.MilestoneIDsMsg{IDs: ids, Err: err}
+	}
 }
 
 func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
+
+	case notion.MilestoneIDsMsg:
+		if msg.Err != nil {
+			m.err = msg.Err
+			m.loading = false
+			return m, nil
+		}
+		return m, func() tea.Msg {
+			pages, err := notion.FetchPages[notion.MilestonePage](m.notion, msg.IDs)
+			return notion.MilestonePagesMsg{Pages: pages, Err: err}
+		}
+
+	case notion.MilestonePagesMsg:
+		if msg.Err != nil {
+			m.err = msg.Err
+			m.loading = false
+			return m, nil
+		}
+
+		// create the list items
+		tempItems := make([]Item, len(msg.Pages))
+		for i, pg := range msg.Pages {
+			tempItems[i] = NewItem(pg)
+		}
+
+		m.groups = listutil.GroupByKey(tempItems)
+		items := listutil.BuildGroupList(m.groups, m.hidden, statusOrder)
+
+		m.list.SetItems(items)
+		m.loading = false
+
+		cmds := []tea.Cmd{}
+		for i, item := range m.list.Items() {
+			if item, ok := item.(Item); ok && item.Status == "🚧 under development" {
+				item.FetchState = Pending
+				m.list.SetItem(i, item)
+				cmds = append(cmds, m.fetchTaskRelationIDs(i, item))
+			}
+		}
+		return m, tea.Batch(cmds...)
+
+	case notion.TaskIDsMsg:
+		if msg.Err != nil {
+			m.err = msg.Err
+			m.loading = false
+			return m, nil
+		}
+		item := m.list.Items()[msg.MilestoneIdx]
+		if _, ok := item.(Item); ok {
+			return m, func() tea.Msg {
+				pages, err := notion.FetchPages[notion.TaskPage](m.notion, msg.IDs)
+				return notion.TaskPagesMsg{Pages: pages, Err: err, MilestoneIdx: msg.MilestoneIdx}
+			}
+		}
+		return m, nil
+
+	case notion.TaskPagesMsg:
+		if msg.Err != nil {
+			m.err = msg.Err
+			m.loading = false
+			return m, nil
+		}
+		item := m.list.Items()[msg.MilestoneIdx]
+		if mstone, ok := item.(Item); ok {
+			mstone.Tasks = msg.Pages
+			m.list.SetItem(msg.MilestoneIdx, mstone)
+		}
+		return m, nil
 
 	case tea.WindowSizeMsg:
 		m.list.SetSize(msg.Width, msg.Height)
@@ -163,28 +252,20 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 					m.ActiveKeyMap = SelectingKeyMapper
 					m.Focus.Mode = SelectingMode
 				}
-
 				return m, nil
+
+			case key.Matches(msg, m.neutralKeyMap.Down):
+				m.list.CursorDown()
+				return m, func() tea.Msg {
+					return TaskViewMsg{Tasks: m.getCurrTasks()}
+				}
+			case key.Matches(msg, m.neutralKeyMap.Up):
+				m.list.CursorUp()
+				return m, func() tea.Msg {
+					return TaskViewMsg{Tasks: m.getCurrTasks()}
+				}
 			}
 		}
-
-	case notion.MilestonePagesMsg:
-		if msg.Err != nil {
-			return m, nil
-		}
-
-		// create the list items
-		tempItems := make([]Item, len(msg.Pages))
-		for i, page := range msg.Pages {
-			tempItems[i] = NewItem(page)
-		}
-
-		m.groups = listutil.GroupByKey(tempItems)
-		items := listutil.BuildGroupList(m.groups, m.hidden, statusOrder)
-
-		m.list.SetItems(items)
-		m.loading = false
-
 	}
 
 	var cmd tea.Cmd
@@ -194,35 +275,25 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 
 // just forward the list.View()
 func (m Model) View() string {
-	// ! temp, styling
-	// if m.loading {
-	// 	return "Loading milestones..."
-	// }
+	if m.loading {
+		return "Loading milestones..."
+	}
 
 	containerStyle := lg.NewStyle().PaddingRight(1)
 	return containerStyle.Render(m.list.View())
 }
 
-func (m Model) SelectedMilestone() notion.SelectedMilestone {
+func (m Model) getCurrTasks() []notion.TaskPage {
 	item := m.list.SelectedItem()
 
 	switch item := item.(type) {
-	// get first milestone id of this group
 	case listutil.ListItemGroupHeader:
-		milestone := m.groups[item.Label][0]
-		return notion.SelectedMilestone{
-			ID:          milestone.ID,
-			TasksPropID: milestone.TasksPropID,
-		}
-	// otherwise, on milestone, return its id
+		mstone := m.groups[item.Label][0]
+		return mstone.Tasks
 	case Item:
-		return notion.SelectedMilestone{
-			ID:          item.ID,
-			TasksPropID: item.TasksPropID,
-		}
+		return item.Tasks
 	}
-
-	return notion.SelectedMilestone{}
+	return []notion.TaskPage{}
 }
 
 func (m *Model) SetItemDelegate(d list.ItemDelegate) {
@@ -243,4 +314,11 @@ func (m Model) updateMilestoneInGroups(updated Item) Model {
 	// then rebuild item list
 	m.list.SetItems(listutil.BuildGroupList(m.groups, m.hidden, statusOrder))
 	return m
+}
+
+func (m Model) fetchTaskRelationIDs(idx int, mstone Item) tea.Cmd {
+	return func() tea.Msg {
+		ids, err := m.notion.FetchRelationIDs(mstone.ID, mstone.TasksPropID)
+		return notion.TaskIDsMsg{IDs: ids, Err: err, MilestoneIdx: idx}
+	}
 }

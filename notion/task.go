@@ -1,13 +1,15 @@
 package notion
 
 type TaskPagesMsg struct {
-	Pages []TaskPage
-	Err   error
+	Pages        []TaskPage
+	Err          error
+	MilestoneIdx int
 }
 
 type TaskIDsMsg struct {
-	IDs []string
-	Err error
+	IDs          []string
+	Err          error
+	MilestoneIdx int
 }
 
 type TaskPage struct {

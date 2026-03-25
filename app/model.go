@@ -8,6 +8,7 @@ import (
 	"notion-project-tui/notion"
 	"notion-project-tui/styles"
 	"notion-project-tui/util/keymap"
+	"os"
 	"strings"
 	"time"
 
@@ -65,11 +66,10 @@ func New() Model {
 		keys:      RootKeyMap,
 		help:      help.New(),
 		notion:    notion.NewClient(),
-		objective: objective.New(c),
+		objective: objective.New(c, os.Getenv("NOTION_HOOP_ARCHIVES_ID"), "P%60%60s"),
 		// overview:  overview.New(c),
 
-		//! hardoded for now
-		notebook: notebook.New(c, "1d3b7273944b8024ac0ff449015a7d9b", "%7BGKi"),
+		notebook: notebook.New(c, os.Getenv("NOTION_HOOP_ARCHIVES_ID"), "%7BGKi"),
 	}
 }
 
