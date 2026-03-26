@@ -1,4 +1,4 @@
-name: retrieve task datasource
+name: retrieve milestone datasource
 url: $NOTION_API_URL/data_sources/:dsId
 auth:
   type: bearer_token
@@ -9,4 +9,4 @@ headers:
   value: $NOTION_VERSION
 path_params:
 - name: dsId
-  value: f6d9c3b9-137f-44f1-b45e-cf24e8c88cb6
+  value: 3617361c-6e4d-4539-b2fc-aa8923a16eeb

@@ -1,0 +1,45 @@
+name: temp task EDITED
+method: PATCH
+url: $NOTION_API_URL/pages/:pageId
+body:
+  content: |-
+    {
+      "properties": {
+        "task": {
+          "id": "title",
+          "type": "title",
+          "title": [
+            {
+              "type": "text",
+              "text": {
+                "content": "temp task EDITED",
+                "link": null
+              },
+              "annotations": {
+                "bold": false,
+                "italic": false,
+                "strikethrough": false,
+                "underline": false,
+                "code": false,
+                "color": "default"
+              },
+              "plain_text": "temp task EDITED",
+              "href": null
+            }
+          ]
+        }
+      }
+    }
+  content_type: application/json
+auth:
+  type: bearer_token
+  bearer_token:
+    token: $NOTION_API_TOKEN
+headers:
+  - name: Notion-Version
+    value: $NOTION_VERSION
+  - name: content-type
+    value: application/json
+path_params:
+  - name: pageId
+    value: 32fb7273944b80ecb268e540772a54fa

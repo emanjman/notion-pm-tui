@@ -1,0 +1,24 @@
+name: dog 🐶
+method: PATCH
+url: $NOTION_API_URL/pages/:pageId
+body:
+  content: |-
+    {
+      "icon": {
+        "type": "emoji",
+        "emoji": "🐶"
+      }
+    }
+  content_type: application/json
+auth:
+  type: bearer_token
+  bearer_token:
+    token: $NOTION_API_TOKEN
+headers:
+- name: Notion-Version
+  value: $NOTION_VERSION
+- name: content-type
+  value: application/json
+path_params:
+- name: pageId
+  value: 32fb7273944b80b3ad6ae7d261aff703

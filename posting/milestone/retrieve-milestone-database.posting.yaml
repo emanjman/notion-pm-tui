@@ -1,0 +1,14 @@
+name: retrieve milestone database
+description: |-
+  necessary for accessing the datasource id -> db.data_sources.id
+url: $NOTION_API_URL/databases/:dbId
+auth:
+  type: bearer_token
+  bearer_token:
+    token: $NOTION_API_TOKEN
+headers:
+- name: Notion-Version
+  value: $NOTION_VERSION
+path_params:
+- name: dbId
+  value: 87f60babd0964daa8ecf8ef093abe06e

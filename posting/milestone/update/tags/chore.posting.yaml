@@ -1,17 +1,18 @@
-name: update task (priority -> 0-none)
+name: chore
 method: PATCH
-url: $NOTION_API_URL/pages/32eb7273944b80b28106f9c29f330007
+url: $NOTION_API_URL/pages/:pageId
 body:
   content: |-
     {
       "properties": {
-        "priority": {
-          "id": "%3BYXd",
+        "tags": {
+          "id": "ll%5Ez",
           "type": "select",
           "select": {
-            "id": "5a12d048-4277-4349-b8f8-f05933562951",
-            "name": "0",
-            "color": "default"
+            "id": "6c7e6b38-04e1-457c-be71-58a0c10d1335",
+            "name": "chore 🧼",
+            "color": "default",
+            "description": null
           }
         }
       }
@@ -26,3 +27,6 @@ headers:
   value: $NOTION_VERSION
 - name: content-type
   value: application/json
+path_params:
+- name: pageId
+  value: 32fb7273944b80b3ad6ae7d261aff703

@@ -1,0 +1,31 @@
+name: "0"
+method: PATCH
+url: $NOTION_API_URL/pages/:pageId
+body:
+  content: |-
+    {
+      "properties": {
+        "priority": {
+          "id": "%3BYXd",
+          "type": "select",
+          "select": {
+            "id": "5a12d048-4277-4349-b8f8-f05933562951",
+            "name": "0",
+            "color": "default"
+          }
+        }
+      }
+    }
+  content_type: application/json
+auth:
+  type: bearer_token
+  bearer_token:
+    token: $NOTION_API_TOKEN
+headers:
+  - name: Notion-Version
+    value: $NOTION_VERSION
+  - name: content-type
+    value: application/json
+path_params:
+  - name: pageId
+    value: 32fb7273944b80ecb268e540772a54fa

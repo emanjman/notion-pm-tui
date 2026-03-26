@@ -1,9 +1,0 @@
-name: retrieve task select property
-url: $NOTION_API_URL/pages/32eb7273944b80b28106f9c29f330007/properties/%3BYXd
-auth:
-  type: bearer_token
-  bearer_token:
-    token: $NOTION_API_TOKEN
-headers:
-- name: Notion-Version
-  value: $NOTION_VERSION

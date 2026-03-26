@@ -1,0 +1,32 @@
+name: dev
+method: PATCH
+url: $NOTION_API_URL/pages/:pageId
+body:
+  content: |
+    {
+      "properties": {
+        "status": {
+          "id": "y%7B%5CO",
+          "type": "status",
+          "status": {
+            "id": "19c18e72-7f77-4ad9-88da-dc08f7899ef6",
+            "name": "dev",
+            "color": "blue",
+            "description": null
+          }
+        }
+      }
+    }
+  content_type: application/json
+auth:
+  type: bearer_token
+  bearer_token:
+    token: $NOTION_API_TOKEN
+headers:
+- name: Notion-Version
+  value: $NOTION_VERSION
+- name: content-type
+  value: application/json
+path_params:
+- name: pageId
+  value: 32fb7273944b80ecb268e540772a54fa

@@ -1,6 +1,6 @@
-name: update task (priority -> 5-purple)
+name: "5"
 method: PATCH
-url: $NOTION_API_URL/pages/32eb7273944b80b28106f9c29f330007
+url: $NOTION_API_URL/pages/:pageId
 body:
   content: |-
     {
@@ -23,7 +23,10 @@ auth:
   bearer_token:
     token: $NOTION_API_TOKEN
 headers:
-- name: Notion-Version
-  value: $NOTION_VERSION
-- name: content-type
-  value: application/json
+  - name: Notion-Version
+    value: $NOTION_VERSION
+  - name: content-type
+    value: application/json
+path_params:
+  - name: pageId
+    value: 32fb7273944b80ecb268e540772a54fa
