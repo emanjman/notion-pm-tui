@@ -44,12 +44,13 @@ func (k BrowserKeyMap) FullHelp() [][]key.Binding {
 // ---
 
 type ReaderKeyMap struct {
-	Left  key.Binding
-	Up    key.Binding
-	Up5   key.Binding
-	Down  key.Binding
-	Down5 key.Binding
-	Enter key.Binding
+	Left       key.Binding
+	Up         key.Binding
+	Up5        key.Binding
+	Down       key.Binding
+	Down5      key.Binding
+	Enter      key.Binding
+	OpenEditor key.Binding
 }
 
 var ReaderKeys = ReaderKeyMap{
@@ -77,15 +78,19 @@ var ReaderKeys = ReaderKeyMap{
 		key.WithKeys("enter"),
 		key.WithHelp("enter", "edit mode"),
 	),
+	OpenEditor: key.NewBinding(
+		key.WithKeys("ctrl+e"),
+		key.WithHelp("ctrl+e", "open in editor"),
+	),
 }
 
 func (k ReaderKeyMap) ShortHelp() []key.Binding {
-	return []key.Binding{k.Left, k.Up, k.Down, k.Enter}
+	return []key.Binding{k.Left, k.Up, k.Down, k.Enter, k.OpenEditor}
 }
 
 func (k ReaderKeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.Left, k.Up, k.Down, k.Enter},
+		{k.Left, k.Up, k.Down, k.Enter, k.OpenEditor},
 		{},
 	}
 }

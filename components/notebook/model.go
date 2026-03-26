@@ -179,6 +179,13 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		}
 		m.editor.SetValue(m.getCurrMarkdown())
 
+	case EditorFinishedMsg:
+		return m, func() tea.Msg {
+			md, err := m.notion.ReplaceContentByMarkdown(msg.Note.ID, msg.Content)
+			msg.Note.Markdown = md
+			return ReplaceContentMsg{Note: msg.Note, Idx: msg.Idx, Err: err}
+		}
+
 	case ReplaceContentMsg:
 		if msg.Note != nil {
 			// Update the item with new markdown from API
@@ -269,6 +276,14 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 
 			case key.Matches(msg, m.readerKeyMap.Enter):
 				m = m.enterEditMode()
+
+			case key.Matches(msg, m.readerKeyMap.OpenEditor):
+				idx := m.browser.Index()
+				note := m.browser.Items()[idx]
+				if note, ok := note.(Item); ok {
+					return m, openMarkdownInEditor(m.getCurrMarkdown(), idx, note)
+				}
+				return m, nil
 			}
 		case Editing:
 			switch {

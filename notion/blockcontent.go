@@ -193,7 +193,7 @@ func renderCode(b Block, base lg.Style) string {
 		lxr = lexers.Fallback
 	}
 
-	style := chromastyles.Get("monokai")
+	style := chromastyles.Get("onedark") // theme
 	if style == nil {
 		style = chromastyles.Fallback
 	}
