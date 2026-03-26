@@ -227,17 +227,10 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 				return m, nil
 
 			case key.Matches(msg, m.browserKeyMap.Down):
-				m.browser.CursorDown()
-				m.reader.YPosition = 0
-				m.reader.SetContent(m.getCurrContent())
-				m.editor.SetValue(m.getCurrMarkdown())
+				m = m.updateContentOnNav(true)
 				return m, nil
-
 			case key.Matches(msg, m.browserKeyMap.Up):
-				m.browser.CursorUp()
-				m.reader.YPosition = 0
-				m.reader.SetContent(m.getCurrContent())
-				m.editor.SetValue(m.getCurrMarkdown())
+				m = m.updateContentOnNav(false)
 				return m, nil
 
 			case key.Matches(msg, m.browserKeyMap.Enter):
@@ -461,5 +454,17 @@ func (m Model) enterEditMode() Model {
 	m.browser.SetDelegate(NewItemDelegate(false))
 	m.ogMarkdown = m.editor.Value()
 	m.vimMode = NormalMode
+	return m
+}
+
+func (m Model) updateContentOnNav(scrollDown bool) Model {
+	if scrollDown {
+		m.browser.CursorDown()
+	} else {
+		m.browser.CursorUp()
+	}
+	m.reader.YPosition = 0
+	m.reader.SetContent(m.getCurrContent())
+	m.editor.SetValue(m.getCurrMarkdown())
 	return m
 }
