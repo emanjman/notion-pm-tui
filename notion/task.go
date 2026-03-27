@@ -1,5 +1,20 @@
 package notion
 
+type TaskTypeOptionsMsg struct {
+	Options []SelectItem
+	Err     error
+}
+
+type TaskDatasourceResponse struct {
+	Properties struct {
+		Type struct {
+			Select struct {
+				Options []SelectItem `json:"options"`
+			} `json:"select"`
+		} `json:"type"`
+	} `json:"properties"`
+}
+
 type TaskPagesMsg struct {
 	Pages        []TaskPage
 	Err          error

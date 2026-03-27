@@ -13,28 +13,31 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-const baseURL = "https://api.notion.com/v1"
-const version = "2025-09-03"
-
 type Client struct {
-	http   *http.Client
-	token  string
-	projId string
+	http      *http.Client
+	token     string
+	version   string
+	baseURL   string
+	projId    string
+	tasksDsId string
 }
 
 // constructor
 func NewClient() *Client {
 	// address of newly created client
 	return &Client{
-		http:   &http.Client{Timeout: 10 * time.Second},
-		token:  os.Getenv("NOTION_API_TOKEN"),
-		projId: os.Getenv("NOTION_HOOP_ARCHIVES_ID"),
+		http:      &http.Client{Timeout: 10 * time.Second},
+		token:     os.Getenv("NOTION_API_TOKEN"),
+		version:   os.Getenv("NOTION_VERSION"),
+		baseURL:   os.Getenv("NOTION_API_URL"),
+		projId:    os.Getenv("NOTION_HOOP_ARCHIVES_ID"),
+		tasksDsId: os.Getenv("NOTION_TASKS_DS_ID"),
 	}
 }
 
 // helper func to decode result as json
 func (c *Client) do(req *http.Request, target interface{}) error {
-	req.Header.Add("Notion-Version", version)
+	req.Header.Add("Notion-Version", c.version)
 	req.Header.Add("Authorization", "Bearer "+c.token)
 
 	res, err := c.http.Do(req)
@@ -57,7 +60,7 @@ func (c *Client) FetchProject() tea.Cmd {
 	return func() tea.Msg {
 		start := time.Now()
 
-		url := baseURL + "/pages/" + c.projId
+		url := c.baseURL + "/pages/" + c.projId
 
 		req, err := http.NewRequest("GET", url, nil)
 		if err != nil {
@@ -109,7 +112,7 @@ func (c *Client) fetchAllChildrenBlocks(blockID string) ([]Block, error) {
 	cursor := ""
 
 	for {
-		url := baseURL + "/blocks/" + blockID + "/children?page_size=100"
+		url := c.baseURL + "/blocks/" + blockID + "/children?page_size=100"
 		if cursor != "" {
 			url += "&start_cursor=" + cursor
 		}
@@ -151,11 +154,11 @@ func (c *Client) FetchRelationIDs(pageID string, propID string) ([]string, error
 	cursor := ""
 
 	for {
-		url := baseURL + "/pages/" + pageID + "/properties/" + propID + "?page_size=100"
+		endpt := c.baseURL + "/pages/" + pageID + "/properties/" + propID + "?page_size=100"
 		if cursor != "" {
-			url += "&start_cursor=" + cursor
+			endpt += "&start_cursor=" + cursor
 		}
-		req, err := http.NewRequest("GET", url, nil)
+		req, err := http.NewRequest("GET", endpt, nil)
 		if err != nil {
 			return nil, err
 		}
@@ -178,7 +181,7 @@ func (c *Client) FetchRelationIDs(pageID string, propID string) ([]string, error
 func FetchPages[T any](c *Client, ids []string) ([]T, error) {
 	relations := make([]T, 0, len(ids))
 	for _, id := range ids {
-		url := baseURL + "/pages/" + id
+		url := c.baseURL + "/pages/" + id
 		req, err := http.NewRequest("GET", url, nil)
 		if err != nil {
 			return nil, err
@@ -193,7 +196,7 @@ func FetchPages[T any](c *Client, ids []string) ([]T, error) {
 }
 
 func (c *Client) FetchPageMarkdown(pageID string) (string, error) {
-	url := baseURL + "/pages/" + pageID + "/markdown"
+	url := c.baseURL + "/pages/" + pageID + "/markdown"
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return "", err
@@ -206,7 +209,7 @@ func (c *Client) FetchPageMarkdown(pageID string) (string, error) {
 }
 
 func (c *Client) ReplaceContentByMarkdown(pageID string, md string) (string, error) {
-	url := baseURL + "/pages/" + pageID + "/markdown"
+	url := c.baseURL + "/pages/" + pageID + "/markdown"
 
 	log.Printf("entered replace content func")
 
@@ -235,7 +238,7 @@ func (c *Client) ReplaceContentByMarkdown(pageID string, md string) (string, err
 }
 
 func (c *Client) UpdatePageProperties(pageID string, props any) error {
-	url := baseURL + "/pages/" + pageID
+	url := c.baseURL + "/pages/" + pageID
 
 	body, err := json.Marshal(struct {
 		Properties any `json:"properties"`
@@ -252,4 +255,22 @@ func (c *Client) UpdatePageProperties(pageID string, props any) error {
 
 	var res struct{}
 	return c.do(req, &res)
+}
+
+func (c *Client) FetchTaskTypeOptions() tea.Cmd {
+	return func() tea.Msg {
+		url := c.baseURL + "/data_sources/" + c.tasksDsId
+
+		req, err := http.NewRequest("GET", url, nil)
+		if err != nil {
+			return TaskTypeOptionsMsg{Err: err}
+		}
+
+		var res TaskDatasourceResponse
+		if err := c.do(req, &res); err != nil {
+			return TaskTypeOptionsMsg{Err: err}
+		}
+
+		return TaskTypeOptionsMsg{Options: res.Properties.Type.Select.Options}
+	}
 }

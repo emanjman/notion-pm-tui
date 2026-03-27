@@ -1,6 +1,7 @@
 package task
 
 import (
+	"notion-project-tui/notion"
 	"notion-project-tui/styles"
 
 	"github.com/charmbracelet/bubbles/textinput"
@@ -38,6 +39,7 @@ type FocusState struct {
 	tempTitle    textinput.Model
 	tempPriority int
 	prevTitle    string
+	prevType     string
 
 	// deletion confirmation
 	pendingDelete bool
@@ -46,18 +48,17 @@ type FocusState struct {
 // ---
 // helpers
 
-var typeFieldOptions = []string{"feat", "fix", "chore", "refactor", "style"}
-
-func cycleTypeField(curr string, delta int) string {
-	n := len(typeFieldOptions)
-
-	for i, typ := range typeFieldOptions {
-		if typ == curr {
-			return typeFieldOptions[((i+delta)%n+n)%n] // todo: vet logic
+func cycleTypeField(curr string, delta int, options []notion.SelectItem) string {
+	n := len(options)
+	if n == 0 {
+		return curr
+	}
+	for i, opt := range options {
+		if opt.Name == curr {
+			return options[((i+delta)%n+n)%n].Name
 		}
 	}
-
-	return typeFieldOptions[0]
+	return options[0].Name
 }
 
 func cyclePriorityField(curr, delta int) int {

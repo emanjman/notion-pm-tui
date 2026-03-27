@@ -1,5 +1,5 @@
-name: retrieve task database
-url: $NOTION_API_URL/databases/:dbId
+name: retrieve task datasource
+url: $NOTION_API_URL/data_sources/:dsId
 auth:
   type: bearer_token
   bearer_token:
@@ -8,5 +8,5 @@ headers:
   - name: Notion-Version
     value: $NOTION_VERSION
 path_params:
-  - name: dbId
-    value: $NOTION_TASKS_DB_ID
+  - name: dsId
+    value: $NOTION_TASKS_DS_ID

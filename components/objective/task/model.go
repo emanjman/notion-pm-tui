@@ -14,13 +14,17 @@ import (
 	lg "github.com/charmbracelet/lipgloss"
 )
 
-type UpdatePagePropertiesMsg struct{ Err error }
+type UpdateTitleMsg struct{ Err error }
+type UpdateSelectionsMsg struct{ Err error }
+type UpdateStatusMsg struct{ Err error }
 
 type Model struct {
 	// Milestone notion.SelectedMilestone // milestone these tasks source from
 	list    list.Model
 	notion  *notion.Client
 	loading bool
+
+	typeOptions []notion.SelectItem
 
 	groups map[string][]Item // should this be Groupable intf?
 	hidden map[string]bool   // should this be Groupable intf?
@@ -68,13 +72,13 @@ func New(clt *notion.Client) Model {
 }
 
 func (m Model) Init() tea.Cmd {
-	return nil
+	return m.notion.FetchTaskTypeOptions()
 }
 
 func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
 
-	case UpdatePagePropertiesMsg:
+	case UpdateTitleMsg:
 		if msg.Err != nil {
 			if task, ok := m.list.SelectedItem().(Item); ok {
 				log.Printf("[ERROR] updating task title in Notion, reverting...")
@@ -84,6 +88,25 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			}
 			return m, nil
 		}
+	case UpdateSelectionsMsg:
+		if msg.Err != nil {
+			if task, ok := m.list.SelectedItem().(Item); ok {
+				task.Type = m.Focus.prevType
+				m.list.SetItem(m.Focus.taskIdx, task)
+				m.updateTaskInGroups(task)
+			}
+		}
+		return m, nil
+
+	case notion.TaskTypeOptionsMsg:
+		if msg.Err != nil {
+			log.Printf("[ERROR] fetching task type options: %v", msg.Err)
+			return m, nil
+		}
+		m.typeOptions = msg.Options
+		m.loading = false
+		log.Printf("[INFO] task type options loaded: %+v", m.typeOptions)
+		return m, nil
 
 	case milestone.TaskViewMsg:
 		// create list items
@@ -123,13 +146,12 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 				}}
 
 				return m, func() tea.Msg {
-					log.Printf("sending request")
 					err := m.notion.UpdatePageProperties(
 						m.Focus.taskID,
 						map[string]any{
 							"task": newTitle,
 						})
-					return UpdatePagePropertiesMsg{Err: err}
+					return UpdateTitleMsg{Err: err}
 				}
 
 			// forward all keys into the textinput model
@@ -148,7 +170,22 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 				m.Focus.Mode = NeutralMode
 				m.ActiveKeyMap = NeutralKeyMapper
 
-				// todo: send command to update task changes (type/priority) in notion
+				if task, ok := m.list.SelectedItem().(Item); ok {
+					var typeOpt notion.SelectItem
+					for _, opt := range m.typeOptions {
+						if opt.Name == task.Type {
+							typeOpt = opt
+							break
+						}
+					}
+					taskID := m.Focus.taskID
+					return m, func() tea.Msg {
+						err := m.notion.UpdatePageProperties(taskID, map[string]any{
+							"type": map[string]any{"select": typeOpt},
+						})
+						return UpdateSelectionsMsg{Err: err}
+					}
+				}
 				return m, nil
 
 			// switch between fields
@@ -169,7 +206,8 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 				if task, ok := selected.(Item); ok {
 					switch m.Focus.field {
 					case TaskType:
-						task.Type = cycleTypeField(task.Type, 1)
+						m.Focus.prevType = task.Type
+						task.Type = cycleTypeField(task.Type, 1, m.typeOptions)
 					case TaskPriority:
 						task.Priority = cyclePriorityField(task.Priority, 1)
 					case TaskTitle:
