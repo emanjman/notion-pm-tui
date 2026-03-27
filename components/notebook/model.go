@@ -182,7 +182,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	case EditorFinishedMsg:
 		return m, func() tea.Msg {
 			md, err := m.notion.ReplaceContentByMarkdown(msg.Note.ID, msg.Content)
-			msg.Note.Markdown = md
+			msg.Note.Markdown = notion.AddBlockSpacing(md)
 			return ReplaceContentMsg{Note: msg.Note, Idx: msg.Idx, Err: err}
 		}
 
@@ -316,7 +316,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 					idx := m.browser.Index()
 					return m, func() tea.Msg {
 						md, err := m.notion.ReplaceContentByMarkdown(item.ID, m.editor.Value())
-						item.Markdown = md
+						item.Markdown = notion.AddBlockSpacing(md)
 						if err != nil {
 							return ReplaceContentMsg{Idx: idx, Note: &item, Err: err}
 						}
@@ -414,7 +414,7 @@ func (m Model) fetchNoteMarkdown(idx int, note Item) tea.Cmd {
 		if err != nil {
 			note.Markdown = err.Error()
 		} else {
-			note.Markdown = md
+			note.Markdown = notion.AddBlockSpacing(md)
 		}
 		return FetchNoteMarkdownMsg{Idx: idx, Note: &note, Err: err}
 	}
