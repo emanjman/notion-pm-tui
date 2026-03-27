@@ -81,13 +81,6 @@ func (d ItemDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd {
 	return nil
 }
 
-var statusColors = []lg.Color{
-	lg.Color("#212121"), // idle
-	lg.Color("#3766d4"), // pending
-	lg.Color("#24ff7b"), // success
-	lg.Color("#ff244c"), // failed
-}
-
 // render items (based on the list item type => header vs milestone)
 func (d ItemDelegate) Render(w io.Writer, m list.Model, index int, item list.Item) {
 	selected := index == m.Index() && d.focused
@@ -157,15 +150,22 @@ func renderItem(d ItemDelegate, item Item, selected bool, windowWidth int) strin
 	// apply final field-specific styles
 	nameStyle = nameStyle.Foreground(styles.PrimaryForeground)
 	tagStyle = tagStyle.Foreground(styles.MutedForeground)
-	stateStyle = stateStyle.Foreground(statusColors[item.FetchState])
-
 	// render each field
 	name := nameStyle.Render(item.Name)
 	tag := tagStyle.Render(item.Tag)
 	activity := segStyle.
 		Foreground(styles.MutedForeground).
 		Render(item.LatestActivityLabel)
-	state := stateStyle.Render("●")
+
+	var state string
+	switch item.FetchState {
+	case Idle:
+		state = stateStyle.Foreground(styles.MutedForeground).Render("◌")
+	case Pending:
+		state = stateStyle.Foreground(styles.MutedForeground).Render("↻")
+	case Failed:
+		state = stateStyle.Foreground(lg.Color("#e0af68")).Render("⚠")
+	}
 	space := segStyle.Render(" ")
 
 	// hide progress bar for completed milestones

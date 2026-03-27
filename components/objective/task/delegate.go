@@ -2,12 +2,13 @@ package task
 
 import (
 	"fmt"
-	"github.com/charmbracelet/bubbles/list"
-	tea "github.com/charmbracelet/bubbletea"
-	lg "github.com/charmbracelet/lipgloss"
 	"io"
 	"notion-project-tui/styles"
 	listutil "notion-project-tui/util/list"
+
+	"github.com/charmbracelet/bubbles/list"
+	tea "github.com/charmbracelet/bubbletea"
+	lg "github.com/charmbracelet/lipgloss"
 )
 
 type variantStyle struct {
@@ -121,10 +122,17 @@ var priorities = []priority{
 	{fg: lg.Color("#f7768e"), severity: "critical"},
 }
 
+var statusColors = map[string]lg.Color{
+	"idle":    lg.Color("#212121"),
+	"dev":     lg.Color("#e0af68"),
+	"done":    lg.Color("#24ff7b"),
+	"archive": lg.Color("#ff244c"),
+}
+
 func renderItem(d ItemDelegate, item Item, selected bool, windowWidth int) string {
 	contStyle := d.style.itemContainer.base
 	segStyle := d.style.itemSegment.base
-	typStyle, titleStyle, priorityStyle := lg.Style{}, lg.Style{}, lg.Style{}
+	typStyle, titleStyle, priorityStyle, statusStyle := lg.Style{}, lg.Style{}, lg.Style{}, lg.Style{}
 
 	// handle field highlighting by mode
 	if selected {
@@ -133,7 +141,7 @@ func renderItem(d ItemDelegate, item Item, selected bool, windowWidth int) strin
 			contStyle = d.style.itemContainer.selected
 
 			// apply select highlight row-wide
-			typStyle, titleStyle, priorityStyle = segStyle, segStyle, segStyle
+			typStyle, titleStyle, priorityStyle, statusStyle = segStyle, segStyle, segStyle, segStyle
 		} else {
 			// apply select highlight by field
 			switch d.focus.field {
@@ -153,6 +161,7 @@ func renderItem(d ItemDelegate, item Item, selected bool, windowWidth int) strin
 			typStyle = typStyle.Background(styles.ErrorBackground)
 			titleStyle = titleStyle.Background(styles.ErrorBackground)
 			priorityStyle = priorityStyle.Background(styles.ErrorBackground)
+			statusStyle = statusStyle.Background(styles.ErrorBackground)
 		}
 	}
 
@@ -168,10 +177,12 @@ func renderItem(d ItemDelegate, item Item, selected bool, windowWidth int) strin
 	priorityStyle = priorityStyle.
 		Foreground(priorities[safePriorityIdx].fg).
 		Padding(0, 1)
+	statusStyle = statusStyle.Foreground(statusColors[item.Status])
 
 	// render each field
 	typ := typStyle.Render(item.Type)
 	space := segStyle.Render(" ")
+	status := statusStyle.Render("◆")
 
 	// handle empty title with placeholder
 	renderedTitle := item.Task
@@ -201,7 +212,7 @@ func renderItem(d ItemDelegate, item Item, selected bool, windowWidth int) strin
 		title = titleStyle.Render(t)
 	}
 
-	left := typ + space + title
+	left := status + space + typ + space + title
 	right := priority
 
 	px := styles.GetPaddingBetween(left, right, windowWidth, contStyle)

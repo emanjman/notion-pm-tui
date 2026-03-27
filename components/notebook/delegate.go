@@ -58,13 +58,6 @@ func (d ItemDelegate) Height() int                               { return 2 }
 func (d ItemDelegate) Spacing() int                              { return 0 }
 func (d ItemDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd { return nil }
 
-var statusColors = []lg.Color{
-	lg.Color("#212121"), // idle
-	lg.Color("#3766d4"), // pending
-	lg.Color("#24ff7b"), // success
-	lg.Color("#ff244c"), // failed
-}
-
 func (d ItemDelegate) Render(w io.Writer, m list.Model, index int, item list.Item) {
 	focused := index == m.Index() && d.sectionFocused
 
@@ -83,19 +76,27 @@ func (d ItemDelegate) Render(w io.Writer, m list.Model, index int, item list.Ite
 		// apply field-specific styles
 		titleStyle = titleStyle.Foreground(styles.PrimaryForeground)
 		dateStyle = dateStyle.Foreground(styles.MutedForeground)
-		stateStyle = stateStyle.Foreground(statusColors[item.ContentState])
 
 		if item.Icon == "" {
-			item.Icon = "✦ "
+			item.Icon = "  "
 		}
 		title := titleStyle.Render(item.Icon + " " + item.Title)
 
 		created := dateStyle.Render(item.CreatedLabel)
-		state := stateStyle.Render("●")
 		space := segStyle.Render(" ")
 
-		left := title
-		right := created + space + state
+		state := segStyle.Render(" ")
+		switch item.ContentState {
+		case Idle:
+			state = stateStyle.Foreground(styles.MutedForeground).Render("◌")
+		case Pending:
+			state = stateStyle.Foreground(styles.MutedForeground).Render("↻")
+		case Failed:
+			state = stateStyle.Foreground(lg.Color("#e0af68")).Render("⚠")
+		}
+
+		left := state + space + title
+		right := created
 
 		px := styles.GetPaddingBetween(left, right, m.Width(), contStyle)
 		content := left + styles.RenderPadding(segStyle, px) + right

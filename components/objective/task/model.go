@@ -32,7 +32,7 @@ type Model struct {
 	tempIDCounter int // for generating temp IDs for new tasks
 }
 
-var statusOrder = []string{"dev", "idle", "done"}
+var statusOrder = []string{"dev", "idle", "done", "archive"}
 
 func New(clt *notion.Client) Model {
 	f := FocusState{}
