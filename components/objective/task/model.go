@@ -2,6 +2,7 @@ package task
 
 import (
 	"fmt"
+	"log"
 	"notion-project-tui/components/objective/milestone"
 	"notion-project-tui/notion"
 	listutil "notion-project-tui/util/list"
@@ -12,6 +13,8 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	lg "github.com/charmbracelet/lipgloss"
 )
+
+type UpdatePagePropertiesMsg struct{ Err error }
 
 type Model struct {
 	// Milestone notion.SelectedMilestone // milestone these tasks source from
@@ -71,6 +74,17 @@ func (m Model) Init() tea.Cmd {
 func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
 
+	case UpdatePagePropertiesMsg:
+		if msg.Err != nil {
+			if task, ok := m.list.SelectedItem().(Item); ok {
+				log.Printf("[ERROR] updating task title in Notion, reverting...")
+				task.Task = m.Focus.prevTitle
+				m.list.SetItem(m.Focus.taskIdx, task)
+				m.updateTaskInGroups(task)
+			}
+			return m, nil
+		}
+
 	case milestone.TaskViewMsg:
 		// create list items
 		tempItems := make([]Item, len(msg.Tasks))
@@ -94,6 +108,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			case key.Matches(msg, m.writingKeyMap.Save):
 				// update item in list
 				if task, ok := m.list.SelectedItem().(Item); ok {
+					m.Focus.prevTitle = task.Task
 					task.Task = m.Focus.tempTitle.Value()
 					m.list.SetItem(m.Focus.taskIdx, task)
 					m.updateTaskInGroups(task)
@@ -102,8 +117,20 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 				m.ActiveKeyMap = NeutralKeyMapper
 				m.Focus.Mode = NeutralMode
 
-				// todo: send command to update task title in notion
-				return m, nil
+				// construct the title property
+				newTitle := notion.TitleProperty{Title: []notion.RichText{
+					{Text: notion.TextContent{Content: m.Focus.tempTitle.Value()}},
+				}}
+
+				return m, func() tea.Msg {
+					log.Printf("sending request")
+					err := m.notion.UpdatePageProperties(
+						m.Focus.taskID,
+						map[string]any{
+							"task": newTitle,
+						})
+					return UpdatePagePropertiesMsg{Err: err}
+				}
 
 			// forward all keys into the textinput model
 			default:

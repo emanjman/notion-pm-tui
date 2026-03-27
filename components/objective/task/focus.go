@@ -37,6 +37,7 @@ type FocusState struct {
 	tempType     string
 	tempTitle    textinput.Model
 	tempPriority int
+	prevTitle    string
 
 	// deletion confirmation
 	pendingDelete bool

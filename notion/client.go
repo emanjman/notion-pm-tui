@@ -233,3 +233,23 @@ func (c *Client) ReplaceContentByMarkdown(pageID string, md string) (string, err
 
 	return res.Markdown, nil
 }
+
+func (c *Client) UpdatePageProperties(pageID string, props any) error {
+	url := baseURL + "/pages/" + pageID
+
+	body, err := json.Marshal(struct {
+		Properties any `json:"properties"`
+	}{Properties: props})
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest("PATCH", url, bytes.NewReader(body))
+	if err != nil {
+		return err
+	}
+	req.Header.Add("Content-Type", "application/json")
+
+	var res struct{}
+	return c.do(req, &res)
+}
