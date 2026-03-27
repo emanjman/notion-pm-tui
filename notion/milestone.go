@@ -15,14 +15,12 @@ type MilestoneIDsMsg struct {
 type MilestonePage struct {
 	ID         string              `json:"id"`
 	Properties MilestoneProperties `json:"properties"`
+	Icon       *Icon               `json:"icon"`
 }
 
 type MilestoneProperties struct {
-	Title               TitleProperty   `json:"name"`
-	Tags                SelectProperty  `json:"tags"`
-	Progress            FormulaProperty `json:"progress"`               // type:number
-	Status              FormulaProperty `json:"$status"`                // type:string
-	LatestActivityLabel FormulaProperty `json:"$latest-acitivty-label"` // type:string
-	// LatestActivityAt    FormulaProperty     `json:"$latest-activity-at"`    // type:date
-	Tasks RelationProperty `json:"@tasks"`
+	Title    TitleProperty    `json:"name"`
+	Progress FormulaProperty  `json:"progress"` // type:number
+	Status   FormulaProperty  `json:"$status"`  // type:string
+	Tasks    RelationProperty `json:"@tasks"`
 }

@@ -26,10 +26,9 @@ type Model struct {
 	groups  map[string][]Item // header to items
 	hidden  map[string]bool   // hidden group
 
-	ActiveKeyMap    help.KeyMap // for help focus view
-	neutralKeyMap   NeutralKeyMap
-	selectingKeyMap SelectingKeyMap
-	writingKeyMap   WritingKeyMap
+	ActiveKeyMap  help.KeyMap // for help focus view
+	neutralKeyMap NeutralKeyMap
+	writingKeyMap WritingKeyMap
 
 	Focus *FocusState
 }
@@ -56,13 +55,12 @@ func New(n *notion.Client, projID, propID string) Model {
 		list:    l,
 		err:     nil,
 		loading: true,
-		groups:  listutil.GroupByKey(mockItems()),
+		groups:  map[string][]Item{},
 		hidden:  map[string]bool{},
 
-		ActiveKeyMap:    NeutralKeyMapper, // default map view
-		neutralKeyMap:   NeutralKeyMapper,
-		selectingKeyMap: SelectingKeyMapper,
-		writingKeyMap:   WritingKeyMapper,
+		ActiveKeyMap:  NeutralKeyMapper, // default map view
+		neutralKeyMap: NeutralKeyMapper,
+		writingKeyMap: WritingKeyMapper,
 
 		Focus: &f,
 	}
@@ -179,57 +177,6 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			}
 		}
 
-		if m.Focus.Mode == SelectingMode {
-			switch {
-
-			// on exit, save updates via notion api
-			case key.Matches(msg, m.selectingKeyMap.Exit):
-				m.Focus.Mode = NeutralMode
-				m.ActiveKeyMap = NeutralKeyMapper
-
-				// todo: send command to update milestone changes in notion
-				return m, nil
-
-			// switch between fields (vertical navigation)
-			case key.Matches(msg, m.selectingKeyMap.Up):
-				if m.Focus.field == MilestoneTitle {
-					m.Focus.field = fieldCnt - 1
-				} else {
-					m.Focus.field = (m.Focus.field - 1) % fieldCnt
-				}
-				return m, nil
-			case key.Matches(msg, m.selectingKeyMap.Down):
-				m.Focus.field = (m.Focus.field + 1) % fieldCnt
-				return m, nil
-
-			// enter field: cycle select or enter writing mode
-			case key.Matches(msg, m.selectingKeyMap.Select):
-				selected := m.list.SelectedItem()
-				if milestone, ok := selected.(Item); ok {
-					switch m.Focus.field {
-					case MilestoneTag:
-						// cycle tag, stay in selecting mode
-						milestone.Tag = cycleTagField(milestone.Tag, 1)
-						m.list.SetItem(m.Focus.milestoneIdx, milestone)
-						m.updateMilestoneInGroups(milestone)
-					case MilestoneTitle:
-						// enter writing mode for title
-						m.Focus.Mode = WritingMode
-						m.ActiveKeyMap = WritingKeyMapper
-
-						if item, ok := m.list.SelectedItem().(Item); ok {
-							m.Focus.tempTitle = initTempTitle(item)
-						}
-					}
-
-					return m, nil
-				}
-			}
-
-			// consume all keys, don't forward to list navigations
-			return m, nil
-		}
-
 		if m.Focus.Mode == NeutralMode {
 			switch {
 			case key.Matches(msg, m.neutralKeyMap.Select):
@@ -239,14 +186,16 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 				if header, ok := selected.(listutil.ListItemGroupHeader); ok {
 					m.hidden[header.Label] = !m.hidden[header.Label]
 					m.list.SetItems(listutil.BuildGroupList(m.groups, m.hidden, statusOrder))
-				} else if milestone, ok := selected.(Item); ok {
-					// initialize the focus state
+				}
+				return m, nil
+
+			case key.Matches(msg, m.neutralKeyMap.Rename):
+				if milestone, ok := m.list.SelectedItem().(Item); ok {
 					m.Focus.milestoneID = milestone.ID
 					m.Focus.milestoneIdx = m.list.Index()
-					m.Focus.field = MilestoneTitle // default field
-
-					m.ActiveKeyMap = SelectingKeyMapper
-					m.Focus.Mode = SelectingMode
+					m.Focus.tempTitle = initTempTitle(milestone)
+					m.Focus.Mode = WritingMode
+					m.ActiveKeyMap = WritingKeyMapper
 				}
 				return m, nil
 

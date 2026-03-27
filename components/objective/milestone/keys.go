@@ -5,7 +5,8 @@ import "github.com/charmbracelet/bubbles/key"
 type NeutralKeyMap struct {
 	Up     key.Binding
 	Down   key.Binding
-	Select key.Binding // enter focus (select) mode
+	Select key.Binding // toggle group header
+	Rename key.Binding // enter writing mode
 }
 
 var NeutralKeyMapper = NeutralKeyMap{
@@ -21,55 +22,20 @@ var NeutralKeyMapper = NeutralKeyMap{
 		key.WithKeys("enter"),
 		key.WithHelp("enter", "select milestone"),
 	),
+	Rename: key.NewBinding(
+		key.WithKeys("r"),
+		key.WithHelp("r", "rename milestone"),
+	),
 }
 
 func (k NeutralKeyMap) ShortHelp() []key.Binding {
-	return []key.Binding{k.Up, k.Down, k.Select}
+	return []key.Binding{k.Up, k.Down, k.Select, k.Rename}
 }
 
 func (k NeutralKeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.Up, k.Down, k.Select},
+		{k.Up, k.Down, k.Select, k.Rename},
 		{},
-	}
-}
-
-// ---
-
-type SelectingKeyMap struct {
-	Up     key.Binding // prev field
-	Down   key.Binding // next field
-	Select key.Binding // cycle select-options or enter rewrite mode
-	Exit   key.Binding // send off changes to notion (server)
-}
-
-var SelectingKeyMapper = SelectingKeyMap{
-	Up: key.NewBinding(
-		key.WithKeys("up", "k"),
-		key.WithHelp("↑/k", "prev field"),
-	),
-	Down: key.NewBinding(
-		key.WithKeys("down", "j"),
-		key.WithHelp("↓/j", "next field"),
-	),
-	Select: key.NewBinding(
-		key.WithKeys("enter"),
-		key.WithHelp("enter", "edit/cycle field"),
-	),
-	Exit: key.NewBinding(
-		key.WithKeys("esc"),
-		key.WithHelp("esc", "save + exit"),
-	),
-}
-
-func (k SelectingKeyMap) ShortHelp() []key.Binding {
-	return []key.Binding{k.Up, k.Down, k.Select}
-}
-
-func (k SelectingKeyMap) FullHelp() [][]key.Binding {
-	return [][]key.Binding{
-		{k.Up, k.Down, k.Select},
-		{k.Exit},
 	}
 }
 

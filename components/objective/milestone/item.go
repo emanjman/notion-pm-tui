@@ -15,13 +15,12 @@ const (
 
 // implementation for the `list.Item` interface
 type Item struct {
-	ID                  string
-	TasksPropID         string
-	Name                string
-	Status              string
-	LatestActivityLabel string
-	Progress            float64
-	Tag                 string
+	ID          string
+	TasksPropID string
+	Name        string
+	Status      string
+	Progress    float64
+	Icon        string
 
 	Tasks      []notion.TaskPage
 	FetchState FetchState
@@ -43,21 +42,18 @@ func NewItem(page notion.MilestonePage) Item {
 		progress = *page.Properties.Progress.Formula.Number
 	}
 
-	tag := page.Properties.Tags.Select.Name
-
-	label := ""
-	if page.Properties.LatestActivityLabel.Formula.String != nil {
-		label = *page.Properties.LatestActivityLabel.Formula.String
+	icon := ""
+	if page.Icon != nil && page.Icon.Emoji != nil {
+		icon = *page.Icon.Emoji
 	}
 
 	return Item{
-		ID:                  page.ID,
-		TasksPropID:         page.Properties.Tasks.ID,
-		Name:                title,
-		Status:              status,
-		LatestActivityLabel: label,
-		Progress:            progress,
-		Tag:                 tag,
+		ID:          page.ID,
+		TasksPropID: page.Properties.Tasks.ID,
+		Name:        title,
+		Status:      status,
+		Progress:    progress,
+		Icon:        icon,
 
 		Tasks:      []notion.TaskPage{},
 		FetchState: Idle,

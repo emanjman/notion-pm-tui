@@ -75,7 +75,7 @@ func NewItemDelegate(focused bool, focus *FocusState) ItemDelegate {
 	}
 }
 
-func (d ItemDelegate) Height() int  { return 3 }
+func (d ItemDelegate) Height() int  { return 2 }
 func (d ItemDelegate) Spacing() int { return 0 }
 func (d ItemDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd {
 	return nil
@@ -96,7 +96,6 @@ func (d ItemDelegate) Render(w io.Writer, m list.Model, index int, item list.Ite
 }
 
 // -- helper funcs
-
 func createProgressBar(progress float64, width int, baseStyle lg.Style) string {
 	wfilled := int(progress * float64(width))
 	wempty := width - wfilled
@@ -126,7 +125,7 @@ func renderItemHeader(d ItemDelegate, item listutil.ListItemGroupHeader, selecte
 func renderItem(d ItemDelegate, item Item, selected bool, windowWidth int) string {
 	contStyle := d.style.itemContainer.base
 	segStyle := d.style.itemSegment.base
-	nameStyle, tagStyle, stateStyle := lg.Style{}, lg.Style{}, lg.Style{}
+	nameStyle, stateStyle := lg.Style{}, lg.Style{}
 
 	// handle field highlighting by mode
 	if selected {
@@ -135,27 +134,19 @@ func renderItem(d ItemDelegate, item Item, selected bool, windowWidth int) strin
 			contStyle = d.style.itemContainer.selected
 
 			// apply select highlight row-wide
-			nameStyle, tagStyle, stateStyle = segStyle, segStyle, segStyle
+			nameStyle, stateStyle = segStyle, segStyle
 		} else {
-			// apply select highlight by field
-			switch d.focus.field {
-			case MilestoneTitle:
-				nameStyle = nameStyle.Inherit(d.style.itemSegment.selected)
-			case MilestoneTag:
-				tagStyle = tagStyle.Inherit(d.style.itemSegment.selected)
-			}
+			nameStyle = nameStyle.Inherit(d.style.itemSegment.selected)
 		}
 	}
 
 	// apply final field-specific styles
 	nameStyle = nameStyle.Foreground(styles.PrimaryForeground)
-	tagStyle = tagStyle.Foreground(styles.MutedForeground)
-	// render each field
-	name := nameStyle.Render(item.Name)
-	tag := tagStyle.Render(item.Tag)
-	activity := segStyle.
-		Foreground(styles.MutedForeground).
-		Render(item.LatestActivityLabel)
+
+	if item.Icon == "" {
+		item.Icon = "  "
+	}
+	name := nameStyle.Render(item.Icon + " " + item.Name)
 
 	var state string
 	switch item.FetchState {
@@ -170,7 +161,7 @@ func renderItem(d ItemDelegate, item Item, selected bool, windowWidth int) strin
 
 	// hide progress bar for completed milestones
 	var progress string
-	if item.Status != "🎉 complete" {
+	if item.Status != "🎉 complete" { // !hardcode
 		completion := segStyle.
 			Foreground(styles.MutedForeground).
 			Render(fmt.Sprintf("%.0f%%", item.Progress*100))
@@ -181,7 +172,7 @@ func renderItem(d ItemDelegate, item Item, selected bool, windowWidth int) strin
 	// calculate max title width
 	leftOffset, rightOffset := 3, 2
 	offset := leftOffset + rightOffset
-	nameMaxWidth := windowWidth - lg.Width(activity) - offset
+	nameMaxWidth := windowWidth - lg.Width(progress+space+state) - offset
 
 	if selected && d.focus.Mode == WritingMode {
 		// use textinput component in writing mode
@@ -197,10 +188,10 @@ func renderItem(d ItemDelegate, item Item, selected bool, windowWidth int) strin
 		name = nameStyle.Render(n)
 	}
 
-	r1px := styles.GetPaddingBetween(name, activity+space+state, windowWidth, contStyle)
-	r2px := styles.GetPaddingBetween(tag, progress, windowWidth, contStyle)
-	r1 := name + styles.RenderPadding(segStyle, r1px) + activity + space + state
-	r2 := tag + styles.RenderPadding(segStyle, r2px) + progress
+	left := name
+	right := progress + space + state
+	px := styles.GetPaddingBetween(left, right, windowWidth, contStyle)
+	content := left + styles.RenderPadding(segStyle, px) + right
 
-	return contStyle.Width(windowWidth).Render(r1 + "\n" + r2)
+	return contStyle.Width(windowWidth).Render(content)
 }
