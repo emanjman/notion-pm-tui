@@ -2,6 +2,7 @@ package milestone
 
 import (
 	"notion-project-tui/notion"
+	"notion-project-tui/styles"
 	listutil "notion-project-tui/util/list"
 
 	"github.com/charmbracelet/bubbles/help"
@@ -224,8 +225,10 @@ func (m Model) View() string {
 		return "Loading milestones..."
 	}
 
-	containerStyle := lg.NewStyle().PaddingRight(1)
-	return containerStyle.Render(m.list.View())
+	containerStyle := lg.NewStyle().
+		Border(lg.RoundedBorder()).
+		BorderForeground(styles.BorderForeground)
+	return styles.RenderWithTitle("Milestones", m.list.View(), containerStyle)
 }
 
 func (m Model) getCurrTasks() []notion.TaskPage {

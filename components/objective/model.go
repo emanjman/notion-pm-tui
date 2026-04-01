@@ -4,7 +4,6 @@ import (
 	"notion-project-tui/components/objective/milestone"
 	"notion-project-tui/components/objective/task"
 	"notion-project-tui/notion"
-	"notion-project-tui/styles"
 	"notion-project-tui/util/keymap"
 
 	"github.com/charmbracelet/bubbles/help"
@@ -88,15 +87,15 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		var mstoneCmd, taskCmd tea.Cmd
 		leftWidth := msg.Width * 30 / 100
-		rightWidth := msg.Width - leftWidth - 1 // account for dividing border
+		rightWidth := msg.Width - leftWidth
 
 		m.milestone, mstoneCmd = m.milestone.Update(tea.WindowSizeMsg{
-			Width:  leftWidth,
-			Height: msg.Height,
+			Width:  leftWidth - 2, // account for panel border (left+right)
+			Height: msg.Height - 2,
 		})
 		m.task, taskCmd = m.task.Update(tea.WindowSizeMsg{
-			Width:  rightWidth,
-			Height: msg.Height,
+			Width:  rightWidth - 2,
+			Height: msg.Height - 2,
 		})
 
 		return m, tea.Batch(mstoneCmd, taskCmd)
@@ -124,13 +123,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 }
 
 func (m Model) View() string {
-	left := lg.NewStyle().
-		BorderRight(true).
-		BorderStyle(lg.NormalBorder()).
-		BorderForeground(styles.BorderForeground).
-		Render(m.milestone.View())
-	right := m.task.View()
-	return lg.JoinHorizontal(lg.Top, left, right)
+	return lg.JoinHorizontal(lg.Top, m.milestone.View(), m.task.View())
 }
 
 func (m Model) KeyMap() help.KeyMap {

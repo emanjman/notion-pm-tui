@@ -26,6 +26,25 @@ var (
 	BorderForeground = lg.Color("236")
 )
 
+// RenderWithTitle renders content with a rounded border and embeds title into the top edge.
+func RenderWithTitle(title string, content string, style lg.Style) string {
+	rendered := style.Render(content)
+	lines := strings.Split(rendered, "\n")
+	if len(lines) == 0 {
+		return rendered
+	}
+
+	topLine := []rune(lines[0])
+	insert := []rune("─ " + title + " ")
+
+	if len(insert) < len(topLine)-1 {
+		copy(topLine[1:], insert)
+		lines[0] = string(topLine)
+	}
+
+	return strings.Join(lines, "\n")
+}
+
 // util
 func GetPaddingBetween(left string, right string, windowWidth int, externalStyle lg.Style) int {
 	availWidth := windowWidth - externalStyle.GetHorizontalPadding()
