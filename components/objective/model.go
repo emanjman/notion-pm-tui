@@ -124,12 +124,19 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 }
 
 func (m Model) View() string {
-	left := lg.NewStyle().
-		BorderRight(true).
-		BorderStyle(lg.NormalBorder()).
-		BorderForeground(styles.BorderForeground).
-		Render(m.milestone.View())
-	right := m.task.View()
+	leftStyle := lg.NewStyle().Border(lg.RoundedBorder(), true)
+	rightStyle := lg.NewStyle().Border(lg.RoundedBorder(), true)
+
+	if m.focus == MilestonePanel {
+		leftStyle = leftStyle.BorderForeground(styles.TechForeground)
+		rightStyle = rightStyle.BorderForeground(styles.MutedForeground)
+	} else {
+		rightStyle = rightStyle.BorderForeground(styles.TechForeground)
+		leftStyle = leftStyle.BorderForeground(styles.MutedForeground)
+	}
+
+	left := leftStyle.Render(m.milestone.View())
+	right := rightStyle.Render(m.task.View())
 	return lg.JoinHorizontal(lg.Top, left, right)
 }
 
