@@ -1,0 +1,14 @@
+name: tasks-done
+url: $NOTION_API_URL/pages/:pageId/properties/:propId
+auth:
+  type: bearer_token
+  bearer_token:
+    token: $NOTION_API_TOKEN
+headers:
+- name: Notion-Version
+  value: $NOTION_VERSION
+path_params:
+- name: pageId
+  value: 32fb7273944b80b3ad6ae7d261aff703
+- name: propId
+  value: '%3E%40Rx'
