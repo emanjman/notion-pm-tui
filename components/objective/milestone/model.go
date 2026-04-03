@@ -8,7 +8,6 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
-	lg "github.com/charmbracelet/lipgloss"
 )
 
 type TaskViewMsg struct {
@@ -224,8 +223,7 @@ func (m Model) View() string {
 		return "Loading milestones..."
 	}
 
-	containerStyle := lg.NewStyle().PaddingRight(1)
-	return containerStyle.Render(m.list.View())
+	return m.list.View()
 }
 
 func (m Model) getCurrTasks() []notion.TaskPage {

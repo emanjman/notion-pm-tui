@@ -11,7 +11,6 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
-	lg "github.com/charmbracelet/lipgloss"
 )
 
 type UpdateTitleMsg struct{ Err error }
@@ -305,8 +304,7 @@ func (m Model) View() string {
 	// 	return "Loading tasks..."
 	// }
 
-	containerStyle := lg.NewStyle().PaddingLeft(1)
-	return containerStyle.Render(m.list.View())
+	return m.list.View()
 }
 
 // --- helpers

@@ -87,16 +87,27 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 
 	case tea.WindowSizeMsg:
 		var mstoneCmd, taskCmd tea.Cmd
-		leftWidth := msg.Width * 30 / 100
-		rightWidth := msg.Width - leftWidth - 1 // account for dividing border
+		// each panel is wrapped in a rounded border (+1 col each side, +1 row each side)
+		const borderColsPerPanel = 2
+		const borderRowsPerPanel = 2
+		// each panel has inner padding set in View() (+1 col each side)
+		const paddingColsPerPanel = 2
+		const panelCount = 2
+
+		totalColOverhead := (borderColsPerPanel + paddingColsPerPanel) * panelCount
+		totalRowOverhead := borderRowsPerPanel // same overhead applies to both panels
+
+		availableWidth := msg.Width - totalColOverhead
+		leftWidth := availableWidth * 30 / 100
+		rightWidth := availableWidth - leftWidth
 
 		m.milestone, mstoneCmd = m.milestone.Update(tea.WindowSizeMsg{
 			Width:  leftWidth,
-			Height: msg.Height,
+			Height: msg.Height - totalRowOverhead,
 		})
 		m.task, taskCmd = m.task.Update(tea.WindowSizeMsg{
 			Width:  rightWidth,
-			Height: msg.Height,
+			Height: msg.Height - totalRowOverhead,
 		})
 
 		return m, tea.Batch(mstoneCmd, taskCmd)
@@ -124,8 +135,8 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 }
 
 func (m Model) View() string {
-	leftStyle := lg.NewStyle().Border(lg.RoundedBorder(), true)
-	rightStyle := lg.NewStyle().Border(lg.RoundedBorder(), true)
+	leftStyle := lg.NewStyle().Border(lg.RoundedBorder(), true).Padding(0, 1)
+	rightStyle := lg.NewStyle().Border(lg.RoundedBorder(), true).Padding(0, 1)
 
 	if m.focus == MilestonePanel {
 		leftStyle = leftStyle.BorderForeground(styles.TechForeground)
