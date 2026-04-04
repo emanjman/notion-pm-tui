@@ -2,7 +2,7 @@ name: query-tasks-done
 method: POST
 url: $NOTION_API_URL/data_sources/:projectTasksDsId/query
 body:
-  content: |-
+  content: |
     {
       "filter": {
         "and": [
@@ -20,7 +20,10 @@ body:
           }
         ]
       },
-      "sorts": [{ "property": "created-at", "direction": "descending" }]
+      "sorts": [
+        { "property": "priority", "direction": "descending" },
+        { "property": "created-at", "direction": "ascending" }
+      ]
     }
   content_type: application/json
 auth:
