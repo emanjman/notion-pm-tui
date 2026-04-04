@@ -103,11 +103,11 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 
 		m.milestone, mstoneCmd = m.milestone.Update(tea.WindowSizeMsg{
 			Width:  leftWidth,
-			Height: msg.Height - totalRowOverhead,
+			Height: msg.Height - totalRowOverhead - 1,
 		})
 		m.task, taskCmd = m.task.Update(tea.WindowSizeMsg{
 			Width:  rightWidth,
-			Height: msg.Height - totalRowOverhead,
+			Height: msg.Height - totalRowOverhead - 1,
 		})
 
 		return m, tea.Batch(mstoneCmd, taskCmd)
