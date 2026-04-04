@@ -248,7 +248,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 					return m, func() tea.Msg {
 						return notion.ToggleTaskGroupMsg{Status: header.Label}
 					}
-				} else if loadMore, ok := selected.(LoadMoreItem); ok {
+				} else if loadMore, ok := selected.(LoadMoreItem); ok && !loadMore.Loading {
 					return m, func() tea.Msg {
 						return notion.FetchMoreTasksMsg{Status: loadMore.Status}
 					}
@@ -443,17 +443,19 @@ func (m Model) buildTaskList(groups notion.TaskGroups) []list.Item {
 		if !ok || len(group) == 0 {
 			continue
 		}
+		hasMore := groups[status].NextCursor != nil
 		items = append(items, GroupHeader{
-			Label:  status,
-			Hidden: groups[status].Hide,
-			Count:  len(group),
+			Label:   status,
+			Hidden:  groups[status].Hide,
+			Count:   len(group),
+			HasMore: hasMore,
 		})
 		if !groups[status].Hide {
 			for _, item := range group {
 				items = append(items, item)
 			}
 			if groups[status].NextCursor != nil {
-				items = append(items, LoadMoreItem{Status: status})
+				items = append(items, LoadMoreItem{Status: status, Loading: groups[status].Loading})
 			}
 		}
 	}

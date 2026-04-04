@@ -297,7 +297,6 @@ func (c *Client) QueryTasks(milestoneID, status, cursor string, milestoneIdx int
 
 		req, err := http.NewRequest("POST", url, bytes.NewReader(b))
 		if err != nil {
-			log.Printf(err.Error())
 			return TaskQueryMsg{Err: err, Status: status, MilestoneIdx: milestoneIdx}
 		}
 		req.Header.Add("Content-Type", "application/json")

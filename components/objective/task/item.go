@@ -6,15 +6,17 @@ import (
 )
 
 type LoadMoreItem struct {
-	Status string
+	Status  string
+	Loading bool
 }
 
 func (l LoadMoreItem) FilterValue() string { return "" }
 
 type GroupHeader struct {
-	Label  string
-	Hidden bool
-	Count  int
+	Label   string
+	Hidden  bool
+	Count   int
+	HasMore bool
 }
 
 func (h GroupHeader) FilterValue() string { return "" }

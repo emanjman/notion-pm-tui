@@ -88,17 +88,21 @@ func (d ItemDelegate) Render(w io.Writer, m list.Model, index int, item list.Ite
 		task := renderItem(d, item, selected, m.Width())
 		fmt.Fprint(w, task)
 	case LoadMoreItem:
-		fmt.Fprint(w, renderLoadMore(d, selected, m.Width()))
+		fmt.Fprint(w, renderLoadMore(d, item.Loading, selected, m.Width()))
 	}
 }
 
 // -- helper funcs
 
-func renderLoadMore(d ItemDelegate, selected bool, windowWidth int) string {
-	style := lg.NewStyle().Foreground(styles.MutedForeground).PaddingLeft(4)
-	text := "..."
+func renderLoadMore(d ItemDelegate, loading bool, selected bool, windowWidth int) string {
+	style := d.style.itemContainer.base.Foreground(styles.MutedForeground).PaddingLeft(2)
 	if selected {
-		style = style.Background(styles.SelectedBackground)
+		style = d.style.itemContainer.selected.Foreground(styles.MutedForeground).PaddingLeft(2)
+	}
+	text := "..."
+	if loading {
+		text = "Loading..."
+	} else if selected {
 		text = "[Enter] to load more..."
 	}
 	return style.Width(windowWidth).Render(text)
@@ -115,7 +119,11 @@ func renderItemHeader(d ItemDelegate, item GroupHeader, selected bool, windowWid
 		chevron = "▶"
 	}
 
-	content := fmt.Sprintf("%s %s (%d)", chevron, item.Label, item.Count)
+	count := fmt.Sprintf("%d", item.Count)
+	if item.HasMore {
+		count += "+"
+	}
+	content := fmt.Sprintf("%s %s (%s)", chevron, item.Label, count)
 	return style.Width(windowWidth).Render(content)
 }
 

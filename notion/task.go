@@ -19,6 +19,7 @@ type TaskGroup struct {
 	Tasks      []TaskPage
 	NextCursor *string
 	Hide       bool
+	Loading    bool
 }
 
 // keyed by status: "dev", "idle", "done", "archive"

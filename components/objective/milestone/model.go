@@ -125,10 +125,16 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		item := m.list.SelectedItem()
 		if mstone, ok := item.(Item); ok {
 			group := mstone.TaskGroups[msg.Status]
-			if group.NextCursor != nil {
+			if group.NextCursor != nil && !group.Loading {
 				idx := m.list.Index()
 				cursor := *group.NextCursor
-				return m, m.queryTasksByStatus(idx, mstone.ID, msg.Status, cursor)
+				group.Loading = true
+				mstone.TaskGroups[msg.Status] = group
+				m.list.SetItem(idx, mstone)
+				return m, tea.Batch(
+					m.queryTasksByStatus(idx, mstone.ID, msg.Status, cursor),
+					func() tea.Msg { return TaskViewMsg{Groups: mstone.TaskGroups} },
+				)
 			}
 		}
 		return m, nil
@@ -156,6 +162,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			group := mstone.TaskGroups[msg.Status]
 			group.Tasks = append(group.Tasks, msg.Pages...)
 			group.NextCursor = msg.NextCursor
+			group.Loading = false
 			mstone.TaskGroups[msg.Status] = group
 			mstone.FetchState = Success
 			m.list.SetItem(msg.MilestoneIdx, mstone)
