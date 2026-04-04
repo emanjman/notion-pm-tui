@@ -80,25 +80,35 @@ func (d ItemDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd { return nil }
 
 func (d ItemDelegate) Render(w io.Writer, m list.Model, index int, item list.Item) {
 	selected := index == m.Index() && d.focused
+	items := m.Items()
+	isLast := index == len(items)-1
+	nextIsHeader := !isLast && func() bool {
+		_, ok := items[index+1].(GroupHeader)
+		return ok
+	}()
+	noBorder := isLast || nextIsHeader
 
 	switch item := item.(type) {
 	case GroupHeader:
 		header := renderItemHeader(d, item, selected, m.Width())
 		fmt.Fprint(w, header)
 	case Item:
-		task := renderItem(d, item, selected, m.Width())
+		task := renderItem(d, item, selected, noBorder, m.Width())
 		fmt.Fprint(w, task)
 	case LoadMoreItem:
-		fmt.Fprint(w, renderLoadMore(d, item.Loading, selected, m.Width()))
+		fmt.Fprint(w, renderLoadMore(d, item.Loading, selected, noBorder, m.Width()))
 	}
 }
 
 // -- helper funcs
 
-func renderLoadMore(d ItemDelegate, loading bool, selected bool, windowWidth int) string {
+func renderLoadMore(d ItemDelegate, loading bool, selected bool, noBorder bool, windowWidth int) string {
 	style := d.style.itemContainer.base.Foreground(styles.MutedForeground).PaddingLeft(2)
 	if selected {
 		style = d.style.itemContainer.selected.Foreground(styles.MutedForeground).PaddingLeft(2)
+	}
+	if noBorder {
+		style = style.Border(lg.NormalBorder(), false)
 	}
 	text := "..."
 	if loading {
@@ -106,7 +116,11 @@ func renderLoadMore(d ItemDelegate, loading bool, selected bool, windowWidth int
 	} else if selected {
 		text = "[Enter] to load more..."
 	}
-	return style.Width(windowWidth).Render(text)
+	rendered := style.Width(windowWidth).Render(text)
+	if noBorder {
+		return rendered + "\n" + lg.NewStyle().Render("")
+	}
+	return rendered
 }
 
 func renderItemHeader(d ItemDelegate, item GroupHeader, selected bool, windowWidth int) string {
@@ -151,7 +165,7 @@ var statusColors = map[string]lg.Color{
 	"archive": lg.Color("#ff244c"),
 }
 
-func renderItem(d ItemDelegate, item Item, selected bool, windowWidth int) string {
+func renderItem(d ItemDelegate, item Item, selected bool, noBorder bool, windowWidth int) string {
 	contStyle := d.style.itemContainer.base
 	segStyle := d.style.itemSegment.base
 	typStyle, titleStyle, priorityStyle, statusStyle := lg.Style{}, lg.Style{}, lg.Style{}, lg.Style{}
@@ -185,6 +199,10 @@ func renderItem(d ItemDelegate, item Item, selected bool, windowWidth int) strin
 			priorityStyle = priorityStyle.Background(styles.ErrorBackground)
 			statusStyle = statusStyle.Background(styles.ErrorBackground)
 		}
+	}
+
+	if noBorder {
+		contStyle = contStyle.Border(lg.NormalBorder(), false)
 	}
 
 	// guard against unhandled priority values
@@ -240,5 +258,9 @@ func renderItem(d ItemDelegate, item Item, selected bool, windowWidth int) strin
 	px := styles.GetPaddingBetween(left, right, windowWidth, contStyle)
 	content := left + styles.RenderPadding(segStyle, px) + right
 
-	return contStyle.Width(windowWidth).Render(content)
+	rendered := contStyle.Width(windowWidth).Render(content)
+	if noBorder {
+		return rendered + "\n" + lg.NewStyle().Render("")
+	}
+	return rendered
 }
