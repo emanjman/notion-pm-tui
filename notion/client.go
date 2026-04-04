@@ -257,6 +257,63 @@ func (c *Client) UpdatePageProperties(pageID string, props any) error {
 	return c.do(req, &res)
 }
 
+func (c *Client) QueryTasks(milestoneID, status, cursor string, milestoneIdx int) tea.Cmd {
+	return func() tea.Msg {
+		url := c.baseURL + "/data_sources/" + c.tasksDsId + "/query"
+
+		body := map[string]any{
+			"filter": map[string]any{
+				"and": []map[string]any{
+					{
+						"property": "status",
+						"status":   map[string]any{"equals": status},
+					},
+					{
+						"property": "@milestone",
+						"relation": map[string]any{"contains": milestoneID},
+					},
+				},
+			},
+			"page_size": 10,
+		}
+		if cursor != "" {
+			body["start_cursor"] = cursor
+		}
+
+		b, err := json.Marshal(body)
+		if err != nil {
+			return TaskQueryMsg{Err: err, Status: status, MilestoneIdx: milestoneIdx}
+		}
+
+		req, err := http.NewRequest("POST", url, bytes.NewReader(b))
+		if err != nil {
+			return TaskQueryMsg{Err: err, Status: status, MilestoneIdx: milestoneIdx}
+		}
+		req.Header.Add("Content-Type", "application/json")
+
+		var res struct {
+			Results    []TaskPage `json:"results"`
+			NextCursor *string    `json:"next_cursor"`
+			HasMore    bool       `json:"has_more"`
+		}
+		if err := c.do(req, &res); err != nil {
+			return TaskQueryMsg{Err: err, Status: status, MilestoneIdx: milestoneIdx}
+		}
+
+		var nextCursor *string
+		if res.HasMore {
+			nextCursor = res.NextCursor
+		}
+
+		return TaskQueryMsg{
+			Pages:        res.Results,
+			NextCursor:   nextCursor,
+			Status:       status,
+			MilestoneIdx: milestoneIdx,
+		}
+	}
+}
+
 func (c *Client) FetchTaskTypeOptions() tea.Cmd {
 	return func() tea.Msg {
 		url := c.baseURL + "/data_sources/" + c.tasksDsId

@@ -5,6 +5,20 @@ import (
 	"strconv"
 )
 
+type LoadMoreItem struct {
+	Status string
+}
+
+func (l LoadMoreItem) FilterValue() string { return "" }
+
+type GroupHeader struct {
+	Label  string
+	Hidden bool
+	Count  int
+}
+
+func (h GroupHeader) FilterValue() string { return "" }
+
 type Item struct {
 	ID          string
 	Task        string

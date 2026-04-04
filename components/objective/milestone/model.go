@@ -11,7 +11,7 @@ import (
 )
 
 type TaskViewMsg struct {
-	Tasks []notion.TaskPage
+	Groups notion.TaskGroups
 }
 
 type Model struct {
@@ -22,8 +22,8 @@ type Model struct {
 	list    list.Model
 	err     error
 	loading bool
-	groups  map[string][]Item // header to items
-	hidden  map[string]bool   // hidden group
+	groups map[string][]Item // milestones grouped by milestone status
+	hidden map[string]bool
 
 	ActiveKeyMap  help.KeyMap // for help focus view
 	neutralKeyMap NeutralKeyMap
@@ -113,37 +113,56 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			if item, ok := item.(Item); ok && item.Status == "🚧 under development" {
 				item.FetchState = Pending
 				m.list.SetItem(i, item)
-				cmds = append(cmds, m.fetchTaskRelationIDs(i, item))
+				cmds = append(cmds, m.queryTasksByStatus(i, item.ID, "dev", ""))
+				cmds = append(cmds, m.queryTasksByStatus(i, item.ID, "idle", ""))
+				cmds = append(cmds, m.queryTasksByStatus(i, item.ID, "done", ""))
+				cmds = append(cmds, m.queryTasksByStatus(i, item.ID, "archive", ""))
 			}
 		}
 		return m, tea.Batch(cmds...)
 
-	case notion.TaskIDsMsg:
-		if msg.Err != nil {
-			m.err = msg.Err
-			m.loading = false
-			return m, nil
-		}
-		item := m.list.Items()[msg.MilestoneIdx]
-		if _, ok := item.(Item); ok {
-			return m, func() tea.Msg {
-				pages, err := notion.FetchPages[notion.TaskPage](m.notion, msg.IDs)
-				return notion.TaskPagesMsg{Pages: pages, Err: err, MilestoneIdx: msg.MilestoneIdx}
+	case notion.FetchMoreTasksMsg:
+		item := m.list.SelectedItem()
+		if mstone, ok := item.(Item); ok {
+			group := mstone.TaskGroups[msg.Status]
+			if group.NextCursor != nil {
+				idx := m.list.Index()
+				cursor := *group.NextCursor
+				return m, m.queryTasksByStatus(idx, mstone.ID, msg.Status, cursor)
 			}
 		}
 		return m, nil
 
-	case notion.TaskPagesMsg:
+	case notion.ToggleTaskGroupMsg:
+		item := m.list.SelectedItem()
+		if mstone, ok := item.(Item); ok {
+			group := mstone.TaskGroups[msg.Status]
+			group.Hide = !group.Hide
+			mstone.TaskGroups[msg.Status] = group
+			m.updateMilestoneInGroups(mstone)
+			return m, func() tea.Msg {
+				return TaskViewMsg{Groups: mstone.TaskGroups}
+			}
+		}
+		return m, nil
+
+	case notion.TaskQueryMsg:
 		if msg.Err != nil {
 			m.err = msg.Err
-			m.loading = false
 			return m, nil
 		}
 		item := m.list.Items()[msg.MilestoneIdx]
 		if mstone, ok := item.(Item); ok {
-			mstone.Tasks = msg.Pages
+			group := mstone.TaskGroups[msg.Status]
+			group.Tasks = append(group.Tasks, msg.Pages...)
+			group.NextCursor = msg.NextCursor
+			mstone.TaskGroups[msg.Status] = group
 			mstone.FetchState = Success
 			m.list.SetItem(msg.MilestoneIdx, mstone)
+
+			return m, func() tea.Msg {
+				return TaskViewMsg{Groups: mstone.TaskGroups}
+			}
 		}
 		return m, nil
 
@@ -201,12 +220,22 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			case key.Matches(msg, m.neutralKeyMap.Down):
 				m.list.CursorDown()
 				return m, func() tea.Msg {
-					return TaskViewMsg{Tasks: m.getCurrTasks()}
+					return TaskViewMsg{Groups: m.getCurrTaskGroups()}
 				}
 			case key.Matches(msg, m.neutralKeyMap.Up):
 				m.list.CursorUp()
 				return m, func() tea.Msg {
-					return TaskViewMsg{Tasks: m.getCurrTasks()}
+					return TaskViewMsg{Groups: m.getCurrTaskGroups()}
+				}
+			case key.Matches(msg, m.neutralKeyMap.JumpDown):
+				m.list.Select(min(len(m.list.Items())-1, m.list.Index()+5))
+				return m, func() tea.Msg {
+					return TaskViewMsg{Groups: m.getCurrTaskGroups()}
+				}
+			case key.Matches(msg, m.neutralKeyMap.JumpUp):
+				m.list.Select(max(0, m.list.Index()-5))
+				return m, func() tea.Msg {
+					return TaskViewMsg{Groups: m.getCurrTaskGroups()}
 				}
 			}
 		}
@@ -226,17 +255,17 @@ func (m Model) View() string {
 	return m.list.View()
 }
 
-func (m Model) getCurrTasks() []notion.TaskPage {
+func (m Model) getCurrTaskGroups() notion.TaskGroups {
 	item := m.list.SelectedItem()
 
 	switch item := item.(type) {
 	case listutil.ListItemGroupHeader:
 		mstone := m.groups[item.Label][0]
-		return mstone.Tasks
+		return mstone.TaskGroups
 	case Item:
-		return item.Tasks
+		return item.TaskGroups
 	}
-	return []notion.TaskPage{}
+	return notion.TaskGroups{}
 }
 
 func (m *Model) SetItemDelegate(d list.ItemDelegate) {
@@ -259,9 +288,6 @@ func (m Model) updateMilestoneInGroups(updated Item) Model {
 	return m
 }
 
-func (m Model) fetchTaskRelationIDs(idx int, mstone Item) tea.Cmd {
-	return func() tea.Msg {
-		ids, err := m.notion.FetchRelationIDs(mstone.ID, mstone.TasksPropID)
-		return notion.TaskIDsMsg{IDs: ids, Err: err, MilestoneIdx: idx}
-	}
+func (m Model) queryTasksByStatus(idx int, milestoneID, status, cursor string) tea.Cmd {
+	return m.notion.QueryTasks(milestoneID, status, cursor, idx)
 }

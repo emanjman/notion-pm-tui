@@ -5,13 +5,13 @@ import (
 	"log"
 	"notion-project-tui/components/objective/milestone"
 	"notion-project-tui/notion"
-	listutil "notion-project-tui/util/list"
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 )
+
 
 type UpdateTitleMsg struct{ Err error }
 type UpdateSelectionsMsg struct{ Err error }
@@ -25,8 +25,11 @@ type Model struct {
 
 	typeOptions []notion.SelectItem
 
-	groups map[string][]Item // should this be Groupable intf?
-	hidden map[string]bool   // should this be Groupable intf?
+	// working copy of the current milestone's tasks, used for local mutations
+	// (add, delete, status change) and list rendering. rebuilt on every
+	// milestone switch via TaskViewMsg — not the source of truth for persistence.
+	// note: local mutations here do not sync back to the milestone's TaskGroups.
+	groups map[string][]Item
 
 	ActiveKeyMap    help.KeyMap // for help focus view
 	neutralKeyMap   NeutralKeyMap
@@ -59,7 +62,6 @@ func New(clt *notion.Client) Model {
 		loading: true,
 
 		groups: map[string][]Item{},
-		hidden: map[string]bool{},
 
 		ActiveKeyMap:    NeutralKeyMapper, // default map view
 		neutralKeyMap:   NeutralKeyMapper,
@@ -108,16 +110,17 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		return m, nil
 
 	case milestone.TaskViewMsg:
-		// create list items
-		tempItems := make([]Item, len(msg.Tasks))
-		for i, page := range msg.Tasks {
-			tempItems[i] = NewItem(page)
+		// rebuild working copy from the milestone's TaskGroups on each milestone switch
+		m.groups = map[string][]Item{}
+		for status, group := range msg.Groups {
+			items := make([]Item, len(group.Tasks))
+			for i, page := range group.Tasks {
+				items[i] = NewItem(page)
+			}
+			m.groups[status] = items
 		}
-		m.groups = listutil.GroupByKey(tempItems)
-		items := listutil.BuildGroupList(m.groups, m.hidden, statusOrder)
-		m.list.SetItems(items)
+		m.list.SetItems(m.buildTaskList(msg.Groups))
 		m.loading = false
-
 		return m, nil
 
 	case tea.WindowSizeMsg:
@@ -240,10 +243,15 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			case key.Matches(msg, m.neutralKeyMap.Select):
 				selected := m.list.SelectedItem()
 
-				// if selected item is header, toggle + rebuild list
-				if header, ok := selected.(listutil.ListItemGroupHeader); ok {
-					m.hidden[header.Label] = !m.hidden[header.Label]
-					m.list.SetItems(listutil.BuildGroupList(m.groups, m.hidden, statusOrder))
+				// if selected item is header, emit toggle msg — milestone model owns hide state
+				if header, ok := selected.(GroupHeader); ok {
+					return m, func() tea.Msg {
+						return notion.ToggleTaskGroupMsg{Status: header.Label}
+					}
+				} else if loadMore, ok := selected.(LoadMoreItem); ok {
+					return m, func() tea.Msg {
+						return notion.FetchMoreTasksMsg{Status: loadMore.Status}
+					}
 				} else if task, ok := selected.(Item); ok {
 					// initialize the focus state
 					m.Focus.taskID = task.ID
@@ -259,6 +267,14 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			case key.Matches(msg, m.neutralKeyMap.AddTask):
 				// always add to idle group
 				m = m.addTask()
+				return m, nil
+
+			case key.Matches(msg, m.neutralKeyMap.JumpUp):
+				m.list.Select(max(0, m.list.Index()-5))
+				return m, nil
+
+			case key.Matches(msg, m.neutralKeyMap.JumpDown):
+				m.list.Select(min(len(m.list.Items())-1, m.list.Index()+5))
 				return m, nil
 
 			case key.Matches(msg, m.neutralKeyMap.StatusPrev):
@@ -329,7 +345,7 @@ func (m Model) changeTaskStatus(task Item, delta int) Model {
 	m.groups[newStatus] = append(m.groups[newStatus], task)
 
 	// rebuild list to show change
-	m.list.SetItems(listutil.BuildGroupList(m.groups, m.hidden, statusOrder))
+	m.list.SetItems(m.buildTaskList(notion.TaskGroups{}))
 
 	return m
 }
@@ -346,7 +362,7 @@ func (m Model) updateTaskInGroups(updated Item) Model {
 	}
 
 	// then rebuild item list
-	m.list.SetItems(listutil.BuildGroupList(m.groups, m.hidden, statusOrder))
+	m.list.SetItems(m.buildTaskList(notion.TaskGroups{}))
 	return m
 }
 
@@ -369,7 +385,7 @@ func (m Model) addTask() Model {
 	m.groups[defaultStatus] = append(m.groups[defaultStatus], newTask)
 
 	// Rebuild list
-	items := listutil.BuildGroupList(m.groups, m.hidden, statusOrder)
+	items := m.buildTaskList(notion.TaskGroups{})
 	m.list.SetItems(items)
 
 	// Find the new task's index in the rebuilt list
@@ -406,7 +422,7 @@ func (m Model) deleteTask(task Item) Model {
 	}
 
 	// Rebuild list
-	m.list.SetItems(listutil.BuildGroupList(m.groups, m.hidden, statusOrder))
+	m.list.SetItems(m.buildTaskList(notion.TaskGroups{}))
 
 	// Clear pending delete state
 	m.Focus.pendingDelete = false
@@ -418,4 +434,28 @@ func (m Model) deleteTask(task Item) Model {
 
 func (m *Model) SetItemDelegate(d list.ItemDelegate) {
 	m.list.SetDelegate(d)
+}
+
+func (m Model) buildTaskList(groups notion.TaskGroups) []list.Item {
+	var items []list.Item
+	for _, status := range statusOrder {
+		group, ok := m.groups[status]
+		if !ok || len(group) == 0 {
+			continue
+		}
+		items = append(items, GroupHeader{
+			Label:  status,
+			Hidden: groups[status].Hide,
+			Count:  len(group),
+		})
+		if !groups[status].Hide {
+			for _, item := range group {
+				items = append(items, item)
+			}
+			if groups[status].NextCursor != nil {
+				items = append(items, LoadMoreItem{Status: status})
+			}
+		}
+	}
+	return items
 }

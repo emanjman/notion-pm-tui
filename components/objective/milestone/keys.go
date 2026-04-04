@@ -3,10 +3,12 @@ package milestone
 import "github.com/charmbracelet/bubbles/key"
 
 type NeutralKeyMap struct {
-	Up     key.Binding
-	Down   key.Binding
-	Select key.Binding // toggle group header
-	Rename key.Binding // enter writing mode
+	Up       key.Binding
+	Down     key.Binding
+	JumpUp   key.Binding // jump up 5
+	JumpDown key.Binding // jump down 5
+	Select   key.Binding // toggle group header
+	Rename   key.Binding // enter writing mode
 }
 
 var NeutralKeyMapper = NeutralKeyMap{
@@ -17,6 +19,14 @@ var NeutralKeyMapper = NeutralKeyMap{
 	Down: key.NewBinding(
 		key.WithKeys("down", "j"),
 		key.WithHelp("↓/j", "down"),
+	),
+	JumpUp: key.NewBinding(
+		key.WithKeys("ctrl+k"),
+		key.WithHelp("ctrl+k", "jump up 5"),
+	),
+	JumpDown: key.NewBinding(
+		key.WithKeys("ctrl+j"),
+		key.WithHelp("ctrl+j", "jump down 5"),
 	),
 	Select: key.NewBinding(
 		key.WithKeys("enter"),

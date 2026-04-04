@@ -15,16 +15,29 @@ type TaskDatasourceResponse struct {
 	} `json:"properties"`
 }
 
-type TaskPagesMsg struct {
-	Pages        []TaskPage
-	Err          error
-	MilestoneIdx int
+type TaskGroup struct {
+	Tasks      []TaskPage
+	NextCursor *string
+	Hide       bool
 }
 
-type TaskIDsMsg struct {
-	IDs          []string
-	Err          error
+// keyed by status: "dev", "idle", "done", "archive"
+type TaskGroups map[string]TaskGroup
+
+type ToggleTaskGroupMsg struct {
+	Status string
+}
+
+type FetchMoreTasksMsg struct {
+	Status string
+}
+
+type TaskQueryMsg struct {
+	Pages        []TaskPage
+	NextCursor   *string
+	Status       string
 	MilestoneIdx int
+	Err          error
 }
 
 type TaskPage struct {

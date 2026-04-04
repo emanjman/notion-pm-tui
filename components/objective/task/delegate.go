@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"notion-project-tui/styles"
-	listutil "notion-project-tui/util/list"
 
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
@@ -82,18 +81,30 @@ func (d ItemDelegate) Render(w io.Writer, m list.Model, index int, item list.Ite
 	selected := index == m.Index() && d.focused
 
 	switch item := item.(type) {
-	case listutil.ListItemGroupHeader:
+	case GroupHeader:
 		header := renderItemHeader(d, item, selected, m.Width())
 		fmt.Fprint(w, header)
 	case Item:
 		task := renderItem(d, item, selected, m.Width())
 		fmt.Fprint(w, task)
+	case LoadMoreItem:
+		fmt.Fprint(w, renderLoadMore(d, selected, m.Width()))
 	}
 }
 
 // -- helper funcs
 
-func renderItemHeader(d ItemDelegate, item listutil.ListItemGroupHeader, selected bool, windowWidth int) string {
+func renderLoadMore(d ItemDelegate, selected bool, windowWidth int) string {
+	style := lg.NewStyle().Foreground(styles.MutedForeground).PaddingLeft(4)
+	text := "..."
+	if selected {
+		style = style.Background(styles.SelectedBackground)
+		text = "[Enter] to load more..."
+	}
+	return style.Width(windowWidth).Render(text)
+}
+
+func renderItemHeader(d ItemDelegate, item GroupHeader, selected bool, windowWidth int) string {
 	style := d.style.header.base
 	if selected {
 		style = d.style.header.selected
