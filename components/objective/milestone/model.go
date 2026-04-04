@@ -43,6 +43,7 @@ func New(n *notion.Client, projID, propID string) Model {
 	l.SetShowStatusBar(false)
 	l.SetShowTitle(false)
 	l.SetShowFilter(false)
+	l.SetShowPagination(false)
 	l.SetFilteringEnabled(false)
 	l.DisableQuitKeybindings()
 
