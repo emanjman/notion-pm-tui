@@ -160,7 +160,7 @@ var priorities = []priority{
 
 var statusColors = map[string]lg.Color{
 	"idle":    lg.Color("#212121"),
-	"dev":     lg.Color("#e0af68"),
+	"dev":     lg.Color("#7aa2f7"),
 	"done":    lg.Color("#24ff7b"),
 	"archive": lg.Color("#ff244c"),
 }
