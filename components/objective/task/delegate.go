@@ -53,13 +53,14 @@ func NewItemDelegate(focused bool, focus *FocusState) ItemDelegate {
 	// header style
 	var (
 		hbase = lg.NewStyle().
-			PaddingBottom(1).
 			Foreground(styles.MutedForeground).
 			PaddingLeft(borderDistance).
 			PaddingRight(rightEdgeDistance)
-		hsel = hbase.
+		hsel = lg.NewStyle().
 			Foreground(styles.PrimaryForeground).
-			Underline(true)
+			Background(styles.SelectedBackground).
+			PaddingLeft(borderDistance).
+			PaddingRight(rightEdgeDistance)
 	)
 
 	return ItemDelegate{
@@ -124,7 +125,9 @@ func renderItemHeader(d ItemDelegate, item GroupHeader, selected bool, windowWid
 		count += "+"
 	}
 	content := fmt.Sprintf("%s %s (%s)", chevron, item.Label, count)
-	return style.Width(windowWidth).Render(content)
+	label := style.Width(windowWidth).Render(content)
+	spacer := lg.NewStyle().Render("")
+	return label + "\n" + spacer
 }
 
 type priority struct {

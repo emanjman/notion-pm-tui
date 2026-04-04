@@ -55,13 +55,14 @@ func NewItemDelegate(focused bool, focus *FocusState) ItemDelegate {
 	// header style
 	var (
 		hbase = lg.NewStyle().
-			PaddingBottom(1).
 			Foreground(styles.MutedForeground).
 			PaddingLeft(leftEdgeDistance).
 			PaddingRight(borderDistance)
-		hsel = hbase.
+		hsel = lg.NewStyle().
 			Foreground(styles.PrimaryForeground).
-			Underline(true)
+			Background(styles.SelectedBackground).
+			PaddingLeft(leftEdgeDistance).
+			PaddingRight(borderDistance)
 	)
 
 	return ItemDelegate{
@@ -119,7 +120,9 @@ func renderItemHeader(d ItemDelegate, item listutil.ListItemGroupHeader, selecte
 	}
 
 	content := fmt.Sprintf("%s %s (%d)", chevron, item.Label, item.Count)
-	return style.Width(windowWidth).Render(content)
+	label := style.Width(windowWidth).Render(content)
+	spacer := lg.NewStyle().Render("")
+	return label + "\n" + spacer
 }
 
 func renderItem(d ItemDelegate, item Item, selected bool, windowWidth int) string {
