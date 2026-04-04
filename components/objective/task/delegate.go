@@ -194,9 +194,9 @@ func renderItem(d ItemDelegate, item Item, selected bool, windowWidth int) strin
 	priority := priorityStyle.Render(fmt.Sprintf("%s [%d]", priorities[safePriorityIdx].severity, safePriorityIdx))
 
 	// calculate max title width
-	leftOffset, rightOffset, fieldSpacing := 3, 2, 2
+	leftOffset, rightOffset, fieldSpacing := 3, 3, 2
 	offset := leftOffset + rightOffset + fieldSpacing
-	titleMaxWidth := windowWidth - lg.Width(typ) - lg.Width(priority) - (offset)
+	titleMaxWidth := windowWidth - lg.Width(typ) - lg.Width(priority) - offset
 
 	if selected && d.focus.Mode == WritingMode {
 		// use textinput component in writing mode
