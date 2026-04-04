@@ -284,7 +284,7 @@ func (c *Client) QueryTasks(milestoneID, status, cursor string, milestoneIdx int
 					"direction": "ascending",
 				},
 			},
-			"page_size": 10,
+			"page_size": 5,
 		}
 		if cursor != "" {
 			body["start_cursor"] = cursor
