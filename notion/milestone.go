@@ -19,8 +19,7 @@ type MilestonePage struct {
 }
 
 type MilestoneProperties struct {
-	Title    TitleProperty    `json:"name"`
-	Progress FormulaProperty  `json:"progress"` // type:number
-	Status   FormulaProperty  `json:"$status"`  // type:string
-	Tasks    RelationProperty `json:"@tasks"`
+	Title    TitleProperty   `json:"name"`
+	Progress FormulaProperty `json:"progress"` // type:number
+	Status   FormulaProperty `json:"$status"`  // type:string
 }

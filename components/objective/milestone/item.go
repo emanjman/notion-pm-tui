@@ -15,12 +15,11 @@ const (
 
 // implementation for the `list.Item` interface
 type Item struct {
-	ID          string
-	TasksPropID string
-	Name        string
-	Status      string
-	Progress    float64
-	Icon        string
+	ID       string
+	Name     string
+	Status   string
+	Progress float64
+	Icon     string
 
 	// source of truth for this milestone's task data in memory. persists across
 	// milestone switches so previously fetched tasks don't need to be refetched.
@@ -30,7 +29,6 @@ type Item struct {
 
 func (m Item) FilterValue() string { return m.Name }
 func (m Item) GroupKey() string    { return m.Status } // conform Groupable
-
 
 func NewItem(page notion.MilestonePage) Item {
 	title := notion.ExtractPlainText(page.Properties.Title.Title)
@@ -51,12 +49,11 @@ func NewItem(page notion.MilestonePage) Item {
 	}
 
 	return Item{
-		ID:          page.ID,
-		TasksPropID: page.Properties.Tasks.ID,
-		Name:        title,
-		Status:      status,
-		Progress:    progress,
-		Icon:        icon,
+		ID:       page.ID,
+		Name:     title,
+		Status:   status,
+		Progress: progress,
+		Icon:     icon,
 
 		TaskGroups: notion.TaskGroups{},
 		FetchState: Idle,

@@ -324,20 +324,18 @@ func (c *Client) QueryTasks(milestoneID, status, cursor string, milestoneIdx int
 	}
 }
 
+// options for `type` property, e.g. "style" "feat" "refactor"
 func (c *Client) FetchTaskTypeOptions() tea.Cmd {
 	return func() tea.Msg {
 		url := c.baseURL + "/data_sources/" + c.tasksDsId
-
 		req, err := http.NewRequest("GET", url, nil)
 		if err != nil {
 			return TaskTypeOptionsMsg{Err: err}
 		}
-
 		var res TaskDatasourceResponse
 		if err := c.do(req, &res); err != nil {
 			return TaskTypeOptionsMsg{Err: err}
 		}
-
 		return TaskTypeOptionsMsg{Options: res.Properties.Type.Select.Options}
 	}
 }

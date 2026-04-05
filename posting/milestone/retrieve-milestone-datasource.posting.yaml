@@ -9,4 +9,4 @@ headers:
   value: $NOTION_VERSION
 path_params:
 - name: dsId
-  value: 3617361c-6e4d-4539-b2fc-aa8923a16eeb
+  value: $NOTION_MILESTONES_DS_ID

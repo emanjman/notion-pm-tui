@@ -1,0 +1,46 @@
+name: query milestones in-development
+method: POST
+url: $NOTION_API_URL/data_sources/:dsId/query
+body:
+  content: |-
+    {
+      "filter": {
+        "and": [
+          {
+            "property": "$$status",
+            "formula": {
+              "string": {
+                "equals": "🚧 under development"
+              }
+            }
+          },
+          {
+            "property": "@project",
+            "relation": {
+              "contains": "1d3b7273944b8024ac0ff449015a7d9b"
+            }
+          }
+        ]
+      },
+      "sorts": [{ "property": "$$latest-activity-at", "direction": "descending" }]
+    }
+  content_type: application/json
+auth:
+  type: bearer_token
+  bearer_token:
+    token: $NOTION_API_TOKEN
+headers:
+- name: Notion-Version
+  value: $NOTION_VERSION
+- name: content-type
+  value: application/json
+params:
+- name: filter_properties[]
+  value: name
+- name: filter_properties[]
+  value: progress
+- name: filter_properties[]
+  value: $$status
+path_params:
+- name: dsId
+  value: $NOTION_MILESTONES_DS_ID
