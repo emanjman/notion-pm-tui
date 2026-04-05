@@ -2,7 +2,6 @@ package milestone
 
 import (
 	"notion-project-tui/notion"
-	listutil "notion-project-tui/util/list"
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
@@ -14,16 +13,30 @@ type TaskViewMsg struct {
 	Groups notion.TaskGroups
 }
 
+type GroupHeader struct {
+	Label   string
+	Hidden  bool
+	Count   int
+	HasMore bool
+}
+
+func (h GroupHeader) FilterValue() string { return "" }
+
+type LoadMoreItem struct {
+	Status  string
+	Loading bool
+}
+
+func (l LoadMoreItem) FilterValue() string { return "" }
+
 type Model struct {
 	notion *notion.Client
 	projID string
-	propID string
 
-	list    list.Model
-	err     error
-	loading bool
-	groups map[string][]Item // milestones grouped by milestone status
-	hidden map[string]bool
+	list           list.Model
+	err            error
+	pendingFetches int
+	groups         notion.MilestoneGroups
 
 	ActiveKeyMap  help.KeyMap // for help focus view
 	neutralKeyMap NeutralKeyMap
@@ -34,7 +47,7 @@ type Model struct {
 
 var statusOrder = []string{"🚧 under development", "😴 idle", "🎉 complete"}
 
-func New(n *notion.Client, projID, propID string) Model {
+func New(n *notion.Client, projID string) Model {
 	f := FocusState{}
 
 	l := list.New([]list.Item{}, NewItemDelegate(true, &f), 0, 0)
@@ -47,16 +60,14 @@ func New(n *notion.Client, projID, propID string) Model {
 	l.SetFilteringEnabled(false)
 	l.DisableQuitKeybindings()
 
-	m := Model{
-		notion: n,
-		projID: projID,
-		propID: propID,
+	return Model{
+		notion:         n,
+		projID:         projID,
+		pendingFetches: 3,
 
-		list:    l,
-		err:     nil,
-		loading: true,
-		groups:  map[string][]Item{},
-		hidden:  map[string]bool{},
+		list:   l,
+		err:    nil,
+		groups: notion.MilestoneGroups{},
 
 		ActiveKeyMap:  NeutralKeyMapper, // default map view
 		neutralKeyMap: NeutralKeyMapper,
@@ -64,50 +75,40 @@ func New(n *notion.Client, projID, propID string) Model {
 
 		Focus: &f,
 	}
-	m.list.SetItems(listutil.BuildGroupList(m.groups, m.hidden, statusOrder))
-
-	return m
 }
 
 func (m Model) Init() tea.Cmd {
-	return func() tea.Msg {
-		ids, err := m.notion.FetchRelationIDs(m.projID, m.propID)
-		return notion.MilestoneIDsMsg{IDs: ids, Err: err}
-	}
+	return tea.Batch(
+		m.notion.QueryMilestones(m.projID, "🚧 under development", ""),
+		m.notion.QueryMilestones(m.projID, "😴 idle", ""),
+		m.notion.QueryMilestones(m.projID, "🎉 complete", ""),
+	)
 }
 
 func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
 
-	case notion.MilestoneIDsMsg:
-		if msg.Err != nil {
-			m.err = msg.Err
-			m.loading = false
-			return m, nil
-		}
-		return m, func() tea.Msg {
-			pages, err := notion.FetchPages[notion.MilestonePage](m.notion, msg.IDs)
-			return notion.MilestonePagesMsg{Pages: pages, Err: err}
-		}
-
 	case notion.MilestonePagesMsg:
 		if msg.Err != nil {
 			m.err = msg.Err
-			m.loading = false
+			m.pendingFetches--
 			return m, nil
 		}
 
-		// create the list items
-		tempItems := make([]Item, len(msg.Pages))
-		for i, pg := range msg.Pages {
-			tempItems[i] = NewItem(pg)
+		// append incoming pages into the correct status group
+		group := m.groups[msg.Status]
+		group.Milestones = append(group.Milestones, msg.Pages...)
+		group.NextCursor = msg.NextCursor
+		m.groups[msg.Status] = group
+
+		m.pendingFetches--
+
+		// only render + kick off task fetches once all 3 status batches have arrived
+		if m.pendingFetches > 0 {
+			return m, nil
 		}
 
-		m.groups = listutil.GroupByKey(tempItems)
-		items := listutil.BuildGroupList(m.groups, m.hidden, statusOrder)
-
-		m.list.SetItems(items)
-		m.loading = false
+		m.list.SetItems(m.buildMilestoneList())
 
 		cmds := []tea.Cmd{}
 		for i, item := range m.list.Items() {
@@ -121,6 +122,17 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			}
 		}
 		return m, tea.Batch(cmds...)
+
+	case notion.FetchMoreMilestonesMsg:
+		group := m.groups[msg.Status]
+		if group.NextCursor != nil && !group.Loading {
+			cursor := *group.NextCursor
+			group.Loading = true
+			m.groups[msg.Status] = group
+			m.list.SetItems(m.buildMilestoneList())
+			return m, m.queryMilestonesByStatus(msg.Status, cursor)
+		}
+		return m, nil
 
 	case notion.FetchMoreTasksMsg:
 		item := m.list.SelectedItem()
@@ -182,7 +194,6 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		if m.Focus.Mode == WritingMode {
 			switch {
 			case key.Matches(msg, m.writingKeyMap.Save):
-				// update item in list
 				if milestone, ok := m.list.SelectedItem().(Item); ok {
 					milestone.Name = m.Focus.tempTitle.Value()
 					m.list.SetItem(m.list.Index(), milestone)
@@ -195,7 +206,6 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 				// todo: send command to update milestone title in notion
 				return m, nil
 
-			// forward all keys into the textinput model
 			default:
 				var cmd tea.Cmd
 				m.Focus.tempTitle, cmd = m.Focus.tempTitle.Update(msg)
@@ -208,10 +218,15 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			case key.Matches(msg, m.neutralKeyMap.Select):
 				selected := m.list.SelectedItem()
 
-				// if selected item is header, toggle + rebuild list
-				if header, ok := selected.(listutil.ListItemGroupHeader); ok {
-					m.hidden[header.Label] = !m.hidden[header.Label]
-					m.list.SetItems(listutil.BuildGroupList(m.groups, m.hidden, statusOrder))
+				if header, ok := selected.(GroupHeader); ok {
+					group := m.groups[header.Label]
+					group.Hide = !group.Hide
+					m.groups[header.Label] = group
+					m.list.SetItems(m.buildMilestoneList())
+				} else if loadMore, ok := selected.(LoadMoreItem); ok && !loadMore.Loading {
+					return m, func() tea.Msg {
+						return notion.FetchMoreMilestonesMsg{Status: loadMore.Status}
+					}
 				}
 				return m, nil
 
@@ -250,26 +265,52 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	}
 
 	var cmd tea.Cmd
-	m.list, cmd = m.list.Update(msg) // handles up/down nav
+	m.list, cmd = m.list.Update(msg)
 	return m, cmd
 }
 
-// just forward the list.View()
 func (m Model) View() string {
-	if m.loading {
+	if m.pendingFetches > 0 {
 		return "Loading milestones..."
 	}
 
 	return m.list.View()
 }
 
+func (m Model) buildMilestoneList() []list.Item {
+	var items []list.Item
+	for _, status := range statusOrder {
+		group, ok := m.groups[status]
+		if !ok || len(group.Milestones) == 0 {
+			continue
+		}
+		items = append(items, GroupHeader{
+			Label:   status,
+			Hidden:  group.Hide,
+			Count:   len(group.Milestones),
+			HasMore: group.NextCursor != nil,
+		})
+		if !group.Hide {
+			for _, pg := range group.Milestones {
+				items = append(items, NewItem(pg))
+			}
+			if group.NextCursor != nil {
+				items = append(items, LoadMoreItem{Status: status, Loading: group.Loading})
+			}
+		}
+	}
+	return items
+}
+
 func (m Model) getCurrTaskGroups() notion.TaskGroups {
 	item := m.list.SelectedItem()
 
 	switch item := item.(type) {
-	case listutil.ListItemGroupHeader:
-		mstone := m.groups[item.Label][0]
-		return mstone.TaskGroups
+	case GroupHeader:
+		group := m.groups[item.Label]
+		if len(group.Milestones) > 0 {
+			return NewItem(group.Milestones[0]).TaskGroups
+		}
 	case Item:
 		return item.TaskGroups
 	}
@@ -283,19 +324,23 @@ func (m *Model) SetItemDelegate(d list.ItemDelegate) {
 func (m Model) updateMilestoneInGroups(updated Item) Model {
 	group := m.groups[updated.Status]
 
-	// overwrite task in m.groups
-	for i, t := range group {
-		if t.ID == updated.ID {
-			m.groups[updated.Status][i] = updated
+	for i, pg := range group.Milestones {
+		if pg.ID == updated.ID {
+			// sync the name back onto the page (only field editable locally)
+			group.Milestones[i].Properties.Title.Title[0].PlainText = updated.Name
 			break
 		}
 	}
 
-	// then rebuild item list
-	m.list.SetItems(listutil.BuildGroupList(m.groups, m.hidden, statusOrder))
+	m.groups[updated.Status] = group
+	m.list.SetItems(m.buildMilestoneList())
 	return m
 }
 
 func (m Model) queryTasksByStatus(idx int, milestoneID, status, cursor string) tea.Cmd {
 	return m.notion.QueryTasks(milestoneID, status, cursor, idx)
+}
+
+func (m Model) queryMilestonesByStatus(status, cursor string) tea.Cmd {
+	return m.notion.QueryMilestones(m.projID, status, cursor)
 }

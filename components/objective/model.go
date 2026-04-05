@@ -33,7 +33,7 @@ type Model struct {
 }
 
 func New(n *notion.Client, projID, milestonesPropID string) Model {
-	ms := milestone.New(n, projID, milestonesPropID)
+	ms := milestone.New(n, projID)
 	t := task.New(n)
 
 	return Model{

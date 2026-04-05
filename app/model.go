@@ -167,25 +167,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.page = &msg.Data
 		m.duration = msg.Duration
 
-		return m, func() tea.Msg {
-			ids, err := m.notion.FetchRelationIDs(m.page.ID, m.page.Properties.Milestones.ID)
-			return notion.MilestoneIDsMsg{IDs: ids, Err: err}
-		}
-
-	case notion.MilestoneIDsMsg:
-		if msg.Err != nil {
-			return m, nil
-		}
-		return m, func() tea.Msg {
-			pages, err := notion.FetchPages[notion.MilestonePage](m.notion, msg.IDs)
-			return notion.MilestonePagesMsg{Pages: pages, Err: err}
-		}
-
-	// forward updated milestones model + cmd
-	case notion.MilestonePagesMsg:
-		var cmd tea.Cmd
-		m.objective, cmd = m.objective.Update(msg)
-		return m, cmd
+		return m, nil
 
 	// spill messages into children to be handled at that lvl
 	default:

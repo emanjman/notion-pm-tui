@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"notion-project-tui/styles"
-	listutil "notion-project-tui/util/list"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/list"
@@ -85,14 +84,23 @@ func (d ItemDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd {
 // render items (based on the list item type => header vs milestone)
 func (d ItemDelegate) Render(w io.Writer, m list.Model, index int, item list.Item) {
 	selected := index == m.Index() && d.focused
+	items := m.Items()
+	isLast := index == len(items)-1
+	nextIsHeader := !isLast && func() bool {
+		_, ok := items[index+1].(GroupHeader)
+		return ok
+	}()
+	noBorder := isLast || nextIsHeader
 
 	switch item := item.(type) {
-	case listutil.ListItemGroupHeader:
+	case GroupHeader:
 		header := renderItemHeader(d, item, selected, m.Width())
 		fmt.Fprint(w, header)
 	case Item:
-		milestone := renderItem(d, item, selected, m.Width())
+		milestone := renderItem(d, item, selected, noBorder, m.Width())
 		fmt.Fprint(w, milestone)
+	case LoadMoreItem:
+		fmt.Fprint(w, renderLoadMore(d, item.Loading, selected, noBorder, m.Width()))
 	}
 }
 
@@ -108,7 +116,28 @@ func createProgressBar(progress float64, width int, baseStyle lg.Style) string {
 		baseStyle.Foreground(lg.Color("#2a2a2a")).Render(empty)
 }
 
-func renderItemHeader(d ItemDelegate, item listutil.ListItemGroupHeader, selected bool, windowWidth int) string {
+func renderLoadMore(d ItemDelegate, loading bool, selected bool, noBorder bool, windowWidth int) string {
+	style := d.style.itemContainer.base.Foreground(styles.MutedForeground).PaddingLeft(2)
+	if selected {
+		style = d.style.itemContainer.selected.Foreground(styles.MutedForeground).PaddingLeft(2)
+	}
+	if noBorder {
+		style = style.Border(lg.NormalBorder(), false)
+	}
+	text := "..."
+	if loading {
+		text = "Loading..."
+	} else if selected {
+		text = "[Enter] to load more..."
+	}
+	rendered := style.Width(windowWidth).Render(text)
+	if noBorder {
+		return rendered + "\n" + lg.NewStyle().Render("")
+	}
+	return rendered
+}
+
+func renderItemHeader(d ItemDelegate, item GroupHeader, selected bool, windowWidth int) string {
 	style := d.style.header.base
 	if selected {
 		style = d.style.header.selected
@@ -119,13 +148,17 @@ func renderItemHeader(d ItemDelegate, item listutil.ListItemGroupHeader, selecte
 		chevron = "▶"
 	}
 
-	content := fmt.Sprintf("%s %s (%d)", chevron, item.Label, item.Count)
+	count := fmt.Sprintf("%d", item.Count)
+	if item.HasMore {
+		count += "+"
+	}
+	content := fmt.Sprintf("%s %s (%s)", chevron, item.Label, count)
 	label := style.Width(windowWidth).Render(content)
 	spacer := lg.NewStyle().Render("")
 	return label + "\n" + spacer
 }
 
-func renderItem(d ItemDelegate, item Item, selected bool, windowWidth int) string {
+func renderItem(d ItemDelegate, item Item, selected bool, noBorder bool, windowWidth int) string {
 	contStyle := d.style.itemContainer.base
 	segStyle := d.style.itemSegment.base
 	nameStyle, stateStyle := lg.Style{}, lg.Style{}
@@ -191,10 +224,18 @@ func renderItem(d ItemDelegate, item Item, selected bool, windowWidth int) strin
 		name = nameStyle.Render(n)
 	}
 
+	if noBorder {
+		contStyle = contStyle.Border(lg.NormalBorder(), false)
+	}
+
 	left := name
 	right := progress + space + state
 	px := styles.GetPaddingBetween(left, right, windowWidth, contStyle)
 	content := left + styles.RenderPadding(segStyle, px) + right
 
-	return contStyle.Width(windowWidth).Render(content)
+	rendered := contStyle.Width(windowWidth).Render(content)
+	if noBorder {
+		return rendered + "\n" + lg.NewStyle().Render("")
+	}
+	return rendered
 }

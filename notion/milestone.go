@@ -1,14 +1,25 @@
 package notion
 
 type MilestonePagesMsg struct {
-	Pages []MilestonePage
-	Err   error
+	Pages      []MilestonePage
+	NextCursor *string
+	Status     string
+	Err        error
 }
 
-type MilestoneIDsMsg struct {
-	IDs []string
-	Err error
+type FetchMoreMilestonesMsg struct {
+	Status string
 }
+
+type MilestoneGroup struct {
+	Milestones []MilestonePage
+	NextCursor *string
+	Hide       bool
+	Loading    bool
+}
+
+// keyed by status: "🚧 under development", "😴 idle", "🎉 complete"
+type MilestoneGroups map[string]MilestoneGroup
 
 // ------
 
