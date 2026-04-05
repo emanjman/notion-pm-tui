@@ -301,7 +301,7 @@ func queryDatasource[T any](c *Client, dsId string, body map[string]any, cursor 
 func (c *Client) QueryTasks(milestoneID, status, cursor string, milestoneIdx int) tea.Cmd {
 	return func() tea.Msg {
 		body := taskQueryBody(milestoneID, status, 5)
-		fprops := []string{"task", "type", "priority"}
+		fprops := []string{"task", "type", "priority", "status"}
 		res, err := queryDatasource[TaskPage](c, c.tasksDsId, body, cursor, fprops)
 		if err != nil {
 			return TaskQueryMsg{Err: err, Status: status, MilestoneIdx: milestoneIdx}
