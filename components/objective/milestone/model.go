@@ -227,6 +227,23 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 					return m, func() tea.Msg {
 						return notion.FetchMoreMilestonesMsg{Status: loadMore.Status}
 					}
+				} else if mstone, ok := selected.(Item); ok {
+					switch mstone.FetchState {
+					case Idle:
+						idx := m.list.Index()
+						mstone.FetchState = Pending
+						m.list.SetItem(idx, mstone)
+						return m, tea.Batch(
+							m.queryTasksByStatus(idx, mstone.ID, "dev", ""),
+							m.queryTasksByStatus(idx, mstone.ID, "idle", ""),
+							m.queryTasksByStatus(idx, mstone.ID, "done", ""),
+							m.queryTasksByStatus(idx, mstone.ID, "archive", ""),
+						)
+					case Success:
+						return m, func() tea.Msg {
+							return TaskViewMsg{Groups: mstone.TaskGroups}
+						}
+					}
 				}
 				return m, nil
 
