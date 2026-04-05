@@ -139,11 +139,11 @@ func (m Model) View() string {
 	rightStyle := lg.NewStyle().Border(lg.RoundedBorder(), true).Padding(0, 1)
 
 	if m.focus == MilestonePanel {
-		leftStyle = leftStyle.BorderForeground(styles.TechForeground)
-		rightStyle = rightStyle.BorderForeground(styles.MutedForeground)
-	} else {
-		rightStyle = rightStyle.BorderForeground(styles.TechForeground)
 		leftStyle = leftStyle.BorderForeground(styles.MutedForeground)
+		rightStyle = rightStyle.BorderForeground(styles.BorderForeground)
+	} else {
+		rightStyle = rightStyle.BorderForeground(styles.MutedForeground)
+		leftStyle = leftStyle.BorderForeground(styles.BorderForeground)
 	}
 
 	left := leftStyle.Render(m.milestone.View())

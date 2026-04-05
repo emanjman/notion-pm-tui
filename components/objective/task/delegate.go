@@ -151,16 +151,16 @@ type priority struct {
 
 var priorities = []priority{
 	{fg: styles.MutedForeground, severity: "none"},
-	{fg: lg.Color("#7aa2f7"), severity: "minimal"},
+	{fg: lg.Color("#7aa2f7"), severity: "min"},
 	{fg: lg.Color("#9ece6a"), severity: "low"},
-	{fg: lg.Color("#e0af68"), severity: "medium"},
+	{fg: lg.Color("#e0af68"), severity: "med"},
 	{fg: lg.Color("#ff9e64"), severity: "high"},
-	{fg: lg.Color("#f7768e"), severity: "critical"},
+	{fg: lg.Color("#f7768e"), severity: "crit"},
 }
 
 var statusColors = map[string]lg.Color{
 	"idle":    lg.Color("#212121"),
-	"dev":     lg.Color("#7aa2f7"),
+	"dev":     lg.Color("#4267fc"),
 	"done":    lg.Color("#24ff7b"),
 	"archive": lg.Color("#ff244c"),
 }

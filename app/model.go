@@ -246,14 +246,9 @@ func (m Model) View() string {
 	tabDivider := lg.NewStyle().
 		Foreground(styles.BorderForeground).
 		SetString("|")
-
 	s.WriteString(
 		lg.NewStyle().
-			PaddingLeft(2).
-			PaddingTop(1).
-			BorderBottom(true).
-			BorderStyle(lg.ThickBorder()).
-			BorderForeground(styles.BorderForeground).
+			Padding(1, 2).
 			Width(m.width).
 			Render(strings.Join(headers, tabDivider.String())))
 
@@ -265,14 +260,9 @@ func (m Model) View() string {
 		Primary:   RootKeyMap,
 		Secondary: m.getActiveKeyMap(),
 	})
-
 	s.WriteString(
 		lg.NewStyle().
-			BorderTop(true).
-			BorderStyle(lg.ThickBorder()).
-			BorderForeground(styles.BorderForeground).
-			PaddingLeft(2).
-			PaddingBottom(1).
+			Padding(1, 2).
 			Width(m.width).
 			Render(help))
 
