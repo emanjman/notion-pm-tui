@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"time"
 
@@ -14,24 +15,26 @@ import (
 )
 
 type Client struct {
-	http      *http.Client
-	token     string
-	version   string
-	baseURL   string
-	projId    string
-	tasksDsId string
+	http          *http.Client
+	token         string
+	version       string
+	baseURL       string
+	projId        string
+	tasksDsId     string
+	milestoneDsId string
 }
 
 // constructor
 func NewClient() *Client {
 	// address of newly created client
 	return &Client{
-		http:      &http.Client{Timeout: 10 * time.Second},
-		token:     os.Getenv("NOTION_API_TOKEN"),
-		version:   os.Getenv("NOTION_VERSION"),
-		baseURL:   os.Getenv("NOTION_API_URL"),
-		projId:    os.Getenv("NOTION_HOOP_ARCHIVES_ID"),
-		tasksDsId: os.Getenv("NOTION_TASKS_DS_ID"),
+		http:          &http.Client{Timeout: 10 * time.Second},
+		token:         os.Getenv("NOTION_API_TOKEN"),
+		version:       os.Getenv("NOTION_VERSION"),
+		baseURL:       os.Getenv("NOTION_API_URL"),
+		projId:        os.Getenv("NOTION_HOOP_ARCHIVES_ID"),
+		tasksDsId:     os.Getenv("NOTION_TASKS_DS_ID"),
+		milestoneDsId: os.Getenv("NOTION_MILESTONES_DS_ID"),
 	}
 }
 
@@ -257,70 +260,78 @@ func (c *Client) UpdatePageProperties(pageID string, props any) error {
 	return c.do(req, &res)
 }
 
+type PaginationResponse[T any] struct {
+	Results    []T     `json:"results"`
+	NextCursor *string `json:"next_cursor"`
+	HasMore    bool    `json:"has_more"`
+}
+
+func queryDatasource[T any](c *Client, dsId string, body map[string]any, cursor string, filterProps []string) (*PaginationResponse[T], error) {
+	// setup url + queries
+	url, err := url.Parse(c.baseURL + "/data_sources/" + dsId + "/query")
+	if err != nil {
+		return nil, err
+	}
+	q := url.Query()
+	for _, fp := range filterProps {
+		q.Add("filter_properties[]", fp)
+	}
+	url.RawQuery = q.Encode()
+	// build body + inject cursor (if loading more)
+	if cursor != "" {
+		body["start_cursor"] = cursor
+	}
+	b, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	// send req + prep response
+	req, err := http.NewRequest("POST", url.String(), bytes.NewReader(b))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Add("Content-Type", "application/json")
+	var res PaginationResponse[T]
+	if err := c.do(req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
 func (c *Client) QueryTasks(milestoneID, status, cursor string, milestoneIdx int) tea.Cmd {
 	return func() tea.Msg {
-		url := c.baseURL + "/data_sources/" + c.tasksDsId + "/query"
-
-		body := map[string]any{
-			"filter": map[string]any{
-				"and": []map[string]any{
-					{
-						"property": "status",
-						"status":   map[string]any{"equals": status},
-					},
-					{
-						"property": "@milestone",
-						"relation": map[string]any{"contains": milestoneID},
-					},
-				},
-			},
-			"sorts": []map[string]any{
-				{
-					"property":  "priority",
-					"direction": "descending",
-				},
-				{
-					"property":  "created-at",
-					"direction": "ascending",
-				},
-			},
-			"page_size": 5,
-		}
-		if cursor != "" {
-			body["start_cursor"] = cursor
-		}
-
-		b, err := json.Marshal(body)
+		body := taskQueryBody(milestoneID, status, 5)
+		fprops := []string{"task", "type", "priority"}
+		res, err := queryDatasource[TaskPage](c, c.tasksDsId, body, cursor, fprops)
 		if err != nil {
 			return TaskQueryMsg{Err: err, Status: status, MilestoneIdx: milestoneIdx}
 		}
-
-		req, err := http.NewRequest("POST", url, bytes.NewReader(b))
-		if err != nil {
-			return TaskQueryMsg{Err: err, Status: status, MilestoneIdx: milestoneIdx}
-		}
-		req.Header.Add("Content-Type", "application/json")
-
-		var res struct {
-			Results    []TaskPage `json:"results"`
-			NextCursor *string    `json:"next_cursor"`
-			HasMore    bool       `json:"has_more"`
-		}
-		if err := c.do(req, &res); err != nil {
-			return TaskQueryMsg{Err: err, Status: status, MilestoneIdx: milestoneIdx}
-		}
-
 		var nextCursor *string
 		if res.HasMore {
 			nextCursor = res.NextCursor
 		}
-
 		return TaskQueryMsg{
 			Pages:        res.Results,
 			NextCursor:   nextCursor,
 			Status:       status,
 			MilestoneIdx: milestoneIdx,
 		}
+	}
+}
+
+func (c *Client) QueryMilestones(projID, status, cursor string) tea.Cmd {
+	return func() tea.Msg {
+		body := milestoneQueryBody(projID, status, 5)
+		fprops := []string{"name", "progress", "$status"}
+		res, err := queryDatasource[MilestonePage](c, c.milestoneDsId, body, cursor, fprops)
+		if err != nil {
+			return MilestonePagesMsg{Err: err, Status: status}
+		}
+		var nextCursor *string
+		if res.HasMore {
+			nextCursor = res.NextCursor
+		}
+		return MilestonePagesMsg{Pages: res.Results, NextCursor: nextCursor, Status: status}
 	}
 }
 
