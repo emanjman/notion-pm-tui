@@ -2,11 +2,14 @@ package milestone
 
 import (
 	"notion-project-tui/notion"
+	"notion-project-tui/styles"
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
+	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
+	lg "github.com/charmbracelet/lipgloss"
 )
 
 type TaskViewMsg struct {
@@ -34,9 +37,11 @@ type Model struct {
 	projID string
 
 	list           list.Model
+	delegate       ItemDelegate
 	err            error
 	pendingFetches int
 	groups         notion.MilestoneGroups
+	spinner        spinner.Model
 
 	ActiveKeyMap  help.KeyMap // for help focus view
 	neutralKeyMap NeutralKeyMap
@@ -49,8 +54,9 @@ var statusOrder = []string{"🚧 under development", "😴 idle", "🎉 complete
 
 func New(n *notion.Client, projID string) Model {
 	f := FocusState{}
+	d := NewItemDelegate(true, &f)
 
-	l := list.New([]list.Item{}, NewItemDelegate(true, &f), 0, 0)
+	l := list.New([]list.Item{}, d, 0, 0)
 	l.Title = "Milestones"
 	l.SetShowHelp(false)
 	l.SetShowStatusBar(false)
@@ -60,14 +66,20 @@ func New(n *notion.Client, projID string) Model {
 	l.SetFilteringEnabled(false)
 	l.DisableQuitKeybindings()
 
+	sp := spinner.New()
+	sp.Spinner = spinner.MiniDot
+	sp.Style = lg.NewStyle().Foreground(styles.MutedForeground)
+
 	return Model{
 		notion:         n,
 		projID:         projID,
 		pendingFetches: 3,
 
-		list:   l,
-		err:    nil,
-		groups: notion.MilestoneGroups{},
+		list:     l,
+		delegate: d,
+		err:      nil,
+		groups:   notion.MilestoneGroups{},
+		spinner:  sp,
 
 		ActiveKeyMap:  NeutralKeyMapper, // default map view
 		neutralKeyMap: NeutralKeyMapper,
@@ -79,6 +91,7 @@ func New(n *notion.Client, projID string) Model {
 
 func (m Model) Init() tea.Cmd {
 	return tea.Batch(
+		m.spinner.Tick,
 		m.notion.QueryMilestones(m.projID, "🚧 under development", ""),
 		m.notion.QueryMilestones(m.projID, "😴 idle", ""),
 		m.notion.QueryMilestones(m.projID, "🎉 complete", ""),
@@ -87,6 +100,16 @@ func (m Model) Init() tea.Cmd {
 
 func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
+
+	case spinner.TickMsg:
+		if m.pendingFetches > 0 || m.hasPendingMilestone() {
+			var cmd tea.Cmd
+			m.spinner, cmd = m.spinner.Update(msg)
+			m.delegate.spinnerFrame = m.spinner.View()
+			m.list.SetDelegate(m.delegate)
+			return m, cmd
+		}
+		return m, nil
 
 	case notion.MilestonePagesMsg:
 		if msg.Err != nil {
@@ -296,7 +319,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 
 func (m Model) View() string {
 	if m.pendingFetches > 0 {
-		return "Loading milestones..."
+		return m.spinner.View() + " Loading milestones..."
 	}
 
 	return m.list.View()
@@ -368,4 +391,13 @@ func (m Model) queryTasksByStatus(idx int, milestoneID, status, cursor string) t
 
 func (m Model) queryMilestonesByStatus(status, cursor string) tea.Cmd {
 	return m.notion.QueryMilestones(m.projID, status, cursor)
+}
+
+func (m Model) hasPendingMilestone() bool {
+	for _, item := range m.list.Items() {
+		if ms, ok := item.(Item); ok && ms.FetchState == Pending {
+			return true
+		}
+	}
+	return false
 }

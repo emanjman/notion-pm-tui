@@ -23,10 +23,10 @@ type style struct {
 }
 
 type ItemDelegate struct {
-	focused bool
-	style   style
-
-	focus *FocusState
+	focused      bool
+	style        style
+	focus        *FocusState
+	spinnerFrame string
 }
 
 func NewItemDelegate(focused bool, focus *FocusState) ItemDelegate {
@@ -192,7 +192,11 @@ func renderItem(d ItemDelegate, item Item, selected bool, noBorder bool, windowW
 	case Idle:
 		state = stateStyle.Foreground(styles.MutedForeground).Render("◌")
 	case Pending:
-		state = stateStyle.Foreground(styles.MutedForeground).Render("↻")
+		frame := d.spinnerFrame
+		if frame == "" {
+			frame = "·"
+		}
+		state = stateStyle.Foreground(styles.MutedForeground).Render(frame)
 	case Failed:
 		state = stateStyle.Foreground(lg.Color("#e0af68")).Render("⚠")
 	}
