@@ -1,0 +1,12 @@
+name: retrieve debug datasources
+url: $NOTION_API_URL/data_sources/:dsId
+auth:
+  type: bearer_token
+  bearer_token:
+    token: $NOTION_API_TOKEN
+headers:
+- name: Notion-Version
+  value: $NOTION_VERSION
+path_params:
+- name: dsId
+  value: $NOTION_DEBUG_NOTES_DS_ID

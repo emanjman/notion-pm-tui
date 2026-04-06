@@ -1,0 +1,12 @@
+name: retrieve notes database
+url: $NOTION_API_URL/databases/:dbId
+auth:
+  type: bearer_token
+  bearer_token:
+    token: $NOTION_API_TOKEN
+headers:
+- name: Notion-Version
+  value: $NOTION_VERSION
+path_params:
+- name: dbId
+  value: $NOTION_PROJECT_NOTES_DB_ID
