@@ -322,7 +322,7 @@ func (c *Client) QueryTasks(milestoneID, status, cursor string, milestoneIdx int
 func (c *Client) QueryMilestones(projID, status, cursor string) tea.Cmd {
 	return func() tea.Msg {
 		body := milestoneQueryBody(projID, status, 5)
-		fprops := []string{"name", "progress", "$status"}
+		fprops := []string{"name", "progress", "$status", "task-ct"}
 		res, err := queryDatasource[MilestonePage](c, c.milestoneDsId, body, cursor, fprops)
 		if err != nil {
 			return MilestonePagesMsg{Err: err, Status: status}

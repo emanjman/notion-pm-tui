@@ -15,11 +15,12 @@ const (
 
 // implementation for the `list.Item` interface
 type Item struct {
-	ID       string
-	Name     string
-	Status   string
-	Progress float64
-	Icon     string
+	ID        string
+	Name      string
+	Status    string
+	Progress  float64
+	Icon      string
+	TaskCount int
 
 	// source of truth for this milestone's task data in memory. persists across
 	// milestone switches so previously fetched tasks don't need to be refetched.
@@ -48,12 +49,18 @@ func NewItem(page notion.MilestonePage) Item {
 		icon = *page.Icon.Emoji
 	}
 
+	cnt := 0
+	if page.Properties.TaskCount.Formula.Number != nil {
+		cnt = int(*page.Properties.TaskCount.Formula.Number)
+	}
+
 	return Item{
-		ID:       page.ID,
-		Name:     title,
-		Status:   status,
-		Progress: progress,
-		Icon:     icon,
+		ID:        page.ID,
+		Name:      title,
+		Status:    status,
+		Progress:  progress,
+		Icon:      icon,
+		TaskCount: cnt,
 
 		TaskGroups: notion.TaskGroups{},
 		FetchState: Idle,

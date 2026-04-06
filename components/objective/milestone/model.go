@@ -219,26 +219,34 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 				selected := m.list.SelectedItem()
 
 				if header, ok := selected.(GroupHeader); ok {
+					// toggle header
 					group := m.groups[header.Label]
 					group.Hide = !group.Hide
 					m.groups[header.Label] = group
 					m.list.SetItems(m.buildMilestoneList())
+
 				} else if loadMore, ok := selected.(LoadMoreItem); ok && !loadMore.Loading {
+					// load more milestones
 					return m, func() tea.Msg {
 						return notion.FetchMoreMilestonesMsg{Status: loadMore.Status}
 					}
 				} else if mstone, ok := selected.(Item); ok {
+					// fetch tasks for curr milestone
 					switch mstone.FetchState {
 					case Idle:
 						idx := m.list.Index()
 						mstone.FetchState = Pending
 						m.list.SetItem(idx, mstone)
-						return m, tea.Batch(
-							m.queryTasksByStatus(idx, mstone.ID, "dev", ""),
-							m.queryTasksByStatus(idx, mstone.ID, "idle", ""),
-							m.queryTasksByStatus(idx, mstone.ID, "done", ""),
-							m.queryTasksByStatus(idx, mstone.ID, "archive", ""),
-						)
+						if mstone.TaskCount > 0 {
+							return m, tea.Batch(
+								m.queryTasksByStatus(idx, mstone.ID, "dev", ""),
+								m.queryTasksByStatus(idx, mstone.ID, "idle", ""),
+								m.queryTasksByStatus(idx, mstone.ID, "done", ""),
+								m.queryTasksByStatus(idx, mstone.ID, "archive", ""),
+							)
+						}
+						return m, nil
+					// todo: is this necessary
 					case Success:
 						return m, func() tea.Msg {
 							return TaskViewMsg{Groups: mstone.TaskGroups}

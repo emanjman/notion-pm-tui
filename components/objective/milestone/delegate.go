@@ -161,28 +161,31 @@ func renderItemHeader(d ItemDelegate, item GroupHeader, selected bool, windowWid
 func renderItem(d ItemDelegate, item Item, selected bool, noBorder bool, windowWidth int) string {
 	contStyle := d.style.itemContainer.base
 	segStyle := d.style.itemSegment.base
-	nameStyle, stateStyle := lg.Style{}, lg.Style{}
+	nameStyle, stateStyle, countStyle := lg.Style{}, lg.Style{}, lg.Style{}
 
 	// handle field highlighting by mode
 	if selected {
 		if d.focus.Mode == NeutralMode {
 			segStyle = d.style.itemSegment.selected
-			contStyle = d.style.itemContainer.selected
+			countStyle = d.style.itemContainer.selected
 
 			// apply select highlight row-wide
-			nameStyle, stateStyle = segStyle, segStyle
+			nameStyle, stateStyle, countStyle = segStyle, segStyle, segStyle
 		} else {
 			nameStyle = nameStyle.Inherit(d.style.itemSegment.selected)
+			countStyle = countStyle.Inherit(d.style.itemSegment.selected)
 		}
 	}
 
 	// apply final field-specific styles
 	nameStyle = nameStyle.Foreground(styles.PrimaryForeground)
+	countStyle = countStyle.Foreground(styles.MutedForeground)
 
 	if item.Icon == "" {
 		item.Icon = "  "
 	}
 	name := nameStyle.Render(item.Icon + " " + item.Name)
+	count := countStyle.Render(fmt.Sprintf("%d", item.TaskCount))
 
 	var state string
 	switch item.FetchState {
@@ -198,11 +201,11 @@ func renderItem(d ItemDelegate, item Item, selected bool, noBorder bool, windowW
 	// hide progress bar for completed milestones
 	var progress string
 	if item.Status != "🎉 complete" { // !hardcode
-		completion := segStyle.
-			Foreground(styles.MutedForeground).
-			Render(fmt.Sprintf("%.0f%%", item.Progress*100))
-		pbar := createProgressBar(item.Progress, windowWidth/3, segStyle)
-		progress = completion + segStyle.Render(" ") + pbar
+		// completion := segStyle.
+		// 	Foreground(styles.MutedForeground).
+		// 	Render(fmt.Sprintf("%.0f%%", item.Progress*100))
+		pbar := createProgressBar(item.Progress, windowWidth/4, segStyle)
+		progress = pbar + segStyle.Render(" ") + count
 	}
 
 	// calculate max title width
