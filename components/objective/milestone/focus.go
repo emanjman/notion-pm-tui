@@ -11,7 +11,7 @@ type FocusMode int
 
 const (
 	NeutralMode FocusMode = iota
-	WritingMode             // editing title; reserve all keys
+	WritingMode           // editing title; reserve all keys
 )
 
 // ---
@@ -29,7 +29,7 @@ type FocusState struct {
 // ---
 // helpers
 
-func initTempTitle(item Item) textinput.Model {
+func initTempTitle(item DefaultItem) textinput.Model {
 	ti := textinput.New()
 	ti.SetValue(item.Name)
 	ti.CursorEnd()

@@ -9,25 +9,18 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
+type FetchState int
+
+const (
+	Idle FetchState = iota
+	Pending
+	Success
+	Failed
+)
+
 type TaskViewMsg struct {
 	Groups notion.TaskGroups
 }
-
-type GroupHeader struct {
-	Label   string
-	Hidden  bool
-	Count   int
-	HasMore bool
-}
-
-func (h GroupHeader) FilterValue() string { return "" }
-
-type LoadMoreItem struct {
-	Status  string
-	Loading bool
-}
-
-func (l LoadMoreItem) FilterValue() string { return "" }
 
 type Model struct {
 	notion *notion.Client
@@ -112,7 +105,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 
 		cmds := []tea.Cmd{}
 		for i, item := range m.list.Items() {
-			if item, ok := item.(Item); ok && item.Status == "🚧 under development" {
+			if item, ok := item.(DefaultItem); ok && item.Status == "🚧 under development" {
 				item.FetchState = Pending
 				m.list.SetItem(i, item)
 				cmds = append(cmds, m.queryTasksByStatus(i, item.ID, "dev", ""))
@@ -136,7 +129,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 
 	case notion.FetchMoreTasksMsg:
 		item := m.list.SelectedItem()
-		if mstone, ok := item.(Item); ok {
+		if mstone, ok := item.(DefaultItem); ok {
 			group := mstone.TaskGroups[msg.Status]
 			if group.NextCursor != nil && !group.Loading {
 				idx := m.list.Index()
@@ -154,7 +147,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 
 	case notion.ToggleTaskGroupMsg:
 		item := m.list.SelectedItem()
-		if mstone, ok := item.(Item); ok {
+		if mstone, ok := item.(DefaultItem); ok {
 			group := mstone.TaskGroups[msg.Status]
 			group.Hide = !group.Hide
 			mstone.TaskGroups[msg.Status] = group
@@ -171,7 +164,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			return m, nil
 		}
 		item := m.list.Items()[msg.MilestoneIdx]
-		if mstone, ok := item.(Item); ok {
+		if mstone, ok := item.(DefaultItem); ok {
 			group := mstone.TaskGroups[msg.Status]
 			group.Tasks = append(group.Tasks, msg.Pages...)
 			group.NextCursor = msg.NextCursor
@@ -194,7 +187,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		if m.Focus.Mode == WritingMode {
 			switch {
 			case key.Matches(msg, m.writingKeyMap.Save):
-				if milestone, ok := m.list.SelectedItem().(Item); ok {
+				if milestone, ok := m.list.SelectedItem().(DefaultItem); ok {
 					milestone.Name = m.Focus.tempTitle.Value()
 					m.list.SetItem(m.list.Index(), milestone)
 					m.updateMilestoneInGroups(milestone)
@@ -218,7 +211,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			case key.Matches(msg, m.neutralKeyMap.Select):
 				selected := m.list.SelectedItem()
 
-				if header, ok := selected.(GroupHeader); ok {
+				if header, ok := selected.(GroupHeaderItem); ok {
 					// toggle header
 					group := m.groups[header.Label]
 					group.Hide = !group.Hide
@@ -230,7 +223,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 					return m, func() tea.Msg {
 						return notion.FetchMoreMilestonesMsg{Status: loadMore.Status}
 					}
-				} else if mstone, ok := selected.(Item); ok {
+				} else if mstone, ok := selected.(DefaultItem); ok {
 					// fetch tasks for curr milestone
 					switch mstone.FetchState {
 					case Idle:
@@ -256,7 +249,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 				return m, nil
 
 			case key.Matches(msg, m.neutralKeyMap.Rename):
-				if milestone, ok := m.list.SelectedItem().(Item); ok {
+				if milestone, ok := m.list.SelectedItem().(DefaultItem); ok {
 					m.Focus.milestoneID = milestone.ID
 					m.Focus.milestoneIdx = m.list.Index()
 					m.Focus.tempTitle = initTempTitle(milestone)
@@ -309,15 +302,10 @@ func (m Model) buildMilestoneList() []list.Item {
 		if !ok || len(group.Milestones) == 0 {
 			continue
 		}
-		items = append(items, GroupHeader{
-			Label:   status,
-			Hidden:  group.Hide,
-			Count:   len(group.Milestones),
-			HasMore: group.NextCursor != nil,
-		})
+		items = append(items, NewGroupHeaderItem(status, group))
 		if !group.Hide {
 			for _, pg := range group.Milestones {
-				items = append(items, NewItem(pg))
+				items = append(items, NewDefaultItem(pg))
 			}
 			if group.NextCursor != nil {
 				items = append(items, LoadMoreItem{Status: status, Loading: group.Loading})
@@ -331,12 +319,12 @@ func (m Model) getCurrTaskGroups() notion.TaskGroups {
 	item := m.list.SelectedItem()
 
 	switch item := item.(type) {
-	case GroupHeader:
+	case GroupHeaderItem:
 		group := m.groups[item.Label]
 		if len(group.Milestones) > 0 {
-			return NewItem(group.Milestones[0]).TaskGroups
+			return NewDefaultItem(group.Milestones[0]).TaskGroups
 		}
-	case Item:
+	case DefaultItem:
 		return item.TaskGroups
 	}
 	return notion.TaskGroups{}
@@ -346,7 +334,7 @@ func (m *Model) SetItemDelegate(d list.ItemDelegate) {
 	m.list.SetDelegate(d)
 }
 
-func (m Model) updateMilestoneInGroups(updated Item) Model {
+func (m Model) updateMilestoneInGroups(updated DefaultItem) Model {
 	group := m.groups[updated.Status]
 
 	for i, pg := range group.Milestones {

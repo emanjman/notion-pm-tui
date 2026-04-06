@@ -29,6 +29,8 @@ type ItemDelegate struct {
 	focus *FocusState
 }
 
+var _ list.ItemDelegate = (*ItemDelegate)(nil) // conform
+
 func NewItemDelegate(focused bool, focus *FocusState) ItemDelegate {
 	borderDistance := 1
 	leftEdgeDistance := 1
@@ -87,16 +89,16 @@ func (d ItemDelegate) Render(w io.Writer, m list.Model, index int, item list.Ite
 	items := m.Items()
 	isLast := index == len(items)-1
 	nextIsHeader := !isLast && func() bool {
-		_, ok := items[index+1].(GroupHeader)
+		_, ok := items[index+1].(GroupHeaderItem)
 		return ok
 	}()
 	noBorder := isLast || nextIsHeader
 
 	switch item := item.(type) {
-	case GroupHeader:
+	case GroupHeaderItem:
 		header := renderItemHeader(d, item, selected, m.Width())
 		fmt.Fprint(w, header)
-	case Item:
+	case DefaultItem:
 		milestone := renderItem(d, item, selected, noBorder, m.Width())
 		fmt.Fprint(w, milestone)
 	case LoadMoreItem:
@@ -137,7 +139,7 @@ func renderLoadMore(d ItemDelegate, loading bool, selected bool, noBorder bool, 
 	return rendered
 }
 
-func renderItemHeader(d ItemDelegate, item GroupHeader, selected bool, windowWidth int) string {
+func renderItemHeader(d ItemDelegate, item GroupHeaderItem, selected bool, windowWidth int) string {
 	style := d.style.header.base
 	if selected {
 		style = d.style.header.selected
@@ -158,7 +160,7 @@ func renderItemHeader(d ItemDelegate, item GroupHeader, selected bool, windowWid
 	return label + "\n" + spacer
 }
 
-func renderItem(d ItemDelegate, item Item, selected bool, noBorder bool, windowWidth int) string {
+func renderItem(d ItemDelegate, item DefaultItem, selected bool, noBorder bool, windowWidth int) string {
 	contStyle := d.style.itemContainer.base
 	segStyle := d.style.itemSegment.base
 	nameStyle, stateStyle, countStyle := lg.Style{}, lg.Style{}, lg.Style{}
