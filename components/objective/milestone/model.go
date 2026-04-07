@@ -308,7 +308,7 @@ func (m Model) buildMilestoneList() []list.Item {
 				items = append(items, NewDefaultItem(pg))
 			}
 			if group.NextCursor != nil {
-				items = append(items, LoadMoreItem{Status: status, Loading: group.Loading})
+				items = append(items, NewLoadMoreItem(status, group))
 			}
 		}
 	}

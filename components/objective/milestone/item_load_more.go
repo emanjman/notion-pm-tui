@@ -1,6 +1,10 @@
 package milestone
 
-import "github.com/charmbracelet/bubbles/list"
+import (
+	"notion-project-tui/notion"
+
+	"github.com/charmbracelet/bubbles/list"
+)
 
 type LoadMoreItem struct {
 	Status  string
@@ -8,5 +12,12 @@ type LoadMoreItem struct {
 }
 
 var _ list.Item = (*LoadMoreItem)(nil) // conform
+
+func NewLoadMoreItem(status string, g notion.MilestoneGroup) LoadMoreItem {
+	return LoadMoreItem{
+		Status:  status,
+		Loading: g.Loading,
+	}
+}
 
 func (l LoadMoreItem) FilterValue() string { return "" }
