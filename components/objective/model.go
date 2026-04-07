@@ -32,6 +32,8 @@ type Model struct {
 	keys             KeyMap
 }
 
+var _ tea.Model = (*Model)(nil) // conform
+
 func New(n *notion.Client, projID, milestonesPropID string) Model {
 	ms := milestone.New(n, projID)
 	t := task.New(n)
@@ -53,7 +55,7 @@ func (m Model) Init() tea.Cmd {
 	return tea.Batch(m.milestone.Init(), m.task.Init())
 }
 
-func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
+func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		if m.InFocusMode() {

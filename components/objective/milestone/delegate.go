@@ -3,6 +3,7 @@ package milestone
 import (
 	"fmt"
 	"io"
+	"notion-project-tui/notion"
 	"notion-project-tui/styles"
 	"strings"
 
@@ -190,19 +191,19 @@ func renderItem(d ItemDelegate, item DefaultItem, selected bool, noBorder bool, 
 	count := countStyle.Render(fmt.Sprintf("%d", item.TaskCount))
 
 	var state string
-	switch item.FetchState {
-	case Idle:
+	switch item.FetchStatus {
+	case FetchIdle:
 		state = stateStyle.Foreground(styles.MutedForeground).Render("◌")
-	case Pending:
+	case FetchPending:
 		state = stateStyle.Foreground(styles.MutedForeground).Render("↻")
-	case Failed:
+	case FetchFailed:
 		state = stateStyle.Foreground(lg.Color("#e0af68")).Render("⚠")
 	}
 	space := segStyle.Render(" ")
 
 	// hide progress bar for completed milestones
 	var progress string
-	if item.Status != "🎉 complete" { // !hardcode
+	if item.MilestoneStatus != notion.MilestoneComplete {
 		// completion := segStyle.
 		// 	Foreground(styles.MutedForeground).
 		// 	Render(fmt.Sprintf("%.0f%%", item.Progress*100))

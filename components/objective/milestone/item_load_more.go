@@ -7,13 +7,13 @@ import (
 )
 
 type LoadMoreItem struct {
-	Status  string
+	Status  notion.MilestoneStatus
 	Loading bool
 }
 
 var _ list.Item = (*LoadMoreItem)(nil) // conform
 
-func NewLoadMoreItem(status string, g notion.MilestoneGroup) LoadMoreItem {
+func NewLoadMoreItem(status notion.MilestoneStatus, g notion.MilestoneGroup) LoadMoreItem {
 	return LoadMoreItem{
 		Status:  status,
 		Loading: g.Loading,

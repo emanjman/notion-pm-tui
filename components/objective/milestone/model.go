@@ -9,36 +9,24 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-type FetchState int
-
-const (
-	Idle FetchState = iota
-	Pending
-	Success
-	Failed
-)
-
 type TaskViewMsg struct {
 	Groups notion.TaskGroups
 }
 
 type Model struct {
-	notion *notion.Client
-	projID string
-
+	notion         *notion.Client
+	projID         string
 	list           list.Model
 	err            error
 	pendingFetches int
 	groups         notion.MilestoneGroups
-
-	ActiveKeyMap  help.KeyMap // for help focus view
-	neutralKeyMap NeutralKeyMap
-	writingKeyMap WritingKeyMap
-
-	Focus *FocusState
+	ActiveKeyMap   help.KeyMap // for help focus view
+	neutralKeyMap  NeutralKeyMap
+	writingKeyMap  WritingKeyMap
+	Focus          *FocusState
 }
 
-var statusOrder = []string{"🚧 under development", "😴 idle", "🎉 complete"}
+var _ tea.Model = (*Model)(nil) // conform
 
 func New(n *notion.Client, projID string) Model {
 	f := FocusState{}
@@ -57,28 +45,25 @@ func New(n *notion.Client, projID string) Model {
 		notion:         n,
 		projID:         projID,
 		pendingFetches: 3,
-
-		list:   l,
-		err:    nil,
-		groups: notion.MilestoneGroups{},
-
-		ActiveKeyMap:  NeutralKeyMapper, // default map view
-		neutralKeyMap: NeutralKeyMapper,
-		writingKeyMap: WritingKeyMapper,
-
-		Focus: &f,
+		list:           l,
+		err:            nil,
+		groups:         notion.MilestoneGroups{},
+		ActiveKeyMap:   NeutralKeyMapper, // default map view
+		neutralKeyMap:  NeutralKeyMapper,
+		writingKeyMap:  WritingKeyMapper,
+		Focus:          &f,
 	}
 }
 
 func (m Model) Init() tea.Cmd {
 	return tea.Batch(
-		m.notion.QueryMilestones(m.projID, "🚧 under development", ""),
-		m.notion.QueryMilestones(m.projID, "😴 idle", ""),
-		m.notion.QueryMilestones(m.projID, "🎉 complete", ""),
+		m.notion.QueryMilestones(m.projID, notion.MilestoneUnderDevelopment, ""),
+		m.notion.QueryMilestones(m.projID, notion.MilestoneIdle, ""),
+		m.notion.QueryMilestones(m.projID, notion.MilestoneComplete, ""),
 	)
 }
 
-func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
+func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 
 	case notion.MilestonePagesMsg:
@@ -106,7 +91,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		cmds := []tea.Cmd{}
 		for i, item := range m.list.Items() {
 			if item, ok := item.(DefaultItem); ok && item.Status == "🚧 under development" {
-				item.FetchState = Pending
+				item.FetchState = FetchPending
 				m.list.SetItem(i, item)
 				cmds = append(cmds, m.queryTasksByStatus(i, item.ID, "dev", ""))
 				cmds = append(cmds, m.queryTasksByStatus(i, item.ID, "idle", ""))
@@ -170,7 +155,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			group.NextCursor = msg.NextCursor
 			group.Loading = false
 			mstone.TaskGroups[msg.Status] = group
-			mstone.FetchState = Success
+			mstone.FetchState = FetchSuccess
 			m.list.SetItem(msg.MilestoneIdx, mstone)
 
 			return m, func() tea.Msg {
@@ -226,9 +211,9 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 				} else if mstone, ok := selected.(DefaultItem); ok {
 					// fetch tasks for curr milestone
 					switch mstone.FetchState {
-					case Idle:
+					case FetchIdle:
 						idx := m.list.Index()
-						mstone.FetchState = Pending
+						mstone.FetchState = FetchPending
 						m.list.SetItem(idx, mstone)
 						if mstone.TaskCount > 0 {
 							return m, tea.Batch(
@@ -240,7 +225,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 						}
 						return m, nil
 					// todo: is this necessary
-					case Success:
+					case FetchSuccess:
 						return m, func() tea.Msg {
 							return TaskViewMsg{Groups: mstone.TaskGroups}
 						}
@@ -297,7 +282,7 @@ func (m Model) View() string {
 
 func (m Model) buildMilestoneList() []list.Item {
 	var items []list.Item
-	for _, status := range statusOrder {
+	for _, status := range notion.MilestoneStatusOrder() {
 		group, ok := m.groups[status]
 		if !ok || len(group.Milestones) == 0 {
 			continue

@@ -28,7 +28,7 @@ func taskQueryBody(milestoneID, status string, size int) map[string]any {
 	}
 }
 
-func milestoneQueryBody(projID, status string, size int) map[string]any {
+func milestoneQueryBody(projID string, status MilestoneStatus, size int) map[string]any {
 	return map[string]any{
 		"filter": map[string]any{
 			"and": []map[string]any{
@@ -40,7 +40,7 @@ func milestoneQueryBody(projID, status string, size int) map[string]any {
 					"property": "$status",
 					"formula": map[string]any{
 						"string": map[string]any{
-							"equals": status,
+							"equals": status.String(),
 						},
 					},
 				},

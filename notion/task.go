@@ -53,3 +53,7 @@ type TaskProperties struct {
 	Type      SelectProperty   `json:"type"`
 	Milestone RelationProperty `json:"@milestone"`
 }
+
+// ---
+
+var TaskStatusOrder = []string{"dev", "idle", "done", "archive"}

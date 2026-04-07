@@ -60,6 +60,8 @@ type Model struct {
 	ogMarkdown       string
 }
 
+var _ tea.Model = (*Model)(nil) // conform
+
 func New(notion *notion.Client, projID, propID string) Model {
 	// list config
 	l := list.New([]list.Item{}, NewItemDelegate(true), 0, 0)
@@ -102,7 +104,7 @@ func (m Model) Init() tea.Cmd {
 	return tea.Batch(browserInit, m.reader.Init())
 }
 
-func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
+func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 
 	case notion.NoteIDsMsg:

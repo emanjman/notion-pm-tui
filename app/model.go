@@ -58,6 +58,8 @@ type Model struct {
 	// debugNotes   views.NotesListModel
 }
 
+var _ tea.Model = (*Model)(nil) // conform
+
 func New() Model {
 	c := notion.NewClient()
 	return Model{

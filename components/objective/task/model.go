@@ -12,7 +12,6 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-
 type UpdateTitleMsg struct{ Err error }
 type UpdateSelectionsMsg struct{ Err error }
 type UpdateStatusMsg struct{ Err error }
@@ -40,8 +39,6 @@ type Model struct {
 
 	tempIDCounter int // for generating temp IDs for new tasks
 }
-
-var statusOrder = []string{"dev", "idle", "done", "archive"}
 
 func New(clt *notion.Client) Model {
 	f := FocusState{}
@@ -439,7 +436,7 @@ func (m *Model) SetItemDelegate(d list.ItemDelegate) {
 
 func (m Model) buildTaskList(groups notion.TaskGroups) []list.Item {
 	var items []list.Item
-	for _, status := range statusOrder {
+	for _, status := range notion.TaskStatusOrder {
 		group, ok := m.groups[status]
 		if !ok || len(group) == 0 {
 			continue
