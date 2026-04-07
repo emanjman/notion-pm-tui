@@ -1,6 +1,9 @@
 package milestone
 
-import "github.com/charmbracelet/bubbles/key"
+import (
+	"github.com/charmbracelet/bubbles/key"
+	tea "github.com/charmbracelet/bubbletea"
+)
 
 type NeutralKeyMap struct {
 	Up       key.Binding
@@ -71,4 +74,37 @@ func (k WritingKeyMap) FullHelp() [][]key.Binding {
 		{k.Save},
 		{},
 	}
+}
+
+// ---
+
+// dispatcher, where `onX()` logic still sits in `handlers.go`
+func (m Model) handleKey(msg tea.KeyMsg) (Model, tea.Cmd) {
+	switch m.Focus.Mode {
+	case WritingMode:
+		switch {
+		case key.Matches(msg, m.writingKeyMap.Save):
+			m.onWritingModeSave()
+		default:
+			var cmd tea.Cmd
+			m.Focus.tempTitle, cmd = m.Focus.tempTitle.Update(msg)
+			return m, cmd
+		}
+	case NeutralMode:
+		switch {
+		case key.Matches(msg, m.neutralKeyMap.Select):
+			m.onNeutralSelect()
+		case key.Matches(msg, m.neutralKeyMap.Rename):
+			m.onNeutralRename()
+		case key.Matches(msg, m.neutralKeyMap.Down):
+			m.onNeutralDown()
+		case key.Matches(msg, m.neutralKeyMap.Up):
+			m.onNeutralUp()
+		case key.Matches(msg, m.neutralKeyMap.JumpDown):
+			m.onNeutralJumpDown()
+		case key.Matches(msg, m.neutralKeyMap.JumpUp):
+			m.onNeutralJumpUp()
+		}
+	}
+	return m, nil
 }
