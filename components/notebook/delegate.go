@@ -25,6 +25,8 @@ type ItemDelegate struct {
 	style          style
 }
 
+var _ list.ItemDelegate = (*ItemDelegate)(nil) // conform
+
 func NewItemDelegate(sectionFocused bool) ItemDelegate {
 	borderDistance := 0
 	rightEdgeDistance := 3

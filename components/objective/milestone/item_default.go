@@ -50,4 +50,4 @@ func NewDefaultItem(page notion.MilestonePage) DefaultItem {
 	}
 }
 
-func (m DefaultItem) FilterValue() string { return m.Name }
+func (x DefaultItem) FilterValue() string { return x.Name }

@@ -24,4 +24,4 @@ func NewGroupHeaderItem(label string, g notion.MilestoneGroup) GroupHeaderItem {
 	}
 }
 
-func (h GroupHeaderItem) FilterValue() string { return "" }
+func (x GroupHeaderItem) FilterValue() string { return x.Label }

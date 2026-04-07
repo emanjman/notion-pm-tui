@@ -20,4 +20,4 @@ func NewLoadMoreItem(status string, g notion.MilestoneGroup) LoadMoreItem {
 	}
 }
 
-func (l LoadMoreItem) FilterValue() string { return "" }
+func (_ LoadMoreItem) FilterValue() string { return "" }

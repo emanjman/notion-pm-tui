@@ -28,6 +28,8 @@ type ItemDelegate struct {
 	focus *FocusState
 }
 
+var _ list.ItemDelegate = (*ItemDelegate)(nil) // conform
+
 func NewItemDelegate(focused bool, focus *FocusState) ItemDelegate {
 	borderDistance := 0
 	rightEdgeDistance := 3
