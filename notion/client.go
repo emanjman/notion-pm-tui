@@ -266,7 +266,7 @@ type PaginationResponse[T any] struct {
 	HasMore    bool    `json:"has_more"`
 }
 
-func queryDatasource[T any](c *Client, dsId string, body map[string]any, cursor *string, filterProps []string) (*PaginationResponse[T], error) {
+func queryDatasource[T any](c *Client, dsId string, body map[string]any, cursor string, filterProps []string) (*PaginationResponse[T], error) {
 	// setup url + queries
 	url, err := url.Parse(c.baseURL + "/data_sources/" + dsId + "/query")
 	if err != nil {
@@ -278,8 +278,8 @@ func queryDatasource[T any](c *Client, dsId string, body map[string]any, cursor 
 	}
 	url.RawQuery = q.Encode()
 	// build body + inject cursor (if loading more)
-	if cursor != nil {
-		body["start_cursor"] = *cursor
+	if cursor != "" {
+		body["start_cursor"] = cursor
 	}
 	b, err := json.Marshal(body)
 	if err != nil {
@@ -298,7 +298,7 @@ func queryDatasource[T any](c *Client, dsId string, body map[string]any, cursor 
 	return &res, nil
 }
 
-func (c *Client) QueryTasks(milestoneID, status string, cursor *string, milestoneIdx int) tea.Cmd {
+func (c *Client) QueryTasks(milestoneID, status, cursor string, milestoneIdx int) tea.Cmd {
 	return func() tea.Msg {
 		body := taskQueryBody(milestoneID, status, 5)
 		fprops := []string{"task", "type", "priority", "status"}
@@ -319,7 +319,7 @@ func (c *Client) QueryTasks(milestoneID, status string, cursor *string, mileston
 	}
 }
 
-func (c *Client) QueryMilestones(projID string, status MilestoneStatus, cursor *string) tea.Cmd {
+func (c *Client) QueryMilestones(projID string, status MilestoneStatus, cursor string) tea.Cmd {
 	return func() tea.Msg {
 		body := milestoneQueryBody(projID, status, 5)
 		fprops := []string{"name", "progress", "$status", "task-ct"}

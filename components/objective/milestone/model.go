@@ -26,8 +26,6 @@ type Model struct {
 	Focus          *FocusState
 }
 
-var _ tea.Model = (*Model)(nil) // conform
-
 func New(n *notion.Client, projID string) Model {
 	f := FocusState{}
 
@@ -63,7 +61,7 @@ func (m Model) Init() tea.Cmd {
 	)
 }
 
-func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
 
 	case notion.MilestonePagesMsg:
@@ -90,8 +88,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		cmds := []tea.Cmd{}
 		for i, item := range m.list.Items() {
-			if item, ok := item.(DefaultItem); ok && item.Status == "🚧 under development" {
-				item.FetchState = FetchPending
+			if item, ok := item.(DefaultItem); ok && item.MilestoneStatus == notion.MilestoneUnderDevelopment {
+				item.FetchStatus = FetchPending
 				m.list.SetItem(i, item)
 				cmds = append(cmds, m.queryTasksByStatus(i, item.ID, "dev", ""))
 				cmds = append(cmds, m.queryTasksByStatus(i, item.ID, "idle", ""))
@@ -108,7 +106,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			group.Loading = true
 			m.groups[msg.Status] = group
 			m.list.SetItems(m.buildMilestoneList())
-			return m, m.queryMilestonesByStatus(msg.Status, cursor)
+			return m, m.notion.QueryMilestones(m.projID, msg.Status, cursor)
+
 		}
 		return m, nil
 
@@ -155,7 +154,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			group.NextCursor = msg.NextCursor
 			group.Loading = false
 			mstone.TaskGroups[msg.Status] = group
-			mstone.FetchState = FetchSuccess
+			mstone.FetchStatus = FetchSuccess
 			m.list.SetItem(msg.MilestoneIdx, mstone)
 
 			return m, func() tea.Msg {
@@ -198,9 +197,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 				if header, ok := selected.(GroupHeaderItem); ok {
 					// toggle header
-					group := m.groups[header.Label]
+					group := m.groups[header.Status]
 					group.Hide = !group.Hide
-					m.groups[header.Label] = group
+					m.groups[header.Status] = group
 					m.list.SetItems(m.buildMilestoneList())
 
 				} else if loadMore, ok := selected.(LoadMoreItem); ok && !loadMore.Loading {
@@ -210,10 +209,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					}
 				} else if mstone, ok := selected.(DefaultItem); ok {
 					// fetch tasks for curr milestone
-					switch mstone.FetchState {
+					switch mstone.FetchStatus {
 					case FetchIdle:
 						idx := m.list.Index()
-						mstone.FetchState = FetchPending
+						mstone.FetchStatus = FetchPending
 						m.list.SetItem(idx, mstone)
 						if mstone.TaskCount > 0 {
 							return m, tea.Batch(
@@ -276,7 +275,6 @@ func (m Model) View() string {
 	if m.pendingFetches > 0 {
 		return "Loading milestones..."
 	}
-
 	return m.list.View()
 }
 
@@ -305,7 +303,7 @@ func (m Model) getCurrTaskGroups() notion.TaskGroups {
 
 	switch item := item.(type) {
 	case GroupHeaderItem:
-		group := m.groups[item.Label]
+		group := m.groups[item.Status]
 		if len(group.Milestones) > 0 {
 			return NewDefaultItem(group.Milestones[0]).TaskGroups
 		}
@@ -319,26 +317,22 @@ func (m *Model) SetItemDelegate(d list.ItemDelegate) {
 	m.list.SetDelegate(d)
 }
 
-func (m Model) updateMilestoneInGroups(updated DefaultItem) Model {
-	group := m.groups[updated.Status]
+func (m Model) updateMilestoneInGroups(item DefaultItem) Model {
+	group := m.groups[item.MilestoneStatus]
 
 	for i, pg := range group.Milestones {
-		if pg.ID == updated.ID {
+		if pg.ID == item.ID {
 			// sync the name back onto the page (only field editable locally)
-			group.Milestones[i].Properties.Title.Title[0].PlainText = updated.Name
+			group.Milestones[i].Properties.Title.Title[0].PlainText = item.Name
 			break
 		}
 	}
 
-	m.groups[updated.Status] = group
+	m.groups[item.MilestoneStatus] = group
 	m.list.SetItems(m.buildMilestoneList())
 	return m
 }
 
 func (m Model) queryTasksByStatus(idx int, milestoneID, status, cursor string) tea.Cmd {
 	return m.notion.QueryTasks(milestoneID, status, cursor, idx)
-}
-
-func (m Model) queryMilestonesByStatus(status, cursor string) tea.Cmd {
-	return m.notion.QueryMilestones(m.projID, status, cursor)
 }

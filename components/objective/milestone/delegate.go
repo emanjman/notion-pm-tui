@@ -155,7 +155,7 @@ func renderItemHeader(d ItemDelegate, item GroupHeaderItem, selected bool, windo
 	if item.HasMore {
 		count += "+"
 	}
-	content := fmt.Sprintf("%s %s (%s)", chevron, item.Label, count)
+	content := fmt.Sprintf("%s %s (%s)", chevron, item.Status.String(), count)
 	label := style.Width(windowWidth).Render(content)
 	spacer := lg.NewStyle().Render("")
 	return label + "\n" + spacer

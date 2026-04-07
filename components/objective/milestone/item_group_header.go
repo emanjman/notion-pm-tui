@@ -7,7 +7,7 @@ import (
 )
 
 type GroupHeaderItem struct {
-	Label   string
+	Status  notion.MilestoneStatus
 	Hidden  bool
 	Count   int
 	HasMore bool
@@ -15,13 +15,13 @@ type GroupHeaderItem struct {
 
 var _ list.Item = (*GroupHeaderItem)(nil) // conform
 
-func NewGroupHeaderItem(label string, g notion.MilestoneGroup) GroupHeaderItem {
+func NewGroupHeaderItem(status notion.MilestoneStatus, g notion.MilestoneGroup) GroupHeaderItem {
 	return GroupHeaderItem{
-		Label:   label,
+		Status:  status,
 		Hidden:  g.Hide,
 		Count:   len(g.Milestones),
 		HasMore: g.NextCursor != nil,
 	}
 }
 
-func (x GroupHeaderItem) FilterValue() string { return x.Label }
+func (x GroupHeaderItem) FilterValue() string { return x.Status.String() }
