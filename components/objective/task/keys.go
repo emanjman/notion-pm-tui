@@ -1,6 +1,11 @@
 package task
 
-import "github.com/charmbracelet/bubbles/key"
+import (
+	"notion-project-tui/notion"
+
+	"github.com/charmbracelet/bubbles/key"
+	tea "github.com/charmbracelet/bubbletea"
+)
 
 type NeutralKeyMap struct {
 	Up         key.Binding
@@ -125,4 +130,184 @@ func (k WritingKeyMap) FullHelp() [][]key.Binding {
 		{k.Save},
 		{},
 	}
+}
+
+// ---
+
+func (m Model) handleKey(msg tea.KeyMsg) (Model, tea.Cmd) {
+	switch m.Focus.Mode {
+	case WritingMode:
+		return m.onWritingKey(msg)
+	case SelectingMode:
+		return m.onSelectingKey(msg)
+	case NeutralMode:
+		return m.onNeutralKey(msg)
+	}
+	return m, nil
+}
+
+func (m Model) onWritingKey(msg tea.KeyMsg) (Model, tea.Cmd) {
+	switch {
+	case key.Matches(msg, m.writingKeyMap.Save):
+		if task, ok := m.list.SelectedItem().(Item); ok {
+			m.Focus.prevTitle = task.Task
+			task.Task = m.Focus.tempTitle.Value()
+			m.list.SetItem(m.Focus.taskIdx, task)
+			m.updateTaskInGroups(task)
+		}
+
+		m.ActiveKeyMap = NeutralKeyMapper
+		m.Focus.Mode = NeutralMode
+
+		newTitle := notion.TitleProperty{Title: []notion.RichText{
+			{Text: notion.TextContent{Content: m.Focus.tempTitle.Value()}},
+		}}
+
+		return m, func() tea.Msg {
+			err := m.notion.UpdatePageProperties(
+				m.Focus.taskID,
+				map[string]any{"task": newTitle},
+			)
+			return UpdateTitleMsg{Err: err}
+		}
+
+	default:
+		var cmd tea.Cmd
+		m.Focus.tempTitle, cmd = m.Focus.tempTitle.Update(msg)
+		return m, cmd
+	}
+}
+
+func (m Model) onSelectingKey(msg tea.KeyMsg) (Model, tea.Cmd) {
+	switch {
+	case key.Matches(msg, m.selectingKeyMap.Exit):
+		m.Focus.Mode = NeutralMode
+		m.ActiveKeyMap = NeutralKeyMapper
+
+		if task, ok := m.list.SelectedItem().(Item); ok {
+			var typeOpt notion.SelectItem
+			for _, opt := range m.typeOptions {
+				if opt.Name == task.Type {
+					typeOpt = opt
+					break
+				}
+			}
+			taskID := m.Focus.taskID
+			return m, func() tea.Msg {
+				err := m.notion.UpdatePageProperties(taskID, map[string]any{
+					"type": map[string]any{"select": typeOpt},
+				})
+				return UpdateSelectionsMsg{Err: err}
+			}
+		}
+		return m, nil
+
+	case key.Matches(msg, m.selectingKeyMap.Left):
+		if m.Focus.field == TaskType {
+			m.Focus.field = fieldCnt - 1
+		} else {
+			m.Focus.field = (m.Focus.field - 1) % fieldCnt
+		}
+		return m, nil
+
+	case key.Matches(msg, m.selectingKeyMap.Right):
+		m.Focus.field = (m.Focus.field + 1) % fieldCnt
+		return m, nil
+
+	case key.Matches(msg, m.selectingKeyMap.Select):
+		if task, ok := m.list.SelectedItem().(Item); ok {
+			switch m.Focus.field {
+			case TaskType:
+				m.Focus.prevType = task.Type
+				task.Type = cycleTypeField(task.Type, 1, m.typeOptions)
+			case TaskPriority:
+				task.Priority = cyclePriorityField(task.Priority, 1)
+			case TaskTitle:
+				m.Focus.Mode = WritingMode
+				m.ActiveKeyMap = WritingKeyMapper
+
+				if item, ok := m.list.SelectedItem().(Item); ok {
+					m.Focus.tempTitle = initTempTitle(item)
+				}
+			}
+
+			m.list.SetItem(m.Focus.taskIdx, task)
+			m.updateTaskInGroups(task)
+			return m, nil
+		}
+	}
+
+	// consume all keys, don't forward to list navigation
+	return m, nil
+}
+
+func (m Model) onNeutralKey(msg tea.KeyMsg) (Model, tea.Cmd) {
+	// cancel pending delete if any key other than Delete is pressed
+	if m.Focus.pendingDelete && !key.Matches(msg, m.neutralKeyMap.Delete) {
+		m.Focus.pendingDelete = false
+		return m, nil
+	}
+
+	switch {
+	case key.Matches(msg, m.neutralKeyMap.Select):
+		selected := m.list.SelectedItem()
+		if header, ok := selected.(GroupHeader); ok {
+			return m, func() tea.Msg {
+				return notion.ToggleTaskGroupMsg{Status: header.Label}
+			}
+		} else if loadMore, ok := selected.(LoadMoreItem); ok && !loadMore.Loading {
+			return m, func() tea.Msg {
+				return notion.FetchMoreTasksMsg{Status: loadMore.Status}
+			}
+		} else if task, ok := selected.(Item); ok {
+			m.Focus.taskID = task.ID
+			m.Focus.taskIdx = m.list.Index()
+			m.Focus.field = TaskTitle
+
+			m.ActiveKeyMap = SelectingKeyMapper
+			m.Focus.Mode = SelectingMode
+		}
+		return m, nil
+
+	case key.Matches(msg, m.neutralKeyMap.AddTask):
+		m = m.addTask()
+		return m, nil
+
+	case key.Matches(msg, m.neutralKeyMap.JumpUp):
+		m.list.Select(max(0, m.list.Index()-5))
+		return m, nil
+
+	case key.Matches(msg, m.neutralKeyMap.JumpDown):
+		m.list.Select(min(len(m.list.Items())-1, m.list.Index()+5))
+		return m, nil
+
+	case key.Matches(msg, m.neutralKeyMap.StatusPrev):
+		if task, ok := m.list.SelectedItem().(Item); ok {
+			m = m.changeTaskStatus(task, -1)
+		}
+		return m, nil
+
+	case key.Matches(msg, m.neutralKeyMap.StatusNext):
+		if task, ok := m.list.SelectedItem().(Item); ok {
+			m = m.changeTaskStatus(task, +1)
+		}
+		return m, nil
+
+	case key.Matches(msg, m.neutralKeyMap.Delete):
+		if task, ok := m.list.SelectedItem().(Item); ok {
+			if m.Focus.pendingDelete && m.Focus.taskID == task.ID {
+				m = m.deleteTask(task)
+			} else {
+				m.Focus.pendingDelete = true
+				m.Focus.taskID = task.ID
+				m.Focus.taskIdx = m.list.Index()
+			}
+		}
+		return m, nil
+	}
+
+	// forward unmatched keys to list (e.g. up/down navigation)
+	var cmd tea.Cmd
+	m.list, cmd = m.list.Update(msg)
+	return m, cmd
 }
