@@ -84,7 +84,7 @@ func (m Model) handleKey(msg tea.KeyMsg) (Model, tea.Cmd) {
 	case WritingMode:
 		switch {
 		case key.Matches(msg, m.writingKeyMap.Save):
-			m.onWritingModeSave()
+			return m.onWritingModeSave()
 		default:
 			var cmd tea.Cmd
 			m.Focus.tempTitle, cmd = m.Focus.tempTitle.Update(msg)
@@ -93,17 +93,17 @@ func (m Model) handleKey(msg tea.KeyMsg) (Model, tea.Cmd) {
 	case NeutralMode:
 		switch {
 		case key.Matches(msg, m.neutralKeyMap.Select):
-			m.onNeutralSelect()
+			return m.onNeutralSelect()
 		case key.Matches(msg, m.neutralKeyMap.Rename):
-			m.onNeutralRename()
+			return m.onNeutralRename()
 		case key.Matches(msg, m.neutralKeyMap.Down):
-			m.onNeutralDown()
+			return m.onNeutralDown()
 		case key.Matches(msg, m.neutralKeyMap.Up):
-			m.onNeutralUp()
+			return m.onNeutralUp()
 		case key.Matches(msg, m.neutralKeyMap.JumpDown):
-			m.onNeutralJumpDown()
+			return m.onNeutralJumpDown()
 		case key.Matches(msg, m.neutralKeyMap.JumpUp):
-			m.onNeutralJumpUp()
+			return m.onNeutralJumpUp()
 		}
 	}
 	return m, nil
