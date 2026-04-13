@@ -23,7 +23,7 @@ type Model struct {
 
 	// working copy of the current milestone's tasks, used for local mutations
 	// (add, delete, status change) and list rendering. rebuilt on every
-	// milestone switch via TaskViewMsg — not the source of truth for persistence.
+	// milestone switch via MilestoneTasksMsg — not the source of truth for persistence.
 	// note: local mutations here do not sync back to the milestone's TaskGroups.
 	groups map[string][]Item
 

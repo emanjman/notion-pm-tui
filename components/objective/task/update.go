@@ -41,7 +41,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		log.Printf("[INFO] task type options loaded: %+v", m.typeOptions)
 		return m, nil
 
-	case milestone.TaskViewMsg:
+	case milestone.MilestoneTasksMsg:
 		// rebuild working copy from the milestone's TaskGroups on each milestone switch
 		m.groups = map[string][]Item{}
 		for status, group := range msg.Groups {
