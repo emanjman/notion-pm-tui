@@ -90,6 +90,7 @@ func (m Model) onNeutralJumpUp() (Model, tea.Cmd) {
 
 // -----------
 
+// update milestones; re-render after all req's are received
 func (m Model) onMilestonePages(msg notion.MilestonePagesMsg) (Model, tea.Cmd) {
 	if msg.Err != nil {
 		m.err = msg.Err
@@ -97,29 +98,28 @@ func (m Model) onMilestonePages(msg notion.MilestonePagesMsg) (Model, tea.Cmd) {
 		return m, nil
 	}
 
-	// append incoming pages into the correct status group
-	group := m.groups[msg.Status]
-	group.Milestones = append(group.Milestones, msg.Pages...)
-	group.NextCursor = msg.NextCursor
-	m.groups[msg.Status] = group
+	// push incoming milestones to their group
+	g := m.groups[msg.Status]
+	g.Milestones = append(g.Milestones, msg.Pages...)
+	g.NextCursor = msg.NextCursor
+	m.groups[msg.Status] = g
 
+	// only render + kick off task-fetches after last batch
 	m.pendingFetches--
-
-	// only render + kick off task fetches once all 3 status batches have arrived
 	if m.pendingFetches > 0 {
 		return m, nil
 	}
-
 	m.list.SetItems(m.buildMilestoneList())
 	return m, fetchInitMilestoneTasks(&m.list, m.notion)
 }
 
+// todo: comprehend
 func (m Model) onFetchMoreMilestones(msg notion.FetchMoreMilestonesMsg) (Model, tea.Cmd) {
-	group := m.groups[msg.Status]
-	if group.NextCursor != nil && !group.Loading {
-		cursor := *group.NextCursor
-		group.Loading = true
-		m.groups[msg.Status] = group
+	g := m.groups[msg.Status]
+	if g.NextCursor != nil && !g.Loading {
+		cursor := *g.NextCursor
+		g.Loading = true
+		m.groups[msg.Status] = g
 		m.list.SetItems(m.buildMilestoneList())
 		return m, m.notion.QueryMilestones(m.projID, msg.Status, cursor)
 	}

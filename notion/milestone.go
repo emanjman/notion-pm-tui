@@ -4,8 +4,8 @@ import "fmt"
 
 type MilestonePagesMsg struct {
 	Pages      []MilestonePage
-	NextCursor *string
-	Status     MilestoneStatus
+	NextCursor *string         // bookmark for subsequent milestsone pages
+	Status     MilestoneStatus // grouping key
 	Err        error
 }
 
@@ -76,7 +76,7 @@ func MilestoneStatusFromString(s string) (MilestoneStatus, error) {
 
 var milestoneStatusByString = func() map[string]MilestoneStatus {
 	m := make(map[string]MilestoneStatus, _MilestoneStatusCount)
-	for i := 0; i < int(_MilestoneStatusCount); i++ {
+	for i := range _MilestoneStatusCount {
 		s := MilestoneStatus(i)
 		m[s.String()] = s
 	}

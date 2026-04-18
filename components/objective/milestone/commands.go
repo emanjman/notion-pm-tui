@@ -41,3 +41,12 @@ func refreshMilestoneTasks(g notion.TaskGroups) tea.Cmd {
 		return MilestoneTasksMsg{Groups: g}
 	}
 }
+
+func fetchMilestonesByStatus(projID string, nc *notion.Client) tea.Cmd {
+	return tea.Batch(
+		nc.QueryMilestones(projID, notion.MilestoneUnderDevelopment, ""),
+		nc.QueryMilestones(projID, notion.MilestoneIdle, ""),
+		nc.QueryMilestones(projID, notion.MilestoneComplete, ""),
+	)
+
+}
