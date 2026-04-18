@@ -45,13 +45,13 @@ func (m Model) onNeutralSelect() (Model, tea.Cmd) {
 			mstone.FetchStatus = FetchPending
 			m.list.SetItem(idx, mstone)
 			if mstone.TaskCount > 0 {
-				return m, fetchTasksByStatus(mstone.ID, idx, m.notion)
+				return m, fetchInitTasks(mstone.ID, idx, m.notion)
 			}
 			return m, nil
 
 		// todo: is this necessary?
 		case FetchSuccess:
-			return m, emitTaskViewMsg(mstone.TaskGroups)
+			return m, refreshMilestoneTasks(mstone.TaskGroups)
 		}
 	}
 	return m, nil
@@ -70,22 +70,22 @@ func (m Model) onNeutralRename() (Model, tea.Cmd) {
 
 func (m Model) onNeutralDown() (Model, tea.Cmd) {
 	m.list.CursorDown()
-	return m, emitTaskViewMsg(m.getCurrTaskGroups())
+	return m, refreshMilestoneTasks(m.getCurrTaskGroups())
 }
 
 func (m Model) onNeutralUp() (Model, tea.Cmd) {
 	m.list.CursorUp()
-	return m, emitTaskViewMsg(m.getCurrTaskGroups())
+	return m, refreshMilestoneTasks(m.getCurrTaskGroups())
 }
 
 func (m Model) onNeutralJumpDown() (Model, tea.Cmd) {
 	m.list.Select(min(len(m.list.Items())-1, m.list.Index()+5))
-	return m, emitTaskViewMsg(m.getCurrTaskGroups())
+	return m, refreshMilestoneTasks(m.getCurrTaskGroups())
 }
 
 func (m Model) onNeutralJumpUp() (Model, tea.Cmd) {
 	m.list.Select(max(0, m.list.Index()-5))
-	return m, emitTaskViewMsg(m.getCurrTaskGroups())
+	return m, refreshMilestoneTasks(m.getCurrTaskGroups())
 }
 
 // -----------
@@ -111,7 +111,7 @@ func (m Model) onMilestonePages(msg notion.MilestonePagesMsg) (Model, tea.Cmd) {
 	}
 
 	m.list.SetItems(m.buildMilestoneList())
-	return m, fetchMilestoneTasks(&m.list, m.notion)
+	return m, fetchInitMilestoneTasks(&m.list, m.notion)
 }
 
 func (m Model) onFetchMoreMilestones(msg notion.FetchMoreMilestonesMsg) (Model, tea.Cmd) {
@@ -127,7 +127,7 @@ func (m Model) onFetchMoreMilestones(msg notion.FetchMoreMilestonesMsg) (Model, 
 }
 
 // todo: clean, super bloated
-func (m Model) onFetchMoreTasks(msg notion.FetchMoreTasksMsg) (Model, tea.Cmd) {
+func (m Model) onFetchMoreTasksByStatus(msg notion.FetchMoreTasksMsg) (Model, tea.Cmd) {
 	item := m.list.SelectedItem()
 	if mstone, ok := item.(DefaultItem); ok {
 		group := mstone.TaskGroups[msg.Status]
@@ -141,7 +141,7 @@ func (m Model) onFetchMoreTasks(msg notion.FetchMoreTasksMsg) (Model, tea.Cmd) {
 
 			return m, tea.Batch(
 				m.notion.QueryTasks(mstone.ID, msg.Status, cursor, idx),
-				emitTaskViewMsg(mstone.TaskGroups),
+				refreshMilestoneTasks(mstone.TaskGroups),
 			)
 		}
 	}
@@ -156,7 +156,7 @@ func (m Model) onToggleTaskGroup(msg notion.ToggleTaskGroupMsg) (Model, tea.Cmd)
 		group.Hide = !group.Hide
 		mstone.TaskGroups[msg.Status] = group
 		m.updateMilestoneInGroups(mstone)
-		return m, emitTaskViewMsg(mstone.TaskGroups)
+		return m, refreshMilestoneTasks(mstone.TaskGroups)
 	}
 	return m, nil
 }
@@ -175,7 +175,7 @@ func (m Model) onTaskQuery(msg notion.TaskQueryMsg) (Model, tea.Cmd) {
 		mstone.TaskGroups[msg.Status] = group
 		mstone.FetchStatus = FetchSuccess
 		m.list.SetItem(msg.MilestoneIdx, mstone)
-		return m, emitTaskViewMsg(mstone.TaskGroups)
+		return m, refreshMilestoneTasks(mstone.TaskGroups)
 	}
 	return m, nil
 }

@@ -14,7 +14,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	case notion.FetchMoreMilestonesMsg:
 		return m.onFetchMoreMilestones(msg)
 	case notion.FetchMoreTasksMsg:
-		return m.onFetchMoreTasks(msg)
+		return m.onFetchMoreTasksByStatus(msg)
 	case notion.ToggleTaskGroupMsg:
 		return m.onToggleTaskGroup(msg)
 	case notion.TaskQueryMsg:

@@ -10,21 +10,23 @@ import (
 // tea.Cmd factory + msg types
 // about sending commands out (w/ no context of the model)
 
-func fetchMilestoneTasks(milestones *list.Model, nc *notion.Client) tea.Cmd {
+// init task fetches for all under-development milestones
+func fetchInitMilestoneTasks(milestones *list.Model, nc *notion.Client) tea.Cmd {
 	cmds := []tea.Cmd{}
 
 	for i, m := range milestones.Items() {
 		if m, ok := m.(DefaultItem); ok && m.MilestoneStatus == notion.MilestoneUnderDevelopment {
 			m.FetchStatus = FetchPending
 			milestones.SetItem(i, m)
-			cmds = append(cmds, fetchTasksByStatus(m.ID, i, nc))
+			cmds = append(cmds, fetchInitTasks(m.ID, i, nc))
 		}
 	}
 
 	return tea.Batch(cmds...)
 }
 
-func fetchTasksByStatus(milestoneID string, idx int, nc *notion.Client) tea.Cmd {
+// fetch initial set of tasks across all statuses for a milestone
+func fetchInitTasks(milestoneID string, idx int, nc *notion.Client) tea.Cmd {
 	return tea.Batch(
 		nc.QueryTasks(milestoneID, "dev", "", idx),
 		nc.QueryTasks(milestoneID, "idle", "", idx),
@@ -33,8 +35,9 @@ func fetchTasksByStatus(milestoneID string, idx int, nc *notion.Client) tea.Cmd 
 	)
 }
 
-func emitTaskViewMsg(g notion.TaskGroups) tea.Cmd {
+// refresh task panel w/ latest milestone groups
+func refreshMilestoneTasks(g notion.TaskGroups) tea.Cmd {
 	return func() tea.Msg {
-		return TaskViewMsg{Groups: g}
+		return MilestoneTasksMsg{Groups: g}
 	}
 }

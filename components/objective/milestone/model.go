@@ -8,8 +8,9 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-type TaskViewMsg struct {
-	Groups notion.TaskGroups
+// carries updated task groups for the selected milestone to the task panel
+type MilestoneTasksMsg struct {
+	Groups notion.TaskGroups // task pages keyed by status, each w/ pagination + visibility state
 }
 
 type Model struct {
