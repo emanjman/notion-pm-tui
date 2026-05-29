@@ -20,6 +20,8 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		return m.onToggleTaskGroup(msg)
 	case notion.TaskQueryMsg:
 		return m.onTaskQuery(msg)
+	case UpdateTitleMsg:
+		return m.onUpdateTitle(msg)
 	case tea.KeyMsg:
 		return m.handleKey(msg)
 	case tea.WindowSizeMsg:

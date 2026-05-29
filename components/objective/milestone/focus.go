@@ -24,6 +24,7 @@ type FocusState struct {
 
 	// temp state of edits
 	tempTitle textinput.Model
+	prevTitle string // title backup in case notion-server update fails
 }
 
 // ---

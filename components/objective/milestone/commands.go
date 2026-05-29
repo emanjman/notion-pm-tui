@@ -25,10 +25,10 @@ func fetchInitMilestoneTasks(milestones *list.Model, nc *notion.Client) tea.Cmd 
 	return tea.Batch(cmds...)
 }
 
-// fetch initial set of tasks across all statuses for a milestone
+// fetch init set of tasks across all statuses for a milestone
 func fetchInitTasks(milestoneID string, idx int, nc *notion.Client) tea.Cmd {
 	return tea.Batch(
-		nc.QueryTasks(milestoneID, "dev", "", idx),
+		nc.QueryTasks(milestoneID, "dev", "", idx), // todo: i sus we update this later to use enums
 		nc.QueryTasks(milestoneID, "idle", "", idx),
 		nc.QueryTasks(milestoneID, "done", "", idx),
 		nc.QueryTasks(milestoneID, "archive", "", idx),
@@ -39,6 +39,17 @@ func fetchInitTasks(milestoneID string, idx int, nc *notion.Client) tea.Cmd {
 func refreshMilestoneTasks(g notion.TaskGroups) tea.Cmd {
 	return func() tea.Msg {
 		return MilestoneTasksMsg{Groups: g}
+	}
+}
+
+func updateNotionMilestoneTitle(nc *notion.Client, milestoneID, title string) tea.Cmd {
+	return func() tea.Msg {
+		// todo: make building out a title-prop like this easier (via my own notion sdk)
+		newTitle := notion.TitleProperty{Title: []notion.RichText{
+			{Text: notion.TextContent{Content: title}},
+		}}
+		err := nc.UpdatePageProperties(milestoneID, map[string]any{"name": newTitle})
+		return UpdateTitleMsg{Err: err}
 	}
 }
 

@@ -6,20 +6,27 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-// receiver methods `onXxx()` methods
-
+// update name on ui + notion server
 func (m Model) onWritingModeSave() (Model, tea.Cmd) {
-	if milestone, ok := m.list.SelectedItem().(DefaultItem); ok {
-		milestone.Name = m.Focus.tempTitle.Value()
-		m.list.SetItem(m.list.Index(), milestone)
-		m.updateMilestoneInGroups(milestone)
+	var cmd tea.Cmd
+
+	if mstone, ok := m.list.SelectedItem().(DefaultItem); ok {
+		// stash og title (in case revert needed on failed server update)
+		m.Focus.prevTitle = mstone.Name
+
+		// optimistically update local milestone title
+		mstone.Name = m.Focus.tempTitle.Value()
+		m.list.SetItem(m.list.Index(), mstone)
+		m = m.updateMilestoneInGroups(mstone)
+
+		// set cmd to send-off notion update
+		cmd = updateNotionMilestoneTitle(m.notion, mstone.ID, mstone.Name)
 	}
 
 	m.ActiveKeyMap = NeutralKeyMapper
 	m.Focus.Mode = NeutralMode
 
-	// todo: send command to update milestone title in notion
-	return m, nil
+	return m, cmd
 }
 
 func (m Model) onNeutralSelect() (Model, tea.Cmd) {
@@ -111,6 +118,21 @@ func (m Model) onMilestonePages(msg notion.MilestonePagesMsg) (Model, tea.Cmd) {
 	}
 	m.list.SetItems(m.buildMilestoneList())
 	return m, fetchInitMilestoneTasks(&m.list, m.notion)
+}
+
+// if update failed, revert optimistic ui update to og stashed title
+func (m Model) onUpdateTitle(msg UpdateTitleMsg) (Model, tea.Cmd) {
+	if msg.Err != nil {
+		for i, item := range m.list.Items() {
+			if mstone, ok := item.(DefaultItem); ok && mstone.ID == m.Focus.milestoneID {
+				mstone.Name = m.Focus.prevTitle
+				m.list.SetItem(i, mstone)
+				m = m.updateMilestoneInGroups(mstone)
+				break
+			}
+		}
+	}
+	return m, nil
 }
 
 // todo: comprehend

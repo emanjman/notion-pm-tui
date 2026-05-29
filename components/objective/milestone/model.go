@@ -13,6 +13,9 @@ type MilestoneTasksMsg struct {
 	Groups notion.TaskGroups // task pages keyed by status, each w/ pagination + visibility state
 }
 
+// result of notion milestone title rename
+type UpdateTitleMsg struct{ Err error }
+
 type Model struct {
 	notion         *notion.Client
 	projID         string
