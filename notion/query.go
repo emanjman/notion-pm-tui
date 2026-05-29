@@ -33,8 +33,12 @@ func milestoneQueryBody(projID string, status MilestoneStatus, size int) map[str
 		"filter": map[string]any{
 			"and": []map[string]any{
 				{
-					"property": "@project",
-					"relation": map[string]any{"contains": projID},
+					"property": "r/@project",
+					"rollup": map[string]any{
+						"any": map[string]any{
+							"relation": map[string]any{"contains": projID},
+						},
+					},
 				},
 				{
 					"property": "$status",
