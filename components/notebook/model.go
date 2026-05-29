@@ -264,10 +264,10 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 				m.browser.SetDelegate(NewItemDelegate(true))
 				return m, nil
 
-			case key.Matches(msg, m.readerKeyMap.Up5):
-				m.reader.ScrollUp(5)
-			case key.Matches(msg, m.readerKeyMap.Down5):
-				m.reader.ScrollDown(5)
+			case key.Matches(msg, m.readerKeyMap.JumpUp):
+				m.reader.ScrollUp(10)
+			case key.Matches(msg, m.readerKeyMap.JumpDown):
+				m.reader.ScrollDown(10)
 
 			case key.Matches(msg, m.readerKeyMap.Up), key.Matches(msg, m.readerKeyMap.Down):
 				var cmd tea.Cmd
