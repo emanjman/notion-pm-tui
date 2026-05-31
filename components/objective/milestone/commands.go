@@ -42,6 +42,12 @@ func refreshMilestoneTasks(g notion.TaskGroups) tea.Cmd {
 	}
 }
 
+func loadMoreMilestones(s notion.MilestoneStatus) tea.Cmd {
+	return func() tea.Msg {
+		return notion.FetchMoreMilestonesMsg{Status: s}
+	}
+}
+
 func updateNotionMilestoneTitle(nc *notion.Client, milestoneID, title string) tea.Cmd {
 	return func() tea.Msg {
 		// todo: make building out a title-prop like this easier (via my own notion sdk)

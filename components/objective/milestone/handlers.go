@@ -40,10 +40,7 @@ func (m Model) onNeutralSelect() (Model, tea.Cmd) {
 		m.list.SetItems(m.buildMilestoneList())
 
 	} else if loadMore, ok := selected.(LoadMoreItem); ok && !loadMore.Loading {
-		// load more milestones
-		return m, func() tea.Msg {
-			return notion.FetchMoreMilestonesMsg{Status: loadMore.Status}
-		}
+		loadMoreMilestones(loadMore.Status)
 	} else if mstone, ok := selected.(DefaultItem); ok {
 		// fetch tasks for curr milestone
 		switch mstone.FetchStatus {
