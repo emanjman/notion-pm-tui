@@ -2,7 +2,6 @@ package milestone
 
 import (
 	"notion-project-tui/notion"
-
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -123,6 +122,8 @@ func (m Model) onFetchMoreMilestones(msg notion.FetchMoreMilestonesMsg) (Model, 
 	return m, nil
 }
 
+// ----------------------------------------------------------------------------
+
 // fetch more tasks if exists
 func (m Model) onFetchMoreTasksByStatus(msg notion.FetchMoreTasksMsg) (Model, tea.Cmd) {
 	selected := m.list.SelectedItem()
@@ -180,6 +181,8 @@ func (m Model) onTaskQuery(msg notion.TaskQueryMsg) (Model, tea.Cmd) {
 	}
 	return m, nil
 }
+
+// ----------------------------------------------------------------------------
 
 // update name on ui + notion server
 func (m Model) onWritingModeSave() (Model, tea.Cmd) {
