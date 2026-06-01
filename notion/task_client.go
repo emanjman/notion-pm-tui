@@ -7,9 +7,15 @@ import (
 )
 
 func (c *Client) QueryTasks(milestoneID, status, cursor string, milestoneIdx int) tea.Cmd {
+	fprops := []string{
+		taskPropTitle,
+		taskPropTypeSelect,
+		taskPropPriority,
+		taskPropStatus,
+	}
+
 	return func() tea.Msg {
 		body := taskQueryBody(milestoneID, status, 5)
-		fprops := []string{"task", "type", "priority", "status"}
 		res, err := queryDatasource[TaskPage](c, c.tasksDsId, body, cursor, fprops)
 		if err != nil {
 			return TaskQueryMsg{Err: err, Status: status, MilestoneIdx: milestoneIdx}

@@ -53,17 +53,3 @@ type TaskProperties struct {
 	Type      SelectProperty   `json:"type"`
 	Milestone RelationProperty `json:"@milestone"`
 }
-
-// ---
-
-// type TaskStatus int
-//
-// const (
-// 	TaskDev TaskStatus = iota
-// 	TaskIdle
-// 	TaskDone
-// 	_TaskStatusCount // sentinel for array
-// )
-
-// todo: replace, mock milestone setup
-var TaskStatusOrder = []string{"dev", "idle", "done", "archive"}
