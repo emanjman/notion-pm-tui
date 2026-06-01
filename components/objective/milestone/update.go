@@ -3,6 +3,7 @@ package milestone
 import (
 	"notion-project-tui/notion"
 
+	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -94,4 +95,35 @@ func (m Model) updateMilestoneInGroups(item DefaultItem) Model {
 	m.groups[item.MilestoneStatus] = group
 	m.list.SetItems(m.buildMilestoneList())
 	return m
+}
+
+// dispatcher, where `onX()` logic still sits in `handlers.go`
+func (m Model) handleKey(msg tea.KeyMsg) (Model, tea.Cmd) {
+	switch m.Focus.Mode {
+	case WritingMode:
+		switch {
+		case key.Matches(msg, m.writingKeyMap.Save):
+			return m.onWritingModeSave()
+		default:
+			var cmd tea.Cmd
+			m.Focus.tempTitle, cmd = m.Focus.tempTitle.Update(msg)
+			return m, cmd
+		}
+	case NeutralMode:
+		switch {
+		case key.Matches(msg, m.neutralKeyMap.Select):
+			return m.onNeutralSelect()
+		case key.Matches(msg, m.neutralKeyMap.Rename):
+			return m.onNeutralRename()
+		case key.Matches(msg, m.neutralKeyMap.Down):
+			return m.onNeutralDown()
+		case key.Matches(msg, m.neutralKeyMap.Up):
+			return m.onNeutralUp()
+		case key.Matches(msg, m.neutralKeyMap.JumpDown):
+			return m.onNeutralJumpDown()
+		case key.Matches(msg, m.neutralKeyMap.JumpUp):
+			return m.onNeutralJumpUp()
+		}
+	}
+	return m, nil
 }

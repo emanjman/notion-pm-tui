@@ -1,88 +1,9 @@
 package milestone
 
 import (
-	"notion-project-tui/notion"
 	tea "github.com/charmbracelet/bubbletea"
+	"notion-project-tui/notion"
 )
-
-// ----------------------------------------------------------------------------
-
-// handle select behavior based on item type
-func (m Model) onNeutralSelect() (Model, tea.Cmd) {
-	selected := m.list.SelectedItem()
-
-	if header, ok := selected.(GroupHeaderItem); ok {
-		// toggle show/hide header
-		group := m.groups[header.Status]
-		group.Hide = !group.Hide
-		m.groups[header.Status] = group
-		m.list.SetItems(m.buildMilestoneList())
-
-	} else if loadMore, ok := selected.(LoadMoreItem); ok && !loadMore.Loading {
-		loadMoreMilestones(loadMore.Status)
-
-	} else if mstone, ok := selected.(DefaultItem); ok {
-		// fetch tasks for curr milestone
-		switch mstone.FetchStatus {
-		case FetchIdle:
-			idx := m.list.Index()
-			mstone.FetchStatus = FetchPending
-			m.list.SetItem(idx, mstone)
-			if mstone.TaskCount > 0 {
-				return m, fetchInitTasks(mstone.ID, idx, m.notion)
-			}
-			return m, nil
-
-		case FetchSuccess:
-			return m, refreshMilestoneTasks(mstone.TaskGroups)
-		}
-	}
-
-	return m, nil
-}
-
-// enter writing-mode
-func (m Model) onNeutralRename() (Model, tea.Cmd) {
-	if mstone, ok := m.list.SelectedItem().(DefaultItem); ok {
-		// id milestone to update
-		m.Focus.milestoneID = mstone.ID
-		m.Focus.milestoneIdx = m.list.Index()
-
-		// setup text input model
-		m.Focus.tempTitle = initTempTitle(mstone)
-
-		// flip to writing-mode
-		m.Focus.Mode = WritingMode
-		m.ActiveKeyMap = WritingKeyMapper
-	}
-	return m, nil
-}
-
-// nav down 1 + refresh
-func (m Model) onNeutralDown() (Model, tea.Cmd) {
-	m.list.CursorDown()
-	return m, refreshMilestoneTasks(m.getCurrTaskGroups())
-}
-
-// nav up 1 + refresh
-func (m Model) onNeutralUp() (Model, tea.Cmd) {
-	m.list.CursorUp()
-	return m, refreshMilestoneTasks(m.getCurrTaskGroups())
-}
-
-// nav down 5 + refresh
-func (m Model) onNeutralJumpDown() (Model, tea.Cmd) {
-	m.list.Select(min(len(m.list.Items())-1, m.list.Index()+5))
-	return m, refreshMilestoneTasks(m.getCurrTaskGroups())
-}
-
-// nav up 5 + refresh
-func (m Model) onNeutralJumpUp() (Model, tea.Cmd) {
-	m.list.Select(max(0, m.list.Index()-5))
-	return m, refreshMilestoneTasks(m.getCurrTaskGroups())
-}
-
-// ----------------------------------------------------------------------------
 
 // handle received milestone-pages; re-render when all received
 func (m Model) onMilestonePages(msg notion.MilestonePagesMsg) (Model, tea.Cmd) {
@@ -183,29 +104,6 @@ func (m Model) onTaskQuery(msg notion.TaskQueryMsg) (Model, tea.Cmd) {
 }
 
 // ----------------------------------------------------------------------------
-
-// update name on ui + notion server
-func (m Model) onWritingModeSave() (Model, tea.Cmd) {
-	var cmd tea.Cmd
-
-	if mstone, ok := m.list.SelectedItem().(DefaultItem); ok {
-		// stash og title (in case revert needed on failed server update)
-		m.Focus.prevTitle = mstone.Name
-
-		// optimistically update local milestone title
-		mstone.Name = m.Focus.tempTitle.Value()
-		m.list.SetItem(m.list.Index(), mstone)
-		m = m.updateMilestoneInGroups(mstone)
-
-		// set cmd to send-off notion update
-		cmd = updateNotionMilestoneTitle(m.notion, mstone.ID, mstone.Name)
-	}
-
-	m.ActiveKeyMap = NeutralKeyMapper
-	m.Focus.Mode = NeutralMode
-
-	return m, cmd
-}
 
 // if update failed, revert optimistic ui update to og stashed title
 func (m Model) onUpdateNotionTitle(msg UpdateNotionTitleMsg) (Model, tea.Cmd) {
