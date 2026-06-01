@@ -14,6 +14,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		return m.onMilestonePages(msg)
 	case notion.FetchMoreMilestonesMsg:
 		return m.onFetchMoreMilestones(msg)
+
 	case notion.FetchMoreTasksMsg:
 		return m.onFetchMoreTasksByStatus(msg)
 	case notion.ToggleTaskGroupMsg:
@@ -21,7 +22,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	case notion.TaskQueryMsg:
 		return m.onTaskQuery(msg)
 	case UpdateNotionTitleMsg:
-		return m.onUpdateTitle(msg)
+		return m.onUpdateNotionTitle(msg)
 	case tea.KeyMsg:
 		return m.handleKey(msg)
 	case tea.WindowSizeMsg:
