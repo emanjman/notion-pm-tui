@@ -14,7 +14,7 @@ type MilestoneTasksMsg struct {
 }
 
 // result of notion milestone title rename
-type UpdateTitleMsg struct{ Err error }
+type UpdateNotionTitleMsg struct{ Err error }
 
 type Model struct {
 	notion         *notion.Client

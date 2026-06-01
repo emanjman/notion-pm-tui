@@ -30,6 +30,7 @@ type FocusState struct {
 // ---
 // helpers
 
+// prep textinput model
 func initTempTitle(item DefaultItem) textinput.Model {
 	ti := textinput.New()
 	ti.SetValue(item.Name)
