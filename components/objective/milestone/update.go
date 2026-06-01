@@ -10,19 +10,25 @@ import (
 // dispatch messages to handlers
 func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	// handle milestones
 	case notion.MilestonePagesMsg:
 		return m.onMilestonePages(msg)
 	case notion.FetchMoreMilestonesMsg:
 		return m.onFetchMoreMilestones(msg)
 
+	// handle milestone-tasks
 	case notion.FetchMoreTasksMsg:
 		return m.onFetchMoreTasksByStatus(msg)
 	case notion.ToggleTaskGroupMsg:
 		return m.onToggleTaskGroup(msg)
 	case notion.TaskQueryMsg:
 		return m.onTaskQuery(msg)
+
+	// notion write operations
 	case UpdateNotionTitleMsg:
 		return m.onUpdateNotionTitle(msg)
+
+	// chores
 	case tea.KeyMsg:
 		return m.handleKey(msg)
 	case tea.WindowSizeMsg:
