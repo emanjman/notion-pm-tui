@@ -5,13 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"os"
 	"time"
-
-	tea "github.com/charmbracelet/bubbletea"
 )
 
 type Client struct {
@@ -58,100 +55,6 @@ func (c *Client) do(req *http.Request, target interface{}) error {
 	return json.NewDecoder(res.Body).Decode(target)
 }
 
-// cmd func returns a tea.Msg
-func (c *Client) FetchProject() tea.Cmd {
-	return func() tea.Msg {
-		start := time.Now()
-
-		url := c.baseURL + "/pages/" + c.projId
-
-		req, err := http.NewRequest("GET", url, nil)
-		if err != nil {
-			return ProjectMsg{Err: err, Duration: time.Since(start)}
-		}
-
-		// parse as json
-		var proj ProjectPage
-		if err := c.do(req, &proj); err != nil {
-			return ProjectMsg{Err: err, Duration: time.Since(start)}
-		}
-		return ProjectMsg{Data: proj, Duration: time.Since(start)}
-	}
-}
-
-func (c *Client) FetchPageBlocks(pageID string) ([]Block, error) {
-	blocks, err := c.fetchBlocksRecursive(pageID)
-	if err != nil {
-		return nil, err
-	}
-	return blocks, nil
-}
-
-// return every block of the page by dfs
-func (c *Client) fetchBlocksRecursive(pageID string) ([]Block, error) {
-	blocks, err := c.fetchAllChildrenBlocks(pageID)
-	if err != nil {
-		return nil, err
-	}
-
-	for i, block := range blocks {
-		if block.HasChildren {
-			children, err := c.fetchBlocksRecursive(block.ID)
-
-			if err != nil {
-				return nil, err
-			}
-
-			blocks[i].Children = children
-		}
-	}
-
-	return blocks, nil
-}
-
-// fetches all children blocks of a given page/block
-func (c *Client) fetchAllChildrenBlocks(blockID string) ([]Block, error) {
-	var blocks []Block
-	cursor := ""
-
-	for {
-		url := c.baseURL + "/blocks/" + blockID + "/children?page_size=100"
-		if cursor != "" {
-			url += "&start_cursor=" + cursor
-		}
-
-		req, err := http.NewRequest("GET", url, nil)
-		if err != nil {
-			return nil, err
-		}
-
-		var result struct {
-			Results    []Block `json:"results"`
-			HasMore    bool    `json:"has_more"`
-			NextCursor string  `json:"next_cursor"`
-		}
-
-		if err := c.do(req, &result); err != nil {
-			return nil, err
-		}
-
-		// merge additional blocks
-		blocks = append(blocks, result.Results...)
-
-		// terminate if no more sibling blocks to fetch
-		if !result.HasMore {
-			break
-		}
-
-		cursor = result.NextCursor
-	}
-
-	// return final set of blocks
-	return blocks, nil
-}
-
-// ---
-
 func (c *Client) FetchRelationIDs(pageID string, propID string) ([]string, error) {
 	ids := []string{}
 	cursor := ""
@@ -196,48 +99,6 @@ func FetchPages[T any](c *Client, ids []string) ([]T, error) {
 		relations = append(relations, relation)
 	}
 	return relations, nil
-}
-
-func (c *Client) FetchPageMarkdown(pageID string) (string, error) {
-	url := c.baseURL + "/pages/" + pageID + "/markdown"
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		return "", err
-	}
-	var res MDSuccessRes
-	if err = c.do(req, &res); err != nil {
-		return "", err
-	}
-	return res.Markdown, nil
-}
-
-func (c *Client) ReplaceContentByMarkdown(pageID string, md string) (string, error) {
-	url := c.baseURL + "/pages/" + pageID + "/markdown"
-
-	log.Printf("entered replace content func")
-
-	reqBody := MDReplaceReq{
-		Type:           "replace_content",
-		ReplaceContent: ReplaceContent{NewStr: md}}
-	body, err := json.Marshal(reqBody)
-	if err != nil {
-		return md, fmt.Errorf("failed to marshal markdown: %w", err)
-	}
-
-	req, err := http.NewRequest("PATCH", url, bytes.NewReader(body))
-	if err != nil {
-		return md, fmt.Errorf("failed to create request: %w", err)
-	}
-	req.Header.Add("Content-Type", "application/json")
-
-	var res MDSuccessRes
-	if err := c.do(req, &res); err != nil {
-		return md, err
-	}
-
-	log.Printf("replacing content")
-
-	return res.Markdown, nil
 }
 
 func (c *Client) UpdatePageProperties(pageID string, props any) error {
@@ -296,57 +157,4 @@ func queryDatasource[T any](c *Client, dsId string, body map[string]any, cursor 
 		return nil, err
 	}
 	return &res, nil
-}
-
-func (c *Client) QueryTasks(milestoneID, status, cursor string, milestoneIdx int) tea.Cmd {
-	return func() tea.Msg {
-		body := taskQueryBody(milestoneID, status, 5)
-		fprops := []string{"task", "type", "priority", "status"}
-		res, err := queryDatasource[TaskPage](c, c.tasksDsId, body, cursor, fprops)
-		if err != nil {
-			return TaskQueryMsg{Err: err, Status: status, MilestoneIdx: milestoneIdx}
-		}
-		var nextCursor *string
-		if res.HasMore {
-			nextCursor = res.NextCursor
-		}
-		return TaskQueryMsg{
-			Pages:        res.Results,
-			NextCursor:   nextCursor,
-			Status:       status,
-			MilestoneIdx: milestoneIdx,
-		}
-	}
-}
-
-func (c *Client) QueryMilestones(projID string, status MilestoneStatus, cursor string) tea.Cmd {
-	return func() tea.Msg {
-		body := milestoneQueryBody(projID, status, 5)
-		fprops := []string{"name", "progress", "$status", "task-ct"}
-		res, err := queryDatasource[MilestonePage](c, c.milestoneDsId, body, cursor, fprops)
-		if err != nil {
-			return MilestonePagesMsg{Err: err, Status: status}
-		}
-		var nextCursor *string
-		if res.HasMore {
-			nextCursor = res.NextCursor
-		}
-		return MilestonePagesMsg{Pages: res.Results, NextCursor: nextCursor, Status: status}
-	}
-}
-
-// options for `type` property, e.g. "style" "feat" "refactor"
-func (c *Client) FetchTaskTypeOptions() tea.Cmd {
-	return func() tea.Msg {
-		url := c.baseURL + "/data_sources/" + c.tasksDsId
-		req, err := http.NewRequest("GET", url, nil)
-		if err != nil {
-			return TaskTypeOptionsMsg{Err: err}
-		}
-		var res TaskDatasourceResponse
-		if err := c.do(req, &res); err != nil {
-			return TaskTypeOptionsMsg{Err: err}
-		}
-		return TaskTypeOptionsMsg{Options: res.Properties.Type.Select.Options}
-	}
 }
