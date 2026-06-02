@@ -32,12 +32,6 @@ func queryMilestoneBody(projID string, status MilestoneStatus, size int) map[str
 	}
 }
 
-// todo: wire the @version datasource so the version can be selected per-project.
-// for now the demo project ("Hoop Archives") has a single version, so we hardcode
-// its page id. a milestone must hang off a @version (the @project is a rollup
-// through it), otherwise it won't roll up to any project.
-const demoVersionPageID = "346b7273-944b-80ee-bc8d-e9ead7e1e623"
-
 func addMilestoneBody(milestonesDatasourceID, title, versionID string) map[string]any {
 	return map[string]any{
 		"parent": map[string]any{
