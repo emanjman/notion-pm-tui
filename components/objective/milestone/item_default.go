@@ -29,7 +29,7 @@ func NewDefaultItem(page notion.MilestonePage) DefaultItem {
 		temp := *page.Properties.Status.Formula.String
 		status, err = notion.MilestoneStatusFromString(temp)
 		if err != nil {
-			log.Printf(err.Error())
+			log.Printf("%v", err)
 		}
 	}
 

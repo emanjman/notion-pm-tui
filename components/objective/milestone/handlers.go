@@ -1,6 +1,8 @@
 package milestone
 
 import (
+	"log"
+
 	tea "github.com/charmbracelet/bubbletea"
 	"notion-project-tui/notion"
 )
@@ -104,6 +106,32 @@ func (m Model) onTaskQuery(msg notion.TaskQueryMsg) (Model, tea.Cmd) {
 }
 
 // ----------------------------------------------------------------------------
+
+// reconcile the optimistic milestone with the page notion actually created:
+// on success swap the temp id for the real one; on failure drop the temp item.
+func (m Model) onAddMilestonePage(msg notion.AddMilestonePageMsg) (Model, tea.Cmd) {
+	if msg.Err != nil {
+		log.Printf("add milestone failed: %v", msg.Err)
+		return m.removeMilestoneByID(msg.TempID), nil
+	}
+
+	for status, group := range m.groups {
+		for i, pg := range group.Milestones {
+			if pg.ID == msg.TempID {
+				group.Milestones[i].ID = msg.Page.ID
+				m.groups[status] = group
+				m.list.SetItems(m.buildMilestoneList())
+
+				// keep focus tracking pointed at the real id
+				if m.Focus.milestoneID == msg.TempID {
+					m.Focus.milestoneID = msg.Page.ID
+				}
+				return m, nil
+			}
+		}
+	}
+	return m, nil
+}
 
 // if update failed, revert optimistic ui update to og stashed title
 func (m Model) onUpdateNotionTitle(msg UpdateNotionTitleMsg) (Model, tea.Cmd) {

@@ -2,7 +2,6 @@ package milestone
 
 import (
 	"fmt"
-	"log"
 	"notion-project-tui/notion"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -107,7 +106,6 @@ func (m Model) onNeutralAdd() (Model, tea.Cmd) {
 	// find new milestone idx in list; enter writing-mode
 	for i, item := range m.list.Items() {
 		if mstone, ok := item.(DefaultItem); ok && mstone.ID == tempID {
-			log.Printf("mstone:", mstone.Name)
 			// focus on mstone
 			m.list.Select(i)
 

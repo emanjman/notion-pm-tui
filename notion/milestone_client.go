@@ -3,7 +3,6 @@ package notion
 import (
 	"bytes"
 	"encoding/json"
-	"log"
 	"net/http"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -32,30 +31,33 @@ func (c *Client) QueryMilestones(projID string, status MilestoneStatus, cursor s
 }
 
 type AddMilestonePageMsg struct {
-	Err  error
-	Page *MilestonePage
+	Err    error
+	TempID string         // optimistic temp id to reconcile against the created page
+	Page   *MilestonePage // created page (carries the real notion id)
 }
 
-// todo: needs fixing
-func (c *Client) AddMilestone(tempPage MilestonePage) tea.Cmd {
-	endpt := c.baseURL + "/pages"
-	body := addMilestoneBody(c.milestoneDsId, tempPage)
-	b, err := json.Marshal(body)
-	if err != nil {
-		return AddMilestonePageMsg{Err: err, Page: nil}
-	}
+// AddMilestone creates a milestone page on notion. TempID is echoed back on the
+// msg so the caller can swap the optimistic local item's id for the real one.
+func (c *Client) AddMilestone(tempID, title string) tea.Cmd {
+	return func() tea.Msg {
+		endpt := c.baseURL + "/pages"
+		body := addMilestoneBody(c.milestoneDsId, title)
+		b, err := json.Marshal(body)
+		if err != nil {
+			return AddMilestonePageMsg{Err: err, TempID: tempID}
+		}
 
-	req, err := http.NewRequest("POST", endpt, bytes.NewReader(b))
-	if err != nil {
-		return AddMilestonePageMsg{Err: err, Page: nil}
-	}
+		req, err := http.NewRequest("POST", endpt, bytes.NewReader(b))
+		if err != nil {
+			return AddMilestonePageMsg{Err: err, TempID: tempID}
+		}
+		req.Header.Add("Content-Type", "application/json")
 
-	req.Header.Add("Content-Type", "application/json")
-	var res PaginationResponse[T]
-	if err := c.do(req, &res); err != nil {
-		return AddMilestonePageMsg{Err: err, Page: nil}
+		// POST /pages returns a single page object, not a paginated list
+		var res MilestonePage
+		if err := c.do(req, &res); err != nil {
+			return AddMilestonePageMsg{Err: err, TempID: tempID}
+		}
+		return AddMilestonePageMsg{TempID: tempID, Page: &res}
 	}
-
-	log.Printf("res:", res)
-	return AddMilestonePageMsg{Err: nil, Page: res}
 }

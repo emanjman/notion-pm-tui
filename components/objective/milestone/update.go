@@ -28,6 +28,8 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	// notion write operations
 	case UpdateNotionTitleMsg:
 		return m.onUpdateNotionTitle(msg)
+	case notion.AddMilestonePageMsg:
+		return m.onAddMilestonePage(msg)
 
 	// chores
 	case tea.KeyMsg:
@@ -79,6 +81,21 @@ func (m Model) getCurrTaskGroups() notion.TaskGroups {
 
 func (m *Model) SetItemDelegate(d list.ItemDelegate) {
 	m.list.SetDelegate(d)
+}
+
+// remove a milestone (by id) from its group + rebuild the list
+func (m Model) removeMilestoneByID(id string) Model {
+	for status, group := range m.groups {
+		for i, pg := range group.Milestones {
+			if pg.ID == id {
+				group.Milestones = append(group.Milestones[:i], group.Milestones[i+1:]...)
+				m.groups[status] = group
+				m.list.SetItems(m.buildMilestoneList())
+				return m
+			}
+		}
+	}
+	return m
 }
 
 func (m Model) updateMilestoneInGroups(item DefaultItem) Model {
