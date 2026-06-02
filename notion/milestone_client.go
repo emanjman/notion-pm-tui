@@ -39,9 +39,15 @@ type AddMilestonePageMsg struct {
 // AddMilestone creates a milestone page on notion. TempID is echoed back on the
 // msg so the caller can swap the optimistic local item's id for the real one.
 func (c *Client) AddMilestone(tempID, title string) tea.Cmd {
+	// todo: wire the @version datasource so the version can be selected per-project.
+	// for now the demo project ("Hoop Archives") has a single version, so we hardcode
+	// its page id. a milestone must hang off a @version (the @project is a rollup
+	// through it), otherwise it won't roll up to any project.
+	const demoVersionPageID = "346b7273-944b-80ee-bc8d-e9ead7e1e623"
+
 	return func() tea.Msg {
 		endpt := c.baseURL + "/pages"
-		body := addMilestoneBody(c.milestoneDsId, title)
+		body := addMilestoneBody(c.milestoneDsId, title, demoVersionPageID)
 		b, err := json.Marshal(body)
 		if err != nil {
 			return AddMilestonePageMsg{Err: err, TempID: tempID}

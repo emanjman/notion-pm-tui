@@ -38,19 +38,17 @@ func queryMilestoneBody(projID string, status MilestoneStatus, size int) map[str
 // through it), otherwise it won't roll up to any project.
 const demoVersionPageID = "346b7273-944b-80ee-bc8d-e9ead7e1e623"
 
-func addMilestoneBody(milestonesDatasourceId, title string) map[string]any {
+func addMilestoneBody(milestonesDatasourceID, title, versionID string) map[string]any {
 	return map[string]any{
 		"parent": map[string]any{
-			"data_source_id": milestonesDatasourceId,
+			"data_source_id": milestonesDatasourceID,
 		},
-		// only writable props — the formula/rollup props (progress, $status,
-		// task-ct, r/@project) are read-only and rejected by the create endpoint.
 		"properties": map[string]any{
 			milestonePropTitle: TitleProperty{
 				Title: []RichText{{Text: TextContent{Content: title}}},
 			},
 			milestonePropVersionRelation: RelationProperty{
-				Relation: []RelationItem{{ID: demoVersionPageID}},
+				Relation: []RelationItem{{ID: versionID}},
 			},
 		},
 	}

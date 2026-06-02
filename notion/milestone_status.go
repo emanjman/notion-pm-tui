@@ -2,6 +2,8 @@ package notion
 
 import "fmt"
 
+// -- enum --
+
 type MilestoneStatus int
 
 const (
@@ -11,10 +13,14 @@ const (
 	_MilestoneStatusCount // sentinel for array
 )
 
+// -- msg --
+
 // load more milestones of this milestone-status-group
 type FetchMoreMilestonesMsg struct {
 	Status MilestoneStatus
 }
+
+// -- helpers --
 
 // get milestone status in an ordered arr
 func MilestoneStatusOrder() []MilestoneStatus {

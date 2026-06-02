@@ -1,30 +1,36 @@
 package notion
 
+// -- types --
+
+// notion page from @project-milestones
 type MilestonePage struct {
 	ID         string              `json:"id"`
 	Properties MilestoneProperties `json:"properties"`
 	Icon       *Icon               `json:"icon"`
 }
 
-type MilestoneProperties struct {
-	Title     TitleProperty   `json:"name"`
-	Progress  FormulaProperty `json:"progress"` // type:number
-	Status    FormulaProperty `json:"$status"`  // type:string
-	TaskCount FormulaProperty `json:"task-ct"`  // type:number
+// packaging grouped notion pages w/ state info
+type MilestoneGroup struct {
+	Milestones []MilestonePage
+	NextCursor *string // bookmarks subseq notion-pages available
+	Hide       bool    // is hidden
+	Loading    bool    // is fetching notion pages
+}
+
+// map milestone-status to milestone-group
+type MilestoneGroups map[MilestoneStatus]MilestoneGroup
+
+// -- msg --
+
+type AddMilestonePageMsg struct {
+	TempID string         // optimistic temp-id to be reconciled
+	Page   *MilestonePage // created notion-page (w/ real notion-id)
+	Err    error          // failed notion-page creation
 }
 
 type MilestonePagesMsg struct {
 	Pages      []MilestonePage
-	NextCursor *string         // bookmark for subsequent milestsone pages
-	Status     MilestoneStatus // grouping key
-	Err        error
+	Status     MilestoneStatus // grouping-key
+	NextCursor *string         // bookmarks subseq notion-pages available
+	Err        error           // failed notion-page fetch
 }
-
-type MilestoneGroup struct {
-	Milestones []MilestonePage
-	NextCursor *string
-	Hide       bool
-	Loading    bool
-}
-
-type MilestoneGroups map[MilestoneStatus]MilestoneGroup
