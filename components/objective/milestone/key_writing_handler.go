@@ -1,9 +1,15 @@
 package milestone
 
-import tea "github.com/charmbracelet/bubbletea"
+import (
+	"log"
+	"strings"
+
+	tea "github.com/charmbracelet/bubbletea"
+)
 
 // update name on ui + notion server
-func (m Model) onWritingModeSave() (Model, tea.Cmd) {
+func (m Model) onWritingSave() (Model, tea.Cmd) {
+	log.Printf("on writing save")
 	var cmd tea.Cmd
 
 	if mstone, ok := m.list.SelectedItem().(DefaultItem); ok {
@@ -14,6 +20,10 @@ func (m Model) onWritingModeSave() (Model, tea.Cmd) {
 		mstone.Name = m.Focus.tempTitle.Value()
 		m.list.SetItem(m.list.Index(), mstone)
 		m = m.updateMilestoneInGroups(mstone)
+
+		if strings.HasPrefix(mstone.ID, "temp") && strings.TrimSpace(mstone.Name) != "" {
+			// todo: create milestone
+		}
 
 		// set cmd to send-off notion update
 		cmd = updateNotionMilestoneTitle(m.notion, mstone.ID, mstone.Name)

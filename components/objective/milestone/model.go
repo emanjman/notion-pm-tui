@@ -27,6 +27,8 @@ type Model struct {
 	neutralKeyMap  NeutralKeyMap
 	writingKeyMap  WritingKeyMap
 	Focus          *FocusState
+
+	tempIDCounter int // for generating temp IDs for new milestones
 }
 
 func New(n *notion.Client, projID string) Model {

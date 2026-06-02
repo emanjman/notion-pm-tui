@@ -1,6 +1,6 @@
 package notion
 
-func milestoneQueryBody(projID string, status MilestoneStatus, size int) map[string]any {
+func queryMilestoneBody(projID string, status MilestoneStatus, size int) map[string]any {
 	return map[string]any{
 		"filter": map[string]any{
 			"and": []map[string]any{
@@ -29,5 +29,21 @@ func milestoneQueryBody(projID string, status MilestoneStatus, size int) map[str
 			},
 		},
 		"page_size": size,
+	}
+}
+
+func addMilestoneBody(milestonesDatasourceId string, pg MilestonePage) map[string]any {
+	return map[string]any{
+		"parent": map[string]any{
+			"data_source_id": milestonesDatasourceId,
+		},
+		"properties": pg.Properties,
+		// map[string]any{
+		// 	milestonePropTitle: TitleProperty{
+		// 		Title: []RichText{
+		// 			TextContent{Content: pg.}
+		// 		},
+		// 	}
+		// }
 	}
 }
