@@ -28,7 +28,7 @@ type AddMilestonePageMsg struct {
 	Err    error          // failed notion-page creation
 }
 
-type MilestonePagesMsg struct {
+type QueryMilestonePagesMsg struct {
 	Pages      []MilestonePage
 	Status     MilestoneStatus // grouping-key
 	NextCursor *string         // bookmarks subseq notion-pages available

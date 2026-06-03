@@ -257,7 +257,7 @@ func (m Model) onNeutralKey(msg tea.KeyMsg) (Model, tea.Cmd) {
 			}
 		} else if loadMore, ok := selected.(LoadMoreItem); ok && !loadMore.Loading {
 			return m, func() tea.Msg {
-				return notion.FetchMoreTasksMsg{Status: loadMore.Status}
+				return notion.QueryMoreTaskPagesMsg{Status: loadMore.Status}
 			}
 		} else if task, ok := selected.(Item); ok {
 			m.Focus.taskID = task.ID

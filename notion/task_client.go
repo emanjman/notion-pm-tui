@@ -18,13 +18,13 @@ func (c *Client) QueryTasks(milestoneID, status, cursor string, milestoneIdx int
 		body := taskQueryBody(milestoneID, status, 5)
 		res, err := queryDatasource[TaskPage](c, c.tasksDsId, body, cursor, fprops)
 		if err != nil {
-			return TaskQueryMsg{Err: err, Status: status, MilestoneIdx: milestoneIdx}
+			return QueryTaskPagesMsg{Err: err, Status: status, MilestoneIdx: milestoneIdx}
 		}
 		var nextCursor *string
 		if res.HasMore {
 			nextCursor = res.NextCursor
 		}
-		return TaskQueryMsg{
+		return QueryTaskPagesMsg{
 			Pages:        res.Results,
 			NextCursor:   nextCursor,
 			Status:       status,

@@ -36,11 +36,10 @@ func (m Model) onNeutralSelect() (Model, tea.Cmd) {
 	selected := m.list.SelectedItem()
 
 	if header, ok := selected.(GroupHeaderItem); ok {
-		// toggle show/hide header
-		group := m.groups[header.Status]
-		group.Hide = !group.Hide
-		m.groups[header.Status] = group
-		m.list.SetItems(m.buildMilestoneList())
+		// toggle show/hide group
+		g := m.groups[header.Status]
+		g.Hide = !g.Hide
+		m = m.updateGroup(header.Status, g)
 
 	} else if loadMore, ok := selected.(LoadMoreItem); ok && !loadMore.Loading {
 		loadMoreMilestones(loadMore.Status)
@@ -83,8 +82,6 @@ func (m Model) onNeutralRename() (Model, tea.Cmd) {
 }
 
 func (m Model) onNeutralAdd() (Model, tea.Cmd) {
-	defaultMilestoneStatus := notion.MilestoneIdle
-
 	m.tempIDCounter++
 	tempID := fmt.Sprintf("temp-%d", m.tempIDCounter)
 
@@ -98,10 +95,9 @@ func (m Model) onNeutralAdd() (Model, tea.Cmd) {
 		},
 	}
 
-	g := m.groups[defaultMilestoneStatus]
+	g := m.groups[notion.MilestoneIdle]
 	g.Milestones = append(g.Milestones, newMilestonepage)
-	m.groups[defaultMilestoneStatus] = g
-	m.list.SetItems(m.buildMilestoneList()) // todo: do i need this?
+	m = m.updateGroup(notion.MilestoneIdle, g)
 
 	// find new milestone idx in list; enter writing-mode
 	for i, item := range m.list.Items() {

@@ -11,25 +11,23 @@ import (
 // dispatch messages to handlers
 func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
-	// handle milestones
-	case notion.MilestonePagesMsg:
-		return m.onMilestonePages(msg)
-	case notion.FetchMoreMilestonesMsg:
-		return m.onFetchMoreMilestones(msg)
+	// handle queries
+	case notion.QueryMilestonePagesMsg:
+		return m.onQueryMilestonePages(msg)
+	case notion.QueryMoreMilestonePagesMsg:
+		return m.onQueryMoreMilestonePages(msg)
+	case notion.QueryMoreTaskPagesMsg:
+		return m.onQueryMoreTaskPages(msg)
+	case notion.QueryTaskPagesMsg:
+		return m.onQueryTaskPages(msg)
 
-	// handle milestone-tasks
-	case notion.FetchMoreTasksMsg:
-		return m.onFetchMoreTasksByStatus(msg)
-	case notion.ToggleTaskGroupMsg:
-		return m.onToggleTaskGroup(msg)
-	case notion.TaskQueryMsg:
-		return m.onTaskQuery(msg)
-
-	// notion write operations
-	case UpdateNotionTitleMsg:
-		return m.onUpdateNotionTitle(msg)
+	// handle writes
 	case notion.AddMilestonePageMsg:
 		return m.onAddMilestonePage(msg)
+	case UpdateNotionTitleMsg:
+		return m.onUpdateNotionTitle(msg)
+	case notion.ToggleTaskGroupMsg:
+		return m.onToggleTaskGroup(msg)
 
 	// chores
 	case tea.KeyMsg:
@@ -44,24 +42,57 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	return m, cmd
 }
 
+// builds list of milestones, grouped by status; depends on `m.groups`
 func (m Model) buildMilestoneList() []list.Item {
 	var items []list.Item
+
 	for _, status := range notion.MilestoneStatusOrder() {
 		group, ok := m.groups[status]
+
+		// skip groups w/o milestones
 		if !ok || len(group.Milestones) == 0 {
 			continue
 		}
+
+		// add header
 		items = append(items, NewGroupHeaderItem(status, group))
+
 		if !group.Hide {
-			for _, pg := range group.Milestones {
-				items = append(items, NewDefaultItem(pg))
+			// add milestones
+			for _, mstone := range group.Milestones {
+				items = append(items, NewDefaultItem(mstone))
 			}
+
 			if group.NextCursor != nil {
+				// add load-more button
 				items = append(items, NewLoadMoreItem(status, group))
 			}
 		}
 	}
+
 	return items
+}
+
+// updates single milestone; triggers list rebuild
+func (m Model) updateMilestone(item DefaultItem) Model {
+	group := m.groups[item.MilestoneStatus]
+
+	for i, pg := range group.Milestones {
+		if pg.ID == item.ID {
+			// sync the name back onto the page (only field editable locally)
+			group.Milestones[i].Properties.Title.Title[0].PlainText = item.Name
+			break
+		}
+	}
+
+	return m.updateGroup(item.MilestoneStatus, group)
+}
+
+// updates single group in `m.groups`; triggers list rebuild
+func (m Model) updateGroup(status notion.MilestoneStatus, group notion.MilestoneGroup) Model {
+	m.groups[status] = group
+	m.list.SetItems(m.buildMilestoneList())
+	return m
 }
 
 func (m Model) getCurrTaskGroups() notion.TaskGroups {
@@ -89,28 +120,10 @@ func (m Model) removeMilestoneByID(id string) Model {
 		for i, pg := range group.Milestones {
 			if pg.ID == id {
 				group.Milestones = append(group.Milestones[:i], group.Milestones[i+1:]...)
-				m.groups[status] = group
-				m.list.SetItems(m.buildMilestoneList())
-				return m
+				return m.updateGroup(status, group)
 			}
 		}
 	}
-	return m
-}
-
-func (m Model) updateMilestoneInGroups(item DefaultItem) Model {
-	group := m.groups[item.MilestoneStatus]
-
-	for i, pg := range group.Milestones {
-		if pg.ID == item.ID {
-			// sync the name back onto the page (only field editable locally)
-			group.Milestones[i].Properties.Title.Title[0].PlainText = item.Name
-			break
-		}
-	}
-
-	m.groups[item.MilestoneStatus] = group
-	m.list.SetItems(m.buildMilestoneList())
 	return m
 }
 

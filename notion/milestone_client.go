@@ -8,7 +8,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-func (c *Client) QueryMilestones(projID string, status MilestoneStatus, cursor string) tea.Cmd {
+func (c *Client) QueryMilestonePages(projID string, status MilestoneStatus, cursor string) tea.Cmd {
 	fprops := []string{
 		milestonePropTitle,
 		milestonePropProgress,
@@ -20,13 +20,13 @@ func (c *Client) QueryMilestones(projID string, status MilestoneStatus, cursor s
 		body := queryMilestoneBody(projID, status, 5)
 		res, err := queryDatasource[MilestonePage](c, c.milestoneDsId, body, cursor, fprops)
 		if err != nil {
-			return MilestonePagesMsg{Err: err, Status: status}
+			return QueryMilestonePagesMsg{Err: err, Status: status}
 		}
 		var nextCursor *string
 		if res.HasMore {
 			nextCursor = res.NextCursor
 		}
-		return MilestonePagesMsg{Pages: res.Results, NextCursor: nextCursor, Status: status}
+		return QueryMilestonePagesMsg{Pages: res.Results, NextCursor: nextCursor, Status: status}
 	}
 }
 

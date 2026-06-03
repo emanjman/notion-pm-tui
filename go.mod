@@ -1,4 +1,4 @@
-module notion-project-tui
+module notion-project-tui // todo: notion-pm-tui
 
 go 1.24.2
 

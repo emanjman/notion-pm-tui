@@ -29,11 +29,11 @@ type ToggleTaskGroupMsg struct {
 	Status string
 }
 
-type FetchMoreTasksMsg struct {
+type QueryMoreTaskPagesMsg struct {
 	Status string
 }
 
-type TaskQueryMsg struct {
+type QueryTaskPagesMsg struct {
 	Pages        []TaskPage
 	NextCursor   *string
 	Status       string

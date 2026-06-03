@@ -16,7 +16,7 @@ const (
 // -- msg --
 
 // load more milestones of this milestone-status-group
-type FetchMoreMilestonesMsg struct {
+type QueryMoreMilestonePagesMsg struct {
 	Status MilestoneStatus
 }
 

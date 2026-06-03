@@ -20,7 +20,7 @@ func (m Model) onWritingSave() (Model, tea.Cmd) {
 		// optimistically update local milestone title
 		mstone.Name = m.Focus.tempTitle.Value()
 		m.list.SetItem(m.list.Index(), mstone)
-		m = m.updateMilestoneInGroups(mstone)
+		m = m.updateMilestone(mstone)
 
 		switch {
 		case isNew && title != "":

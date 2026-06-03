@@ -8,12 +8,12 @@ import (
 )
 
 // init kickoff to get milestones; queried by milestone status
-func fetchMilestonesByStatus(projID string, nc *notion.Client) tea.Cmd {
+func fetchMilestonesByStatus(projID string, ntn *notion.Client) tea.Cmd {
 	// todo: eventually depend on versionID (over projID)
 	return tea.Batch(
-		nc.QueryMilestones(projID, notion.MilestoneUnderDevelopment, ""),
-		nc.QueryMilestones(projID, notion.MilestoneIdle, ""),
-		nc.QueryMilestones(projID, notion.MilestoneComplete, ""),
+		ntn.QueryMilestonePages(projID, notion.MilestoneUnderDevelopment, ""),
+		ntn.QueryMilestonePages(projID, notion.MilestoneIdle, ""),
+		ntn.QueryMilestonePages(projID, notion.MilestoneComplete, ""),
 	)
 }
 
@@ -31,13 +31,13 @@ func fetchInitMilestoneTasks(milestones *list.Model, nc *notion.Client) tea.Cmd 
 }
 
 // fetch init batch of tasks across all statuses of a milestone
-func fetchInitTasks(milestoneID string, idx int, nc *notion.Client) tea.Cmd {
+func fetchInitTasks(milestoneID string, idx int, ntn *notion.Client) tea.Cmd {
 	// todo: i sus we update this later to use enums
 	return tea.Batch(
-		nc.QueryTasks(milestoneID, "dev", "", idx),
-		nc.QueryTasks(milestoneID, "idle", "", idx),
-		nc.QueryTasks(milestoneID, "done", "", idx),
-		nc.QueryTasks(milestoneID, "archive", "", idx),
+		ntn.QueryTasks(milestoneID, "dev", "", idx),
+		ntn.QueryTasks(milestoneID, "idle", "", idx),
+		ntn.QueryTasks(milestoneID, "done", "", idx),
+		ntn.QueryTasks(milestoneID, "archive", "", idx),
 	)
 }
 
@@ -51,17 +51,17 @@ func refreshMilestoneTasks(g notion.TaskGroups) tea.Cmd {
 // hit handler; fetch more milestones for passed milestone status
 func loadMoreMilestones(s notion.MilestoneStatus) tea.Cmd {
 	return func() tea.Msg {
-		return notion.FetchMoreMilestonesMsg{Status: s}
+		return notion.QueryMoreMilestonePagesMsg{Status: s}
 	}
 }
 
 // send req to update miletone title prop on notion-server
-func updateNotionMilestoneTitle(nc *notion.Client, milestoneID, title string) tea.Cmd {
+func updateNotionMilestoneTitle(ntn *notion.Client, milestoneID, title string) tea.Cmd {
 	return func() tea.Msg {
 		newTitle := notion.TitleProperty{Title: []notion.RichText{
 			{Text: notion.TextContent{Content: title}},
 		}}
-		err := nc.UpdatePageProperties(milestoneID, map[string]any{"name": newTitle})
+		err := ntn.UpdatePageProperties(milestoneID, map[string]any{"name": newTitle})
 		return UpdateNotionTitleMsg{Err: err}
 	}
 }
