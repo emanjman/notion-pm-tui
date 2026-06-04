@@ -25,13 +25,13 @@ type ItemDelegate struct {
 	focused bool
 	style   style
 
-	mode Mode
+	mode *Mode
 	edit *EditModeCtx
 }
 
 var _ list.ItemDelegate = (*ItemDelegate)(nil) // conform
 
-func NewItemDelegate(focused bool, mode Mode, edit *EditModeCtx) ItemDelegate {
+func NewItemDelegate(focused bool, mode *Mode, edit *EditModeCtx) ItemDelegate {
 	borderDistance := 1
 	leftEdgeDistance := 1
 

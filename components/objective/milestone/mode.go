@@ -53,15 +53,17 @@ func (edit EditModeCtx) newTitleInput(item DefaultItem) textinput.Model {
 
 // ez switch
 func (m Model) switchMode(mode Mode) Model {
+	// mutate THROUGH the shared ptr (not `m.Mode = &x`) so the list delegate,
+	// which holds the same *Mode, sees the switch live
 	switch mode {
 	case NeutralMode:
-		m.Mode = NeutralMode
+		*m.Mode = NeutralMode
 		m.ActiveKeyMap = NeutralKeyMapper
 	case EditMode:
-		m.Mode = EditMode
+		*m.Mode = EditMode
 		m.ActiveKeyMap = EditKeyMapper
 	case DeleteMode:
-		m.Mode = DeleteMode
+		*m.Mode = DeleteMode
 		m.ActiveKeyMap = DeleteKeyMapper
 	}
 

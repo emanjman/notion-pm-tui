@@ -16,7 +16,7 @@ type Model struct {
 	pendingFetches int
 	groups         notion.MilestoneGroups
 
-	Mode   Mode
+	Mode   *Mode // ptr so the list delegate sees mode switches live (shared heap)
 	Edit   *EditModeCtx // todo: do these NEED to be ptrs?
 	Delete *DeleteModeCtx
 
@@ -31,7 +31,7 @@ func New(n *notion.Client, projID string) Model {
 	edit := EditModeCtx{}
 	del := DeleteModeCtx{}
 
-	l := list.New([]list.Item{}, NewItemDelegate(true, mode, &edit), 0, 0)
+	l := list.New([]list.Item{}, NewItemDelegate(true, &mode, &edit), 0, 0)
 	l.Title = "Milestones"
 	l.SetShowHelp(false)
 	l.SetShowStatusBar(false)
@@ -53,7 +53,7 @@ func New(n *notion.Client, projID string) Model {
 		neutralKeyMap: NeutralKeyMapper,
 		editKeyMap:    EditKeyMapper,
 
-		Mode:   mode,
+		Mode:   &mode,
 		Edit:   &edit,
 		Delete: &del,
 	}

@@ -27,7 +27,7 @@ func renderItem(d ItemDelegate, item DefaultItem, selected bool, noBorder bool, 
 
 	// handle field highlighting by mode
 	if selected {
-		if d.mode == NeutralMode {
+		if *d.mode == NeutralMode {
 			segStyle = d.style.itemSegment.selected
 			countStyle = d.style.itemContainer.selected
 
@@ -75,7 +75,7 @@ func renderItem(d ItemDelegate, item DefaultItem, selected bool, noBorder bool, 
 	offset := leftOffset + rightOffset
 	nameMaxWidth := windowWidth - lg.Width(progress+space+state) - offset
 
-	if selected && d.mode == EditMode {
+	if selected && *d.mode == EditMode {
 		// use textinput component in edit mode
 		d.edit.titleInput.Width = nameMaxWidth
 		name = d.edit.titleInput.View()

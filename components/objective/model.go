@@ -163,5 +163,5 @@ func (m Model) KeyMap() help.KeyMap {
 }
 
 func (m Model) InFocusMode() bool {
-	return m.milestone.Mode > 0 || m.task.Focus.Mode > 0
+	return *m.milestone.Mode > 0 || m.task.Focus.Mode > 0
 }

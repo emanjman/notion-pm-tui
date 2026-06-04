@@ -2,7 +2,6 @@ package milestone
 
 import (
 	"fmt"
-	"log"
 	"notion-project-tui/notion"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -86,8 +85,6 @@ func (m Model) onNeutralAdd() (Model, tea.Cmd) {
 	m.Edit.tempIDCounter++
 	tempID := fmt.Sprintf("temp-%d", m.Edit.tempIDCounter)
 
-	log.Printf("created temp id: %v", tempID) // ! debug
-
 	newPage := notion.MilestonePage{
 		ID: tempID,
 		// Icon: notion.Icon{Type: notion.IconEmoji, Emoji: ""},
@@ -98,18 +95,13 @@ func (m Model) onNeutralAdd() (Model, tea.Cmd) {
 		},
 	}
 
-	log.Printf("new page: %v", newPage) // ! debug
-
 	g := m.groups[notion.MilestoneIdle]
 	g.Milestones = append(g.Milestones, newPage)
 	m = m.updateGroup(notion.MilestoneIdle, g)
 
-	log.Printf("group updated: %v", g.Milestones) // ! debug
-
 	// find new milestone idx in list; enter edit-mode
 	for i, item := range m.list.Items() {
 		if mstone, ok := item.(DefaultItem); ok && mstone.ID == tempID {
-			log.Printf("found") // ! debug
 			// focus on mstone
 			m.list.Select(i)
 

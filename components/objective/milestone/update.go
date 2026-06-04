@@ -128,7 +128,7 @@ func (m Model) removeMilestoneByID(id string) Model {
 
 // dispatcher, where `onX()` logic still sits in `handlers.go`
 func (m Model) handleKey(msg tea.KeyMsg) (Model, tea.Cmd) {
-	switch m.Mode {
+	switch *m.Mode {
 	case EditMode:
 		switch {
 		case key.Matches(msg, m.editKeyMap.Save):
