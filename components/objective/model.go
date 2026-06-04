@@ -72,7 +72,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 				m.focus = MilestonePanel
 
 				m.task.SetItemDelegate(task.NewItemDelegate(false, m.task.Focus))
-				m.milestone.SetItemDelegate(milestone.NewItemDelegate(true, m.milestone.Focus))
+				m.milestone.SetItemDelegate(milestone.NewItemDelegate(true, m.milestone.Mode, m.milestone.Edit))
 
 				return m, nil
 
@@ -80,7 +80,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 				m.focus = TaskPanel
 
 				m.task.SetItemDelegate(task.NewItemDelegate(true, m.task.Focus))
-				m.milestone.SetItemDelegate(milestone.NewItemDelegate(false, m.milestone.Focus))
+				m.milestone.SetItemDelegate(milestone.NewItemDelegate(false, m.milestone.Mode, m.milestone.Edit))
 
 				return m, nil
 			}
@@ -163,5 +163,5 @@ func (m Model) KeyMap() help.KeyMap {
 }
 
 func (m Model) InFocusMode() bool {
-	return m.milestone.Focus.Mode > 0 || m.task.Focus.Mode > 0
+	return m.milestone.Mode > 0 || m.task.Focus.Mode > 0
 }

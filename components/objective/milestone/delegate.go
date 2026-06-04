@@ -25,12 +25,13 @@ type ItemDelegate struct {
 	focused bool
 	style   style
 
-	focus *FocusState
+	mode Mode
+	edit *EditModeCtx
 }
 
 var _ list.ItemDelegate = (*ItemDelegate)(nil) // conform
 
-func NewItemDelegate(focused bool, focus *FocusState) ItemDelegate {
+func NewItemDelegate(focused bool, mode Mode, edit *EditModeCtx) ItemDelegate {
 	borderDistance := 1
 	leftEdgeDistance := 1
 
@@ -72,7 +73,8 @@ func NewItemDelegate(focused bool, focus *FocusState) ItemDelegate {
 			itemSegment:   variantStyle{base: isbase, selected: issel},
 			header:        variantStyle{base: hbase, selected: hsel},
 		},
-		focus: focus,
+		mode: mode,
+		edit: edit,
 	}
 }
 

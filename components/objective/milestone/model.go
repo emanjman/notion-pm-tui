@@ -15,18 +15,23 @@ type Model struct {
 	err            error
 	pendingFetches int
 	groups         notion.MilestoneGroups
-	ActiveKeyMap   help.KeyMap // for help focus view
-	neutralKeyMap  NeutralKeyMap
-	editKeyMap     EditKeyMap
-	Focus          *FocusState
 
-	tempIDCounter int // for generating temp IDs for new milestones
+	Mode   Mode
+	Edit   *EditModeCtx // todo: do these NEED to be ptrs?
+	Delete *DeleteModeCtx
+
+	ActiveKeyMap  help.KeyMap // for help focus view
+	neutralKeyMap NeutralKeyMap
+	editKeyMap    EditKeyMap
+	deleteKeyMap  DeleteKeyMap
 }
 
 func New(n *notion.Client, projID string) Model {
-	f := FocusState{}
+	mode := NeutralMode
+	edit := EditModeCtx{}
+	del := DeleteModeCtx{}
 
-	l := list.New([]list.Item{}, NewItemDelegate(true, &f), 0, 0)
+	l := list.New([]list.Item{}, NewItemDelegate(true, mode, &edit), 0, 0)
 	l.Title = "Milestones"
 	l.SetShowHelp(false)
 	l.SetShowStatusBar(false)
@@ -43,10 +48,14 @@ func New(n *notion.Client, projID string) Model {
 		list:           l,
 		err:            nil,
 		groups:         notion.MilestoneGroups{},
-		ActiveKeyMap:   NeutralKeyMapper, // default map view
-		neutralKeyMap:  NeutralKeyMapper,
-		editKeyMap:     EditKeyMapper,
-		Focus:          &f,
+
+		ActiveKeyMap:  NeutralKeyMapper, // default map view
+		neutralKeyMap: NeutralKeyMapper,
+		editKeyMap:    EditKeyMapper,
+
+		Mode:   mode,
+		Edit:   &edit,
+		Delete: &del,
 	}
 }
 

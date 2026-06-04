@@ -2,6 +2,7 @@ package milestone
 
 import (
 	"fmt"
+	"log"
 	"notion-project-tui/notion"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -68,24 +69,26 @@ func (m Model) onNeutralSelect() (Model, tea.Cmd) {
 func (m Model) onNeutralRename() (Model, tea.Cmd) {
 	if mstone, ok := m.list.SelectedItem().(DefaultItem); ok {
 		// id milestone to update
-		m.Focus.milestoneID = mstone.ID
-		m.Focus.milestoneIdx = m.list.Index()
+		m.Edit.milestoneID = mstone.ID
+		m.Edit.milestoneIdx = m.list.Index()
 
 		// setup text input model
-		m.Focus.tempTitle = initTempTitle(mstone)
+		m.Edit.titleInput = m.Edit.newTitleInput(mstone)
 
 		// flip to edit-mode
-		m.Focus.Mode = EditMode
-		m.ActiveKeyMap = EditKeyMapper
+		m = m.switchMode(EditMode)
 	}
+
 	return m, nil
 }
 
 func (m Model) onNeutralAdd() (Model, tea.Cmd) {
-	m.tempIDCounter++
-	tempID := fmt.Sprintf("temp-%d", m.tempIDCounter)
+	m.Edit.tempIDCounter++
+	tempID := fmt.Sprintf("temp-%d", m.Edit.tempIDCounter)
 
-	newMilestonepage := notion.MilestonePage{
+	log.Printf("created temp id: %v", tempID) // ! debug
+
+	newPage := notion.MilestonePage{
 		ID: tempID,
 		// Icon: notion.Icon{Type: notion.IconEmoji, Emoji: ""},
 		Properties: notion.MilestoneProperties{
@@ -95,23 +98,27 @@ func (m Model) onNeutralAdd() (Model, tea.Cmd) {
 		},
 	}
 
+	log.Printf("new page: %v", newPage) // ! debug
+
 	g := m.groups[notion.MilestoneIdle]
-	g.Milestones = append(g.Milestones, newMilestonepage)
+	g.Milestones = append(g.Milestones, newPage)
 	m = m.updateGroup(notion.MilestoneIdle, g)
+
+	log.Printf("group updated: %v", g.Milestones) // ! debug
 
 	// find new milestone idx in list; enter edit-mode
 	for i, item := range m.list.Items() {
 		if mstone, ok := item.(DefaultItem); ok && mstone.ID == tempID {
+			log.Printf("found") // ! debug
 			// focus on mstone
 			m.list.Select(i)
 
-			m.Focus.milestoneID = tempID
-			m.Focus.milestoneIdx = i
-			m.Focus.tempTitle = initTempTitle(mstone)
+			m.Edit.milestoneID = tempID
+			m.Edit.milestoneIdx = i
+			m.Edit.titleInput = m.Edit.newTitleInput(mstone)
 
 			// flip to edit-mode
-			m.Focus.Mode = EditMode
-			m.ActiveKeyMap = EditKeyMapper
+			m = m.switchMode(EditMode)
 		}
 	}
 

@@ -21,8 +21,8 @@ func (m Model) onAddMilestonePage(msg notion.AddMilestonePageMsg) (Model, tea.Cm
 				m = m.updateGroup(status, group)
 
 				// keep focus tracking pointed at the real id
-				if m.Focus.milestoneID == msg.TempID {
-					m.Focus.milestoneID = msg.Page.ID
+				if m.Edit.milestoneID == msg.TempID {
+					m.Edit.milestoneID = msg.Page.ID
 				}
 				return m, nil
 			}
@@ -35,8 +35,8 @@ func (m Model) onAddMilestonePage(msg notion.AddMilestonePageMsg) (Model, tea.Cm
 func (m Model) onUpdateNotionTitle(msg UpdateNotionTitleMsg) (Model, tea.Cmd) {
 	if msg.Err != nil {
 		for i, item := range m.list.Items() {
-			if mstone, ok := item.(DefaultItem); ok && mstone.ID == m.Focus.milestoneID {
-				mstone.Name = m.Focus.prevTitle
+			if mstone, ok := item.(DefaultItem); ok && mstone.ID == m.Edit.milestoneID {
+				mstone.Name = m.Edit.titleBackup
 				m.list.SetItem(i, mstone)
 				m = m.updateMilestone(mstone)
 				break

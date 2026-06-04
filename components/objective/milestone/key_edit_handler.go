@@ -12,13 +12,13 @@ func (m Model) onEditSave() (Model, tea.Cmd) {
 
 	if mstone, ok := m.list.SelectedItem().(DefaultItem); ok {
 		isNew := strings.HasPrefix(mstone.ID, "temp")
-		title := strings.TrimSpace(m.Focus.tempTitle.Value())
+		title := strings.TrimSpace(m.Edit.titleInput.Value())
 
 		// stash og title (in case revert needed on failed server update)
-		m.Focus.prevTitle = mstone.Name
+		m.Edit.titleBackup = mstone.Name
 
 		// optimistically update local milestone title
-		mstone.Name = m.Focus.tempTitle.Value()
+		mstone.Name = m.Edit.titleInput.Value()
 		m.list.SetItem(m.list.Index(), mstone)
 		m = m.updateMilestone(mstone)
 
@@ -35,8 +35,7 @@ func (m Model) onEditSave() (Model, tea.Cmd) {
 		}
 	}
 
-	m.ActiveKeyMap = NeutralKeyMapper
-	m.Focus.Mode = NeutralMode
+	m = m.switchMode(NeutralMode)
 
 	return m, cmd
 }
