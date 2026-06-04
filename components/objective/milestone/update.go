@@ -75,17 +75,16 @@ func (m Model) buildMilestoneList() []list.Item {
 
 // updates single milestone; triggers list rebuild
 func (m Model) updateMilestone(item DefaultItem) Model {
-	group := m.groups[item.MilestoneStatus]
-
-	for i, pg := range group.Milestones {
-		if pg.ID == item.ID {
-			// sync the name back onto the page (only field editable locally)
-			group.Milestones[i].Properties.Title.Title[0].PlainText = item.Name
-			break
+	for status, group := range m.groups {
+		for i, pg := range group.Milestones {
+			if pg.ID == item.ID {
+				// sync the name back onto the page (only field editable locally)
+				group.Milestones[i].Properties.Title.Title[0].PlainText = item.Name
+				return m.updateGroup(status, group)
+			}
 		}
 	}
-
-	return m.updateGroup(item.MilestoneStatus, group)
+	return m
 }
 
 // updates single group in `m.groups`; triggers list rebuild
