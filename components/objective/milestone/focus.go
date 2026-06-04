@@ -11,7 +11,7 @@ type FocusMode int
 
 const (
 	NeutralMode FocusMode = iota
-	WritingMode           // editing title; reserve all keys
+	EditMode              // editing title; reserve all keys
 )
 
 // ---

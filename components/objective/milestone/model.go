@@ -17,7 +17,7 @@ type Model struct {
 	groups         notion.MilestoneGroups
 	ActiveKeyMap   help.KeyMap // for help focus view
 	neutralKeyMap  NeutralKeyMap
-	writingKeyMap  WritingKeyMap
+	editKeyMap     EditKeyMap
 	Focus          *FocusState
 
 	tempIDCounter int // for generating temp IDs for new milestones
@@ -45,7 +45,7 @@ func New(n *notion.Client, projID string) Model {
 		groups:         notion.MilestoneGroups{},
 		ActiveKeyMap:   NeutralKeyMapper, // default map view
 		neutralKeyMap:  NeutralKeyMapper,
-		writingKeyMap:  WritingKeyMapper,
+		editKeyMap:     EditKeyMapper,
 		Focus:          &f,
 	}
 }

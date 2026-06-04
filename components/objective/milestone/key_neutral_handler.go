@@ -64,7 +64,7 @@ func (m Model) onNeutralSelect() (Model, tea.Cmd) {
 	return m, nil
 }
 
-// enter writing-mode
+// enter edit-mode
 func (m Model) onNeutralRename() (Model, tea.Cmd) {
 	if mstone, ok := m.list.SelectedItem().(DefaultItem); ok {
 		// id milestone to update
@@ -74,9 +74,9 @@ func (m Model) onNeutralRename() (Model, tea.Cmd) {
 		// setup text input model
 		m.Focus.tempTitle = initTempTitle(mstone)
 
-		// flip to writing-mode
-		m.Focus.Mode = WritingMode
-		m.ActiveKeyMap = WritingKeyMapper
+		// flip to edit-mode
+		m.Focus.Mode = EditMode
+		m.ActiveKeyMap = EditKeyMapper
 	}
 	return m, nil
 }
@@ -99,7 +99,7 @@ func (m Model) onNeutralAdd() (Model, tea.Cmd) {
 	g.Milestones = append(g.Milestones, newMilestonepage)
 	m = m.updateGroup(notion.MilestoneIdle, g)
 
-	// find new milestone idx in list; enter writing-mode
+	// find new milestone idx in list; enter edit-mode
 	for i, item := range m.list.Items() {
 		if mstone, ok := item.(DefaultItem); ok && mstone.ID == tempID {
 			// focus on mstone
@@ -109,9 +109,9 @@ func (m Model) onNeutralAdd() (Model, tea.Cmd) {
 			m.Focus.milestoneIdx = i
 			m.Focus.tempTitle = initTempTitle(mstone)
 
-			// flip to writing-mode
-			m.Focus.Mode = WritingMode
-			m.ActiveKeyMap = WritingKeyMapper
+			// flip to edit-mode
+			m.Focus.Mode = EditMode
+			m.ActiveKeyMap = EditKeyMapper
 		}
 	}
 

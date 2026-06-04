@@ -8,7 +8,7 @@ type NeutralKeyMap struct {
 	JumpUp   key.Binding // jump up 5
 	JumpDown key.Binding // jump down 5
 	Select   key.Binding // toggle group header
-	Rename   key.Binding // enter writing mode
+	Rename   key.Binding
 	Add      key.Binding
 }
 
