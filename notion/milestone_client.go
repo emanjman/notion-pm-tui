@@ -61,8 +61,3 @@ func (c *Client) AddMilestone(tempID, title string) tea.Cmd {
 		return AddMilestonePageMsg{TempID: tempID, Page: &res}
 	}
 }
-
-// delete related (child) tasks; then delete milestone
-func (c *Client) DeleteMilestone() tea.Cmd {
-	return nil
-}

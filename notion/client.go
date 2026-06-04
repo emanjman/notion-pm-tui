@@ -127,9 +127,9 @@ type PaginationResponse[T any] struct {
 	HasMore    bool    `json:"has_more"`
 }
 
-func queryDatasource[T any](c *Client, dsId string, body map[string]any, cursor string, filterProps []string) (*PaginationResponse[T], error) {
+func queryDatasource[T any](c *Client, datasourceID string, body map[string]any, cursor string, filterProps []string) (*PaginationResponse[T], error) {
 	// setup url + queries
-	url, err := url.Parse(c.baseURL + "/data_sources/" + dsId + "/query")
+	url, err := url.Parse(c.baseURL + "/data_sources/" + datasourceID + "/query")
 	if err != nil {
 		return nil, err
 	}
@@ -157,4 +157,31 @@ func queryDatasource[T any](c *Client, dsId string, body map[string]any, cursor 
 		return nil, err
 	}
 	return &res, nil
+}
+
+// returns error on failed req
+func TrashPage(c *Client, ID string) error {
+	url := c.baseURL + "/pages" + ID
+	body := map[string]bool{
+		"in_trash": true,
+	}
+
+	payload, err := json.Marshal(body)
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest("PATCH", url, bytes.NewReader(payload))
+	if err != nil {
+		return err
+	}
+
+	req.Header.Add("Content-Type", "application/json")
+	var res any
+
+	if err := c.do(req, &res); err != nil {
+		return err
+	}
+
+	return nil
 }
