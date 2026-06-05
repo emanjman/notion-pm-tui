@@ -129,16 +129,6 @@ func (m Model) removeMilestoneByID(id string) Model {
 // dispatcher, where `onX()` logic still sits in `handlers.go`
 func (m Model) handleKey(msg tea.KeyMsg) (Model, tea.Cmd) {
 	switch *m.Mode {
-	case EditMode:
-		switch {
-		case key.Matches(msg, m.editKeyMap.Save):
-			return m.onEditSave()
-		default:
-			var cmd tea.Cmd
-			m.Edit.titleInput, cmd = m.Edit.titleInput.Update(msg)
-			return m, cmd
-		}
-
 	case NeutralMode:
 		switch {
 		// navigation
@@ -156,12 +146,32 @@ func (m Model) handleKey(msg tea.KeyMsg) (Model, tea.Cmd) {
 			return m.onNeutralRename()
 		case key.Matches(msg, m.neutralKeyMap.Add):
 			return m.onNeutralAdd()
+		case key.Matches(msg, m.neutralKeyMap.Delete):
+			return m.onNeutralDelete()
 
 		// dynamic: change mode, launch fetches
 		case key.Matches(msg, m.neutralKeyMap.Select):
 			return m.onNeutralSelect()
+		}
 
+	case EditMode:
+		switch {
+		case key.Matches(msg, m.editKeyMap.Save):
+			return m.onEditSave()
+		default:
+			var cmd tea.Cmd
+			m.Edit.titleInput, cmd = m.Edit.titleInput.Update(msg)
+			return m, cmd
+		}
+
+	case DeleteMode:
+		switch {
+		case key.Matches(msg, m.deleteKeyMap.Cancel):
+			return m.onDeleteCancel()
+		case key.Matches(msg, m.deleteKeyMap.Confirm):
+			return m.onDeleteConfirm()
 		}
 	}
+
 	return m, nil
 }

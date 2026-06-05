@@ -27,15 +27,22 @@ func renderItem(d ItemDelegate, item DefaultItem, selected bool, noBorder bool, 
 
 	// handle field highlighting by mode
 	if selected {
-		if *d.mode == NeutralMode {
+		switch *d.mode {
+		case NeutralMode:
 			segStyle = d.style.itemSegment.selected
 			countStyle = d.style.itemContainer.selected
 
 			// apply select highlight row-wide
 			nameStyle, stateStyle, countStyle = segStyle, segStyle, segStyle
-		} else {
+
+		case EditMode:
 			nameStyle = nameStyle.Inherit(d.style.itemSegment.selected)
 			countStyle = countStyle.Inherit(d.style.itemSegment.selected)
+
+		case DeleteMode:
+			nameStyle = nameStyle.Background(styles.ErrorBackground)
+			stateStyle = stateStyle.Background(styles.ErrorBackground)
+			countStyle = countStyle.Background(styles.ErrorBackground)
 		}
 	}
 

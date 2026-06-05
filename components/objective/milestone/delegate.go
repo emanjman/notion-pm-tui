@@ -29,7 +29,7 @@ type ItemDelegate struct {
 	edit *EditModeCtx
 }
 
-var _ list.ItemDelegate = (*ItemDelegate)(nil) // conform
+var _ list.ItemDelegate = (*ItemDelegate)(nil) // compile-time compliance
 
 func NewItemDelegate(focused bool, mode *Mode, edit *EditModeCtx) ItemDelegate {
 	borderDistance := 1
@@ -100,8 +100,8 @@ func (d ItemDelegate) Render(w io.Writer, m list.Model, index int, item list.Ite
 		header := renderItemHeader(d, item, selected, m.Width())
 		fmt.Fprint(w, header)
 	case DefaultItem:
-		milestone := renderItem(d, item, selected, noBorder, m.Width())
-		fmt.Fprint(w, milestone)
+		mstone := renderItem(d, item, selected, noBorder, m.Width())
+		fmt.Fprint(w, mstone)
 	case LoadMoreItem:
 		fmt.Fprint(w, renderLoadMore(d, item.Loading, selected, noBorder, m.Width()))
 	}

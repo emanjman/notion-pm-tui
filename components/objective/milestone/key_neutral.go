@@ -10,6 +10,7 @@ type NeutralKeyMap struct {
 	Select   key.Binding // toggle group header
 	Rename   key.Binding
 	Add      key.Binding
+	Delete   key.Binding
 }
 
 var NeutralKeyMapper = NeutralKeyMap{
@@ -41,15 +42,19 @@ var NeutralKeyMapper = NeutralKeyMap{
 		key.WithKeys("a"),
 		key.WithHelp("a", "add milestone"),
 	),
+	Delete: key.NewBinding(
+		key.WithKeys("d"),
+		key.WithHelp("d", "delete milestone"),
+	),
 }
 
 func (k NeutralKeyMap) ShortHelp() []key.Binding {
-	return []key.Binding{k.Up, k.Down, k.Select, k.Rename, k.Add}
+	return []key.Binding{k.Up, k.Down, k.Select, k.Rename, k.Add, k.Delete}
 }
 
 func (k NeutralKeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.Up, k.Down, k.Select, k.Rename, k.Add},
+		{k.Up, k.Down, k.Select, k.Rename, k.Add, k.Delete},
 		{},
 	}
 }

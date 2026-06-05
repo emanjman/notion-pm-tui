@@ -82,8 +82,8 @@ func (m Model) onNeutralRename() (Model, tea.Cmd) {
 }
 
 func (m Model) onNeutralAdd() (Model, tea.Cmd) {
-	m.Edit.tempIDCounter++
-	tempID := fmt.Sprintf("temp-%d", m.Edit.tempIDCounter)
+	m.Edit.tempIDs++
+	tempID := fmt.Sprintf("temp-%d", m.Edit.tempIDs)
 
 	newPage := notion.MilestonePage{
 		ID: tempID,
@@ -114,5 +114,15 @@ func (m Model) onNeutralAdd() (Model, tea.Cmd) {
 		}
 	}
 
+	return m, nil
+}
+
+// store mstone + switch to delete-mode; await user decision
+func (m Model) onNeutralDelete() (Model, tea.Cmd) {
+	cur := m.list.SelectedItem()
+	if mstone, ok := cur.(DefaultItem); ok {
+		m.Delete.milestoneBackup = mstone
+		m = m.switchMode(DeleteMode)
+	}
 	return m, nil
 }

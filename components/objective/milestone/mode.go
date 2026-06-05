@@ -26,12 +26,13 @@ type EditModeCtx struct {
 	titleInput  textinput.Model
 	titleBackup string // prev title in case notion-server req fails
 
-	tempIDCounter int
+	tempIDs int
 }
 
 type DeleteModeCtx struct {
-	milestoneID string
-	milstoneIdx int
+	milestoneBackup DefaultItem
+
+	pending int // delete req's
 }
 
 // -- helpers --

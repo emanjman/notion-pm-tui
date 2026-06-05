@@ -16,7 +16,7 @@ type Model struct {
 	pendingFetches int
 	groups         notion.MilestoneGroups
 
-	Mode   *Mode // ptr so the list delegate sees mode switches live (shared heap)
+	Mode   *Mode        // ptr so the list delegate sees mode switches live (shared heap)
 	Edit   *EditModeCtx // todo: do these NEED to be ptrs?
 	Delete *DeleteModeCtx
 
