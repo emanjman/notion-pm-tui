@@ -12,11 +12,12 @@ func (m Model) onDeleteCancel() (Model, tea.Cmd) {
 // should await for all req's before reacting
 func (m Model) onDeleteConfirm() (Model, tea.Cmd) {
 	// optimistically remove milestone from ui
+	mstone := m.Delete.milestoneBackup
+	m = m.removeMilestoneByID(mstone.ID)
 
-	// todo: get taskIDs
-	// todo: get milestoneID
-	// todo: set `pending` tasks to await
-	// todo: kickoff tea batch req
-
+	err := m.notion.TrashPage(mstone.ID)
+	if err != nil {
+		return m, emitTrashMilestonePage(err)
+	}
 	return m, nil
 }

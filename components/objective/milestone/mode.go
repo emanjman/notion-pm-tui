@@ -1,6 +1,7 @@
 package milestone
 
 import (
+	"notion-project-tui/notion"
 	"notion-project-tui/styles"
 
 	"github.com/charmbracelet/bubbles/textinput"
@@ -30,9 +31,7 @@ type EditModeCtx struct {
 }
 
 type DeleteModeCtx struct {
-	milestoneBackup DefaultItem
-
-	pending int // delete req's
+	milestoneBackup notion.MilestonePage
 }
 
 // -- helpers --

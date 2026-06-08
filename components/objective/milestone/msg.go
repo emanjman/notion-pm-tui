@@ -9,3 +9,6 @@ type MilestoneTasksMsg struct {
 
 // result of notion milestone title rename
 type UpdateNotionTitleMsg struct{ Err error }
+
+// result of notion milestone trash
+type TrashMilestonePageMsg struct{ Err error }

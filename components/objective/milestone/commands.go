@@ -49,7 +49,7 @@ func refreshMilestoneTasks(g notion.TaskGroups) tea.Cmd {
 }
 
 // hit handler; fetch more milestones for passed milestone status
-func loadMoreMilestones(s notion.MilestoneStatus) tea.Cmd {
+func emitQueryMoreMilestonePages(s notion.MilestoneStatus) tea.Cmd {
 	return func() tea.Msg {
 		return notion.QueryMoreMilestonePagesMsg{Status: s}
 	}
@@ -63,5 +63,12 @@ func updateNotionMilestoneTitle(ntn *notion.Client, milestoneID, title string) t
 		}}
 		err := ntn.UpdatePageProperties(milestoneID, map[string]any{"name": newTitle})
 		return UpdateNotionTitleMsg{Err: err}
+	}
+}
+
+// hit handler; reconcile trash page req
+func emitTrashMilestonePage(err error) tea.Cmd {
+	return func() tea.Msg {
+		return TrashMilestonePageMsg{Err: err}
 	}
 }

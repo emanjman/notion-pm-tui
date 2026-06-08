@@ -42,7 +42,7 @@ func (m Model) onNeutralSelect() (Model, tea.Cmd) {
 		m = m.updateGroup(header.Status, g)
 
 	} else if loadMore, ok := selected.(LoadMoreItem); ok && !loadMore.Loading {
-		loadMoreMilestones(loadMore.Status)
+		emitQueryMoreMilestonePages(loadMore.Status)
 
 	} else if mstone, ok := selected.(DefaultItem); ok {
 		// fetch tasks for curr milestone
@@ -120,8 +120,13 @@ func (m Model) onNeutralAdd() (Model, tea.Cmd) {
 // store mstone + switch to delete-mode; await user decision
 func (m Model) onNeutralDelete() (Model, tea.Cmd) {
 	cur := m.list.SelectedItem()
-	if mstone, ok := cur.(DefaultItem); ok {
-		m.Delete.milestoneBackup = mstone
+	if mstone, ok := cur.(DefaultItem); ok && mstone.TaskCount == 0 {
+		for _, x := range m.groups[mstone.MilestoneStatus].Milestones {
+			if x.ID == mstone.ID {
+				m.Delete.milestoneBackup = x
+				break
+			}
+		}
 		m = m.switchMode(DeleteMode)
 	}
 	return m, nil
