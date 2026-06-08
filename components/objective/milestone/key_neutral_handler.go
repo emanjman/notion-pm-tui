@@ -119,11 +119,11 @@ func (m Model) onNeutralAdd() (Model, tea.Cmd) {
 
 // store mstone + switch to delete-mode; await user decision
 func (m Model) onNeutralDelete() (Model, tea.Cmd) {
-	cur := m.list.SelectedItem()
-	if mstone, ok := cur.(DefaultItem); ok && mstone.TaskCount == 0 {
-		for _, x := range m.groups[mstone.MilestoneStatus].Milestones {
-			if x.ID == mstone.ID {
-				m.Delete.milestoneBackup = x
+	selected := m.list.SelectedItem()
+	if cur, ok := selected.(DefaultItem); ok && cur.TaskCount == 0 {
+		for _, mstone := range m.groups[cur.MilestoneStatus].Milestones {
+			if mstone.ID == cur.ID {
+				m.Delete.milestoneBackup = mstone
 				break
 			}
 		}

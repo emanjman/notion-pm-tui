@@ -63,7 +63,14 @@ func (m Model) onToggleTaskGroup(msg notion.ToggleTaskGroupMsg) (Model, tea.Cmd)
 func (m Model) onTrashMilestonePage(msg TrashMilestonePageMsg) (Model, tea.Cmd) {
 	if msg.Err != nil {
 		m.err = msg.Err
-		status, err := notion.MilestoneStatusFromString(m.Delete.milestoneBackup.Properties.Status)
+
+		statusFormula := m.Delete.milestoneBackup.Properties.Status.Formula
+		status, err := notion.MilestoneStatusFromString(*statusFormula.String)
+		if err != nil {
+			m.err = err
+			return m, nil
+		}
+
 		g := m.groups[status]
 		g.Milestones = append(g.Milestones, m.Delete.milestoneBackup)
 		m = m.updateGroup(status, g)
