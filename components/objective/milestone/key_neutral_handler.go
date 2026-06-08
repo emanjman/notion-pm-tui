@@ -2,6 +2,7 @@ package milestone
 
 import (
 	"fmt"
+	"log"
 	"notion-project-tui/notion"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -119,6 +120,7 @@ func (m Model) onNeutralAdd() (Model, tea.Cmd) {
 
 // store mstone + switch to delete-mode; await user decision
 func (m Model) onNeutralDelete() (Model, tea.Cmd) {
+	log.Printf("on neutral delete") // !debug
 	selected := m.list.SelectedItem()
 	if cur, ok := selected.(DefaultItem); ok && cur.TaskCount == 0 {
 		for _, mstone := range m.groups[cur.MilestoneStatus].Milestones {

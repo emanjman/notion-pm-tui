@@ -62,6 +62,7 @@ func (m Model) onToggleTaskGroup(msg notion.ToggleTaskGroupMsg) (Model, tea.Cmd)
 // if trash-page failed, restore optimistic ui deletion
 func (m Model) onTrashMilestonePage(msg TrashMilestonePageMsg) (Model, tea.Cmd) {
 	if msg.Err != nil {
+		log.Printf("Error: %v", msg.Err)
 		m.err = msg.Err
 
 		statusFormula := m.Delete.milestoneBackup.Properties.Status.Formula

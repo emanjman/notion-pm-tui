@@ -161,7 +161,7 @@ func queryDatasource[T any](c *Client, datasourceID string, body map[string]any,
 
 // returns error on failed req
 func (c *Client) TrashPage(ID string) error {
-	url := c.baseURL + "/pages" + ID
+	url := c.baseURL + "/pages/" + ID
 	body := map[string]bool{
 		"in_trash": true,
 	}

@@ -19,5 +19,7 @@ func (m Model) onDeleteConfirm() (Model, tea.Cmd) {
 	if err != nil {
 		return m, emitTrashMilestonePage(err)
 	}
+
+	m = m.switchMode(NeutralMode)
 	return m, nil
 }

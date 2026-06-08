@@ -1,6 +1,7 @@
 package milestone
 
 import (
+	"log"
 	"notion-project-tui/notion"
 	"notion-project-tui/styles"
 

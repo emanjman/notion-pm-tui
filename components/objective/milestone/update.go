@@ -28,6 +28,8 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		return m.onUpdateNotionTitle(msg)
 	case notion.ToggleTaskGroupMsg:
 		return m.onToggleTaskGroup(msg)
+	case TrashMilestonePageMsg:
+		return m.onTrashMilestonePage(msg)
 
 	// chores
 	case tea.KeyMsg:
@@ -170,6 +172,8 @@ func (m Model) handleKey(msg tea.KeyMsg) (Model, tea.Cmd) {
 			return m.onDeleteCancel()
 		case key.Matches(msg, m.deleteKeyMap.Confirm):
 			return m.onDeleteConfirm()
+		default:
+			return m.onDeleteCancel()
 		}
 	}
 

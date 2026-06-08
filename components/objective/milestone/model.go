@@ -52,6 +52,7 @@ func New(n *notion.Client, projID string) Model {
 		ActiveKeyMap:  NeutralKeyMapper, // default map view
 		neutralKeyMap: NeutralKeyMapper,
 		editKeyMap:    EditKeyMapper,
+		deleteKeyMap:  DeleteKeyMapper,
 
 		Mode:   &mode,
 		Edit:   &edit,
