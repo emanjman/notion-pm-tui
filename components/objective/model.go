@@ -36,6 +36,7 @@ func New(n *notion.Client, projID, milestonesPropID string) Model {
 
 	return Model{
 		projID:           projID,
+		versionID:        "", // todo: need to identify version to grab
 		milestonesPropID: milestonesPropID,
 		loading:          true,
 		err:              nil,

@@ -26,6 +26,8 @@ func (m Model) handleKey(msg tea.KeyMsg) (Model, tea.Cmd) {
 			return m.onLeftFocus()
 		case key.Matches(msg, m.keys.RightFocus):
 			return m.onRightFocus()
+		case key.Matches(msg, m.keys.ToggleVersionSelect):
+			return m.onToggleVersionSelect()
 
 		// otherwise, handle keys at the respective child-level
 		default:
@@ -52,5 +54,10 @@ func (m Model) onRightFocus() (Model, tea.Cmd) {
 	m.focus = TaskPanel
 	m.task.SetItemDelegate(task.NewItemDelegate(true, m.task.Focus))
 	m.milestone.SetItemDelegate(milestone.NewItemDelegate(false, m.milestone.Mode, m.milestone.Edit))
+	return m, nil
+}
+
+// todo: setup
+func (m Model) onToggleVersionSelect() (Model, tea.Cmd) {
 	return m, nil
 }
