@@ -10,22 +10,9 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		return m.handleWindow(msg)
 	}
 
-	// key presses go to active panel only; data messages go to both
+	// non-key messages (data, cmds) go to both panels
 	var milestoneCmd, taskCmd tea.Cmd
-
-	if _, isKey := msg.(tea.KeyMsg); isKey {
-		switch m.focus {
-		case MilestonePanel:
-			m.milestone, milestoneCmd = m.milestone.Update(msg)
-			return m, milestoneCmd
-		case TaskPanel:
-			m.task, taskCmd = m.task.Update(msg)
-			return m, taskCmd
-		}
-	} else {
-		m.milestone, milestoneCmd = m.milestone.Update(msg)
-		m.task, taskCmd = m.task.Update(msg)
-	}
-
+	m.milestone, milestoneCmd = m.milestone.Update(msg)
+	m.task, taskCmd = m.task.Update(msg)
 	return m, tea.Batch(milestoneCmd, taskCmd)
 }

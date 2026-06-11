@@ -9,9 +9,9 @@ import (
 )
 
 func (m Model) handleKey(msg tea.KeyMsg) (Model, tea.Cmd) {
-	if m.InFocusMode() {
+	if m.ChildPriorityMode() {
 		var cmd tea.Cmd
-		// delegate keys to focused child
+		// keys reserved by child
 		switch m.focus {
 		case MilestonePanel:
 			m.milestone, cmd = m.milestone.Update(msg)
@@ -21,27 +21,36 @@ func (m Model) handleKey(msg tea.KeyMsg) (Model, tea.Cmd) {
 		return m, cmd
 	} else {
 		switch {
+		// switch panels
 		case key.Matches(msg, m.keys.LeftFocus):
-			return m.onLeftFocus(msg)
+			return m.onLeftFocus()
 		case key.Matches(msg, m.keys.RightFocus):
-			return m.onRightFocus(msg)
+			return m.onRightFocus()
+
+		// otherwise, handle keys at the respective child-level
+		default:
+			var cmd tea.Cmd
+			switch m.focus {
+			case MilestonePanel:
+				m.milestone, cmd = m.milestone.Update(msg)
+			case TaskPanel:
+				m.task, cmd = m.task.Update(msg)
+			}
+			return m, cmd
 		}
 	}
-	return m, nil
 }
 
-func (m Model) onLeftFocus(msg tea.KeyMsg) (Model, tea.Cmd) {
+func (m Model) onLeftFocus() (Model, tea.Cmd) {
 	m.focus = MilestonePanel
 	m.task.SetItemDelegate(task.NewItemDelegate(false, m.task.Focus))
 	m.milestone.SetItemDelegate(milestone.NewItemDelegate(true, m.milestone.Mode, m.milestone.Edit))
 	return m, nil
 }
 
-func (m Model) onRightFocus(msg tea.KeyMsg) (Model, tea.Cmd) {
+func (m Model) onRightFocus() (Model, tea.Cmd) {
 	m.focus = TaskPanel
-
 	m.task.SetItemDelegate(task.NewItemDelegate(true, m.task.Focus))
 	m.milestone.SetItemDelegate(milestone.NewItemDelegate(false, m.milestone.Mode, m.milestone.Edit))
-
 	return m, nil
 }

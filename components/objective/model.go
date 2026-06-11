@@ -61,6 +61,8 @@ func (m Model) KeyMap() help.KeyMap {
 	return nil
 }
 
-func (m Model) InFocusMode() bool {
-	return *m.milestone.Mode > milestone.NeutralMode || m.task.Focus.Mode > task.NeutralMode
+func (m Model) ChildPriorityMode() bool {
+	mstoneTakesPriority := *m.milestone.Mode > milestone.NeutralMode
+	taskTakesPriority := m.task.Focus.Mode > task.NeutralMode
+	return mstoneTakesPriority || taskTakesPriority
 }
