@@ -9,55 +9,63 @@ import (
 )
 
 func (m Model) handleKey(msg tea.KeyMsg) (Model, tea.Cmd) {
+	// reserve keys at child
 	if m.ChildPriorityMode() {
-		var cmd tea.Cmd
-		// keys reserved by child
-		switch m.focus {
-		case MilestonePanel:
-			m.milestone, cmd = m.milestone.Update(msg)
-		case TaskPanel:
-			m.task, cmd = m.task.Update(msg)
-		}
-		return m, cmd
-	} else {
-		switch {
-		// switch panels
-		case key.Matches(msg, m.keys.LeftFocus):
-			return m.onLeftFocus()
-		case key.Matches(msg, m.keys.RightFocus):
-			return m.onRightFocus()
-		case key.Matches(msg, m.keys.ToggleVersionSelect):
-			return m.onToggleVersionSelect()
-
-		// otherwise, handle keys at the respective child-level
-		default:
-			var cmd tea.Cmd
-			switch m.focus {
-			case MilestonePanel:
-				m.milestone, cmd = m.milestone.Update(msg)
-			case TaskPanel:
-				m.task, cmd = m.task.Update(msg)
-			}
-			return m, cmd
-		}
+		return m.onChild(msg)
 	}
+	// switch panels
+	switch {
+	case key.Matches(msg, m.keys.ToggleVersionSelect):
+		return m.onPanelFocus(VersionPanel)
+	case key.Matches(msg, m.keys.LeftFocus):
+		return m.onPanelFocus(MilestonePanel)
+	case key.Matches(msg, m.keys.RightFocus):
+		return m.onPanelFocus(TaskPanel)
+	}
+	// otherwise, handle keys at the respective child-level
+	return m.onChild(msg)
 }
 
-func (m Model) onLeftFocus() (Model, tea.Cmd) {
-	m.focus = MilestonePanel
-	m.task.SetItemDelegate(task.NewItemDelegate(false, m.task.Focus))
-	m.milestone.SetItemDelegate(milestone.NewItemDelegate(true, m.milestone.Mode, m.milestone.Edit))
+func (m Model) onPanelFocus(panel Panel) (Model, tea.Cmd) {
+	mfocus, tfocus := false, false
+
+	switch panel {
+	case VersionPanel:
+		m.panel = VersionPanel
+		// vfocus = true
+	case MilestonePanel:
+		m.panel = MilestonePanel
+		mfocus = true
+	case TaskPanel:
+		m.panel = TaskPanel
+		tfocus = true
+	}
+
+	md := milestone.NewItemDelegate(mfocus, m.milestone.Mode, m.milestone.Edit)
+	m.milestone.SetItemDelegate(md)
+	td := task.NewItemDelegate(tfocus, m.task.Focus)
+	m.task.SetItemDelegate(td)
+
 	return m, nil
 }
 
-func (m Model) onRightFocus() (Model, tea.Cmd) {
-	m.focus = TaskPanel
-	m.task.SetItemDelegate(task.NewItemDelegate(true, m.task.Focus))
-	m.milestone.SetItemDelegate(milestone.NewItemDelegate(false, m.milestone.Mode, m.milestone.Edit))
-	return m, nil
+// handle key at child-lvl
+func (m Model) onChild(msg tea.KeyMsg) (Model, tea.Cmd) {
+	var cmd tea.Cmd
+	switch m.panel {
+	case VersionPanel:
+		m.version, cmd = m.version.Update(msg)
+	case MilestonePanel:
+		m.milestone, cmd = m.milestone.Update(msg)
+	case TaskPanel:
+		m.task, cmd = m.task.Update(msg)
+	}
+	return m, cmd
 }
 
-// todo: setup
-func (m Model) onToggleVersionSelect() (Model, tea.Cmd) {
-	return m, nil
+// child in mode that needs to reserve all keys, e.g. typing
+func (m Model) ChildPriorityMode() bool {
+	mstoneTakesPriority := *m.milestone.Mode > milestone.NeutralMode
+	taskTakesPriority := m.task.Focus.Mode > task.NeutralMode
+	return mstoneTakesPriority || taskTakesPriority
 }

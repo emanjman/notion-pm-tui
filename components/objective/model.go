@@ -3,6 +3,7 @@ package objective
 import (
 	"notion-project-tui/components/objective/milestone"
 	"notion-project-tui/components/objective/task"
+	"notion-project-tui/components/objective/version"
 	"notion-project-tui/notion"
 	"notion-project-tui/util/keymap"
 
@@ -10,60 +11,55 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-type Panel int
-
-const (
-	MilestonePanel Panel = iota
-	TaskPanel
-)
-
 type Model struct {
 	projID           string
-	versionID        string
 	milestonesPropID string
 	loading          bool
 	err              error
-	focus            Panel
+	panel            Panel
 	notion           *notion.Client
-	milestone        milestone.Model
-	task             task.Model
-	keys             KeyMap
+
+	version   version.Model
+	milestone milestone.Model
+	task      task.Model
+
+	keys KeyMap
 }
 
 func New(n *notion.Client, projID, milestonesPropID string) Model {
+	v := version.New(n, projID)
 	ms := milestone.New(n, projID)
 	t := task.New(n)
 
 	return Model{
 		projID:           projID,
-		versionID:        "", // todo: need to identify version to grab
 		milestonesPropID: milestonesPropID,
 		loading:          true,
 		err:              nil,
-		focus:            MilestonePanel,
+		panel:            MilestonePanel,
 		notion:           n,
-		milestone:        ms,
-		task:             t,
-		keys:             DefaultKeyMap,
+
+		version:   v,
+		milestone: ms,
+		task:      t,
+
+		keys: DefaultKeyMap,
 	}
 }
 
 func (m Model) Init() tea.Cmd {
-	return tea.Batch(m.milestone.Init(), m.task.Init())
+	return tea.Batch(m.version.Init(), m.milestone.Init(), m.task.Init())
 }
 
+// combine objective's native keymap w/ child keymap
 func (m Model) KeyMap() help.KeyMap {
-	switch m.focus {
+	switch m.panel {
+	case VersionPanel:
+		return keymap.JoinedKeyMap{Primary: m.keys, Secondary: m.version.ActiveKeyMap}
 	case MilestonePanel:
 		return keymap.JoinedKeyMap{Primary: m.keys, Secondary: m.milestone.ActiveKeyMap}
 	case TaskPanel:
 		return keymap.JoinedKeyMap{Primary: m.keys, Secondary: m.task.ActiveKeyMap}
 	}
 	return nil
-}
-
-func (m Model) ChildPriorityMode() bool {
-	mstoneTakesPriority := *m.milestone.Mode > milestone.NeutralMode
-	taskTakesPriority := m.task.Focus.Mode > task.NeutralMode
-	return mstoneTakesPriority || taskTakesPriority
 }

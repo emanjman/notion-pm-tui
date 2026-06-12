@@ -7,18 +7,33 @@ import (
 )
 
 func (m Model) View() string {
-	leftStyle := lg.NewStyle().Border(lg.RoundedBorder(), true).Padding(0, 1)
-	rightStyle := lg.NewStyle().Border(lg.RoundedBorder(), true).Padding(0, 1)
+	var (
+		vstyle = lg.NewStyle().Border(lg.RoundedBorder(), true).Padding(0, 1)
+		mstyle = lg.NewStyle().Border(lg.RoundedBorder(), true).Padding(0, 1)
+		tstyle = lg.NewStyle().Border(lg.RoundedBorder(), true).Padding(0, 1)
+	)
 
-	if m.focus == MilestonePanel {
-		leftStyle = leftStyle.BorderForeground(styles.MutedForeground)
-		rightStyle = rightStyle.BorderForeground(styles.BorderForeground)
-	} else {
-		rightStyle = rightStyle.BorderForeground(styles.MutedForeground)
-		leftStyle = leftStyle.BorderForeground(styles.BorderForeground)
+	var (
+		on  = styles.MutedForeground
+		off = styles.BorderForeground
+	)
+
+	switch m.panel {
+	case VersionPanel:
+		mstyle = mstyle.BorderForeground(off)
+		tstyle = tstyle.BorderForeground(off)
+	case MilestonePanel:
+		mstyle = mstyle.BorderForeground(on)
+		tstyle = tstyle.BorderForeground(off)
+	case TaskPanel:
+		mstyle = mstyle.BorderForeground(off)
+		tstyle = tstyle.BorderForeground(on)
 	}
 
-	left := leftStyle.Render(m.milestone.View())
-	right := rightStyle.Render(m.task.View())
-	return lg.JoinHorizontal(lg.Top, left, right)
+	version := vstyle.Render(m.version.View())
+	mstone := mstyle.Render(m.milestone.View())
+	task := tstyle.Render(m.task.View())
+
+	primary := lg.JoinHorizontal(lg.Left, mstone, task)
+	return lg.JoinVertical(lg.Center, version, primary)
 }

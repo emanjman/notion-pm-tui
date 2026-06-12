@@ -10,16 +10,16 @@ type KeyMap struct {
 
 var DefaultKeyMap = KeyMap{
 	LeftFocus: key.NewBinding(
-		key.WithKeys("left", "h"),
-		key.WithHelp("<-/h", "left focus"),
+		key.WithKeys("ctrl+h"),
+		key.WithHelp("^h", "milestones"),
 	),
 	RightFocus: key.NewBinding(
-		key.WithKeys("right", "l"),
-		key.WithHelp("->/l", "right focus"),
+		key.WithKeys("ctrl+l"),
+		key.WithHelp("^l", "tasks"),
 	),
 	ToggleVersionSelect: key.NewBinding(
-		key.WithKeys("v"),
-		key.WithHelp("v", "toggle version"),
+		key.WithKeys("ctrl+k"),
+		key.WithHelp("^k", "versions"),
 	),
 }
 

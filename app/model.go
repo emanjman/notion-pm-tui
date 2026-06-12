@@ -91,7 +91,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 
 	case tea.KeyMsg:
-		if m.objective.InFocusMode() {
+		if m.objective.ChildPriorityMode() {
 			// forward all keys if in writing mode
 			var cmd tea.Cmd
 			m.objective, cmd = m.objective.Update(msg)
@@ -224,7 +224,6 @@ func (m Model) View() string {
 		main = "Debug notes (coming soon)"
 	case TechTab:
 		main = "Tech notes (coming soon)"
-
 	}
 
 	tabDivider := lg.NewStyle().
