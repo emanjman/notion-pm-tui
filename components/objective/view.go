@@ -20,12 +20,15 @@ func (m Model) View() string {
 
 	switch m.panel {
 	case VersionPanel:
+		vstyle = vstyle.BorderForeground(on)
 		mstyle = mstyle.BorderForeground(off)
 		tstyle = tstyle.BorderForeground(off)
 	case MilestonePanel:
+		vstyle = vstyle.BorderForeground(off)
 		mstyle = mstyle.BorderForeground(on)
 		tstyle = tstyle.BorderForeground(off)
 	case TaskPanel:
+		vstyle = vstyle.BorderForeground(off)
 		mstyle = mstyle.BorderForeground(off)
 		tstyle = tstyle.BorderForeground(on)
 	}
