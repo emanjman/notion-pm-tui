@@ -15,20 +15,20 @@ type NeutralKeyMap struct {
 
 var NeutralKeyMapper = NeutralKeyMap{
 	Up: key.NewBinding(
-		key.WithKeys("up", "k"),
-		key.WithHelp("↑/k", "up"),
+		key.WithKeys("k"),
+		key.WithHelp("k", "up"),
 	),
 	Down: key.NewBinding(
-		key.WithKeys("down", "j"),
-		key.WithHelp("↓/j", "down"),
+		key.WithKeys("j"),
+		key.WithHelp("j", "down"),
 	),
 	JumpUp: key.NewBinding(
-		key.WithKeys("ctrl+k"),
-		key.WithHelp("ctrl+k", "jump up 5"),
+		key.WithKeys("K"),
+		key.WithHelp("K", "jump up"),
 	),
 	JumpDown: key.NewBinding(
-		key.WithKeys("ctrl+j"),
-		key.WithHelp("ctrl+j", "jump down 5"),
+		key.WithKeys("J"),
+		key.WithHelp("J", "jump down"),
 	),
 	Select: key.NewBinding(
 		key.WithKeys("enter"),

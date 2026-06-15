@@ -18,7 +18,9 @@ func (m Model) handleKey(msg tea.KeyMsg) (Model, tea.Cmd) {
 	case key.Matches(msg, m.keys.FocusVersions):
 		return m.onPanelFocus(VersionPanel)
 	case key.Matches(msg, m.keys.UnfocusVersions):
-		return m.onPanelFocus(MilestonePanel)
+		if m.panel == VersionPanel {
+			return m.onPanelFocus(MilestonePanel)
+		}
 	case key.Matches(msg, m.keys.FocusMilestones):
 		return m.onPanelFocus(MilestonePanel)
 	case key.Matches(msg, m.keys.FocusTasks):
