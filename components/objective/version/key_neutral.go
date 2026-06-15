@@ -18,10 +18,6 @@ var NeutralKeyMapper = NeutralKeyMap{
 		key.WithKeys("l"),
 		key.WithHelp("l", "next"),
 	),
-	Escape: key.NewBinding(
-		key.WithKeys("ctrl+j"),
-		key.WithHelp("^j", "milestones"),
-	),
 	Select: key.NewBinding(
 		key.WithKeys("enter"),
 		key.WithHelp("enter", "select"),

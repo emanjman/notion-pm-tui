@@ -15,11 +15,13 @@ func (m Model) handleKey(msg tea.KeyMsg) (Model, tea.Cmd) {
 	}
 	// switch panels
 	switch {
-	case key.Matches(msg, m.keys.ToggleVersionSelect):
+	case key.Matches(msg, m.keys.FocusVersions):
 		return m.onPanelFocus(VersionPanel)
-	case key.Matches(msg, m.keys.LeftFocus):
+	case key.Matches(msg, m.keys.UnfocusVersions):
 		return m.onPanelFocus(MilestonePanel)
-	case key.Matches(msg, m.keys.RightFocus):
+	case key.Matches(msg, m.keys.FocusMilestones):
+		return m.onPanelFocus(MilestonePanel)
+	case key.Matches(msg, m.keys.FocusTasks):
 		return m.onPanelFocus(TaskPanel)
 	}
 	// otherwise, handle keys at the respective child-level

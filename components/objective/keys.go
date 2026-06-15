@@ -3,33 +3,38 @@ package objective
 import "github.com/charmbracelet/bubbles/key"
 
 type KeyMap struct {
-	LeftFocus           key.Binding
-	RightFocus          key.Binding
-	ToggleVersionSelect key.Binding
+	FocusMilestones key.Binding
+	FocusTasks      key.Binding
+	FocusVersions   key.Binding
+	UnfocusVersions key.Binding
 }
 
 var DefaultKeyMap = KeyMap{
-	LeftFocus: key.NewBinding(
+	FocusMilestones: key.NewBinding(
 		key.WithKeys("ctrl+h"),
-		key.WithHelp("^h", "milestones"),
+		key.WithHelp("^h", "focus milestones"),
 	),
-	RightFocus: key.NewBinding(
+	FocusTasks: key.NewBinding(
 		key.WithKeys("ctrl+l"),
-		key.WithHelp("^l", "tasks"),
+		key.WithHelp("^l", "focus tasks"),
 	),
-	ToggleVersionSelect: key.NewBinding(
+	FocusVersions: key.NewBinding(
 		key.WithKeys("ctrl+k"),
-		key.WithHelp("^k", "versions"),
+		key.WithHelp("^k", "focus versions"),
+	),
+	UnfocusVersions: key.NewBinding(
+		key.WithKeys("ctrl+j"),
+		key.WithHelp("^j", "unfocus versions"),
 	),
 }
 
 func (k KeyMap) ShortHelp() []key.Binding {
-	return []key.Binding{k.LeftFocus, k.RightFocus, k.ToggleVersionSelect}
+	return []key.Binding{k.FocusMilestones, k.FocusTasks, k.FocusVersions}
 }
 
 func (k KeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.LeftFocus, k.RightFocus, k.ToggleVersionSelect},
+		{k.FocusMilestones, k.FocusTasks, k.FocusVersions},
 		{},
 	}
 }
