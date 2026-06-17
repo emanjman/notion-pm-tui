@@ -8,6 +8,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
+// todo: need to wire in getting milestone pages by versionID, not projID
 func (c *Client) QueryMilestonePages(projID string, status MilestoneStatus, cursor string) tea.Cmd {
 	fprops := []string{
 		milestonePropTitle,

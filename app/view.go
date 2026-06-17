@@ -99,6 +99,5 @@ func (m Model) getActiveKeyMap() help.KeyMap {
 	default:
 		// return nil
 		return m.objective.KeyMap()
-
 	}
 }

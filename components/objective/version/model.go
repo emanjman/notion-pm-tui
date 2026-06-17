@@ -12,8 +12,13 @@ type Model struct {
 	projID string
 	err    error
 
+	values []string // actual version string values
+
 	ActiveKeyMap  help.KeyMap // for help focus view
 	neutralKeyMap NeutralKeyMap
+
+	width  int
+	height int
 }
 
 func New(n *notion.Client, projID string) Model {
@@ -24,6 +29,9 @@ func New(n *notion.Client, projID string) Model {
 
 		ActiveKeyMap:  NeutralKeyMapper, // default map view
 		neutralKeyMap: NeutralKeyMapper,
+
+		width:  0,
+		height: 0,
 	}
 }
 
