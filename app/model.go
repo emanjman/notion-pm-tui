@@ -18,16 +18,16 @@ type Tab int
 // enum representation for better readability
 const (
 	ObjectiveTab Tab = iota
-	OverviewTab
+	// OverviewTab
 	NotebookTab
 	BugsTab
 	TechTab
 )
-const tabCount = 5
+const tabCount = 4 // todo: can inject labels/cnt into model itself?
 
 var labels = []string{
 	"Objective (n%)",
-	"Overview",
+	// "Overview",
 	"Notebook (n)",
 	"Bug Report (n)",
 	"Technology (n)",

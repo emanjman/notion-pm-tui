@@ -2,16 +2,15 @@ package objective
 
 import (
 	tea "github.com/charmbracelet/bubbletea"
-	lg "github.com/charmbracelet/lipgloss"
 )
 
 func (m Model) handleWindow(msg tea.WindowSizeMsg) (Model, tea.Cmd) {
 	var versionCmd, mstoneCmd, taskCmd tea.Cmd
 
-	// each panel is wrapped in a rounded border (+1 col each side, +1 row each side)
+	// each panel has a border, holding 1space on each side
 	const panelBorderWidth = 2
 	const panelBorderHeight = 2
-	// each panel has inner padding set in View() (+1 col each side)
+
 	const panelPaddingWidth = 2
 	const panelCount = 2
 
@@ -22,20 +21,22 @@ func (m Model) handleWindow(msg tea.WindowSizeMsg) (Model, tea.Cmd) {
 	leftWidth := availableWidth * 30 / 100
 	rightWidth := availableWidth - leftWidth
 
-	// todo: is this circular?
-	versionHeight := lg.NewStyle().SetString(m.version.View()).GetHeight()
+	versionHeight := 1
+
+	// log.Printf("%v %v %v %v %v %v", totalWidthOverhead, totalHeightOverhead, availableWidth, leftWidth, rightWidth, versionHeight)
 
 	m.version, versionCmd = m.version.Update(tea.WindowSizeMsg{
-		Width:  availableWidth,
+		Width:  msg.Width - (panelBorderHeight + panelPaddingWidth),
 		Height: versionHeight,
 	})
+
 	m.milestone, mstoneCmd = m.milestone.Update(tea.WindowSizeMsg{
 		Width:  leftWidth,
-		Height: msg.Height - totalHeightOverhead - 1 - versionHeight,
+		Height: msg.Height - totalHeightOverhead - 1 - versionHeight - panelBorderHeight,
 	})
 	m.task, taskCmd = m.task.Update(tea.WindowSizeMsg{
 		Width:  rightWidth,
-		Height: msg.Height - totalHeightOverhead - 1 - versionHeight,
+		Height: msg.Height - totalHeightOverhead - 1 - versionHeight - panelBorderHeight,
 	})
 
 	return m, tea.Batch(versionCmd, mstoneCmd, taskCmd)

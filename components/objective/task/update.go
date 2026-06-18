@@ -38,7 +38,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		}
 		m.typeOptions = msg.Options
 		m.loading = false
-		log.Printf("[INFO] task type options loaded: %+v", m.typeOptions)
+		// log.Printf("[INFO] task type options loaded: %+v", m.typeOptions)
 		return m, nil
 
 	case milestone.MilestoneTasksMsg:

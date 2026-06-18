@@ -11,8 +11,9 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	}
 
 	// non-key messages (data, cmds) go to both panels
-	var milestoneCmd, taskCmd tea.Cmd
+	var versionCmd, milestoneCmd, taskCmd tea.Cmd
+	m.version, versionCmd = m.version.Update(msg)
 	m.milestone, milestoneCmd = m.milestone.Update(msg)
 	m.task, taskCmd = m.task.Update(msg)
-	return m, tea.Batch(milestoneCmd, taskCmd)
+	return m, tea.Batch(versionCmd, milestoneCmd, taskCmd)
 }

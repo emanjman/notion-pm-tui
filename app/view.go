@@ -43,9 +43,6 @@ func (m Model) View() string {
 
 	case ObjectiveTab:
 		main = m.objective.View()
-	case OverviewTab:
-		// main = m.overview.View()
-		main = "Overview (coming soon)"
 	case NotebookTab:
 		main = m.notebook.View()
 	case BugsTab:
@@ -87,8 +84,6 @@ func (m Model) getActiveKeyMap() help.KeyMap {
 		return m.objective.KeyMap()
 
 	// todo: handle other tabs
-	case OverviewTab:
-		return m.objective.KeyMap() // todo: change
 	case NotebookTab:
 		return m.notebook.ActiveKeyMap
 	case BugsTab:

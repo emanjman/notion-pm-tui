@@ -8,11 +8,16 @@ import (
 )
 
 type Model struct {
-	notion *notion.Client
-	projID string
-	err    error
+	notion  *notion.Client
+	projID  string
+	loading bool
+	err     error
 
-	values []string // actual version string values
+	pages    []notion.VersionPage
+	pageIdx  int
+	CurrPage *notion.VersionPage // exposed version
+
+	Mode *Mode // in case we need to support more modes later
 
 	ActiveKeyMap  help.KeyMap // for help focus view
 	neutralKeyMap NeutralKeyMap
@@ -22,10 +27,18 @@ type Model struct {
 }
 
 func New(n *notion.Client, projID string) Model {
+	mode := NeutralMode
+
 	return Model{
-		notion: n,
-		projID: projID,
-		err:    nil,
+		notion:  n,
+		projID:  projID,
+		loading: true,
+		err:     nil,
+
+		pageIdx:  0,
+		CurrPage: nil,
+
+		Mode: &mode,
 
 		ActiveKeyMap:  NeutralKeyMapper, // default map view
 		neutralKeyMap: NeutralKeyMapper,

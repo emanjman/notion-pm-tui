@@ -48,6 +48,7 @@ func New(n *notion.Client, projID, milestonesPropID string) Model {
 }
 
 func (m Model) Init() tea.Cmd {
+	// todo: it would seem that mstone depends on version pull to finish
 	return tea.Batch(m.version.Init(), m.milestone.Init(), m.task.Init())
 }
 

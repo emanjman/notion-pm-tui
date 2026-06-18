@@ -3,10 +3,8 @@ package version
 import "github.com/charmbracelet/bubbles/key"
 
 type NeutralKeyMap struct {
-	Prev   key.Binding
-	Next   key.Binding
-	Escape key.Binding
-	Select key.Binding
+	Prev key.Binding
+	Next key.Binding
 }
 
 var NeutralKeyMapper = NeutralKeyMap{
@@ -18,19 +16,15 @@ var NeutralKeyMapper = NeutralKeyMap{
 		key.WithKeys("l"),
 		key.WithHelp("l", "next"),
 	),
-	Select: key.NewBinding(
-		key.WithKeys("enter"),
-		key.WithHelp("enter", "select"),
-	),
 }
 
 func (k NeutralKeyMap) ShortHelp() []key.Binding {
-	return []key.Binding{k.Prev, k.Next, k.Select}
+	return []key.Binding{k.Prev, k.Next}
 }
 
 func (k NeutralKeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.Prev, k.Next, k.Select},
+		{k.Prev, k.Next},
 		{},
 	}
 }
