@@ -9,6 +9,7 @@ import (
 
 // handle received milestone-pages; re-render when all fetches resolved
 func (m Model) onQueryMilestonePages(msg notion.QueryMilestonePagesMsg) (Model, tea.Cmd) {
+	log.Printf("caught messages") // !debug
 	m.pendingFetches--
 
 	// handle failed fetch
@@ -18,8 +19,14 @@ func (m Model) onQueryMilestonePages(msg notion.QueryMilestonePagesMsg) (Model, 
 		return m, nil
 	}
 
-	// push incoming milestones to respective status-group
 	g := m.groups[msg.Status]
+
+	// clear existing milestones
+	if msg.Source == notion.VersionChange {
+		g.Milestones = nil
+	}
+
+	// push incoming milestones to respective status-group
 	g.Milestones = append(g.Milestones, msg.Pages...)
 	g.NextCursor = msg.NextCursor
 	m.groups[msg.Status] = g
@@ -46,7 +53,7 @@ func (m Model) onQueryMoreMilestonePages(msg notion.QueryMoreMilestonePagesMsg) 
 	g.Loading = true
 	m = m.updateGroup(msg.Status, g)
 
-	return m, m.notion.QueryMilestonePages(m.versionID, msg.Status, *g.NextCursor)
+	return m, m.notion.QueryMilestonePages(m.versionID, msg.Status, *g.NextCursor, notion.MoreMilestones)
 }
 
 func (m Model) onQueryTaskPages(msg notion.QueryTaskPagesMsg) (Model, tea.Cmd) {

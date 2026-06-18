@@ -1,5 +1,14 @@
 package notion
 
+// -- enum --
+
+type QueryMilestonePagesSource int
+
+const (
+	VersionChange QueryMilestonePagesSource = iota
+	MoreMilestones
+)
+
 // -- types --
 
 // notion page from @project-milestones
@@ -33,4 +42,5 @@ type QueryMilestonePagesMsg struct {
 	Status     MilestoneStatus // grouping-key
 	NextCursor *string         // bookmarks subseq notion-pages available
 	Err        error           // failed notion-page fetch
+	Source     QueryMilestonePagesSource
 }
