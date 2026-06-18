@@ -19,7 +19,7 @@ func (c *Client) QueryMilestonePages(projID string, status MilestoneStatus, curs
 
 	return func() tea.Msg {
 		body := queryMilestoneBody(projID, status, 5)
-		res, err := queryDatasource[MilestonePage](c, c.milestoneDsId, body, cursor, fprops)
+		res, err := queryDatasource[MilestonePage](c, c.milestonesDatasourceID, body, cursor, fprops)
 		if err != nil {
 			return QueryMilestonePagesMsg{Err: err, Status: status}
 		}
@@ -42,7 +42,7 @@ func (c *Client) AddMilestone(tempID, title string) tea.Cmd {
 
 	return func() tea.Msg {
 		endpt := c.baseURL + "/pages"
-		body := addMilestoneBody(c.milestoneDsId, title, demoVersionPageID)
+		body := addMilestoneBody(c.milestonesDatasourceID, title, demoVersionPageID)
 		b, err := json.Marshal(body)
 		if err != nil {
 			return AddMilestonePageMsg{Err: err, TempID: tempID}

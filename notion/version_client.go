@@ -1,10 +1,28 @@
 package notion
 
-import tea "github.com/charmbracelet/bubbletea"
+import (
+	tea "github.com/charmbracelet/bubbletea"
+)
 
-// todo: setup
-func (c *Client) QueryVersionPages(projID string) tea.Cmd {
+func (c *Client) QueryVersionPages(projID, cursor string) tea.Cmd {
+	fprops := []string{
+		versionPropTitle,
+		versionPropCreatedAt,
+		versionPropMilestonesRelation,
+		versionPropProjectRelation,
+	}
+
 	return func() tea.Msg {
-		return nil
+		body := queryVersionBody(projID)
+		res, err := queryDatasource[VersionPage](c, c.versionsDatasourceID, body, cursor, fprops)
+		if err != nil {
+			return QueryVersionPagesMsg{Err: err}
+		}
+
+		var nextCursor *string
+		if res.HasMore {
+			nextCursor = res.NextCursor
+		}
+		return QueryVersionPagesMsg{Pages: res.Results, NextCursor: nextCursor}
 	}
 }

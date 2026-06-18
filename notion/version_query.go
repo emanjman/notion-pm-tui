@@ -11,7 +11,7 @@ func queryVersionBody(projID string) map[string]any {
 		"sorts": []map[string]any{
 			{
 				"property":  versionPropCreatedAt,
-				"direction": "descending",
+				"direction": "ascending",
 			},
 		},
 		"page_size": 10, // hardcoded sane size

@@ -12,26 +12,30 @@ import (
 )
 
 type Client struct {
-	http          *http.Client
-	token         string
-	version       string
-	baseURL       string
-	projId        string
-	tasksDsId     string
-	milestoneDsId string
+	http    *http.Client
+	token   string
+	version string
+	baseURL string
+
+	projID                 string
+	tasksDatasourceID      string
+	milestonesDatasourceID string
+	versionsDatasourceID   string
 }
 
 // constructor
 func NewClient() *Client {
 	// address of newly created client
 	return &Client{
-		http:          &http.Client{Timeout: 10 * time.Second},
-		token:         os.Getenv("NOTION_API_TOKEN"),
-		version:       os.Getenv("NOTION_VERSION"),
-		baseURL:       os.Getenv("NOTION_API_URL"),
-		projId:        os.Getenv("NOTION_HOOP_ARCHIVES_ID"),
-		tasksDsId:     os.Getenv("NOTION_TASKS_DS_ID"),
-		milestoneDsId: os.Getenv("NOTION_MILESTONES_DS_ID"),
+		http:    &http.Client{Timeout: 10 * time.Second},
+		token:   os.Getenv("NOTION_API_TOKEN"),
+		version: os.Getenv("NOTION_VERSION"),
+		baseURL: os.Getenv("NOTION_API_URL"),
+
+		projID:                 os.Getenv("NOTION_HOOP_ARCHIVES_ID"),
+		tasksDatasourceID:      os.Getenv("NOTION_TASKS_DS_ID"),
+		milestonesDatasourceID: os.Getenv("NOTION_MILESTONES_DS_ID"),
+		versionsDatasourceID:   os.Getenv("NOTION_VERSIONS_DS_ID"),
 	}
 }
 

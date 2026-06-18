@@ -12,7 +12,7 @@ func (c *Client) FetchProject() tea.Cmd {
 	return func() tea.Msg {
 		start := time.Now()
 
-		url := c.baseURL + "/pages/" + c.projId
+		url := c.baseURL + "/pages/" + c.projID
 
 		req, err := http.NewRequest("GET", url, nil)
 		if err != nil {

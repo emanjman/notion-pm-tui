@@ -16,7 +16,7 @@ func (c *Client) QueryTasks(milestoneID, status, cursor string, milestoneIdx int
 
 	return func() tea.Msg {
 		body := taskQueryBody(milestoneID, status, 5)
-		res, err := queryDatasource[TaskPage](c, c.tasksDsId, body, cursor, fprops)
+		res, err := queryDatasource[TaskPage](c, c.tasksDatasourceID, body, cursor, fprops)
 		if err != nil {
 			return QueryTaskPagesMsg{Err: err, Status: status, MilestoneIdx: milestoneIdx}
 		}
@@ -36,7 +36,7 @@ func (c *Client) QueryTasks(milestoneID, status, cursor string, milestoneIdx int
 // options for `type` property, e.g. "style" "feat" "refactor"
 func (c *Client) FetchTaskTypeOptions() tea.Cmd {
 	return func() tea.Msg {
-		url := c.baseURL + "/data_sources/" + c.tasksDsId
+		url := c.baseURL + "/data_sources/" + c.tasksDatasourceID
 		req, err := http.NewRequest("GET", url, nil)
 		if err != nil {
 			return TaskTypeOptionsMsg{Err: err}
