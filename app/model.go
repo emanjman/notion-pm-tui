@@ -63,7 +63,7 @@ func New() Model {
 		keys:      RootKeyMap,
 		help:      help.New(),
 		notion:    notion.NewClient(),
-		objective: objective.New(c, os.Getenv("NOTION_HOOP_ARCHIVES_ID"), "P%60%60s"),
+		objective: objective.New(c, os.Getenv("NOTION_HOOP_ARCHIVES_ID")),
 		// overview:  overview.New(c),
 
 		notebook: notebook.New(c, os.Getenv("NOTION_HOOP_ARCHIVES_ID"), "%7BGKi"),

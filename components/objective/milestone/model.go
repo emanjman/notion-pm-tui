@@ -10,7 +10,7 @@ import (
 
 type Model struct {
 	notion         *notion.Client
-	projID         string
+	versionID      string
 	list           list.Model
 	err            error
 	pendingFetches int
@@ -26,7 +26,7 @@ type Model struct {
 	deleteKeyMap  DeleteKeyMap
 }
 
-func New(n *notion.Client, projID string) Model {
+func New(n *notion.Client, versionID string) Model {
 	mode := NeutralMode
 	edit := EditModeCtx{}
 	del := DeleteModeCtx{}
@@ -43,7 +43,7 @@ func New(n *notion.Client, projID string) Model {
 
 	return Model{
 		notion:         n,
-		projID:         projID,
+		versionID:      versionID,
 		pendingFetches: 3,
 		list:           l,
 		err:            nil,
@@ -61,5 +61,6 @@ func New(n *notion.Client, projID string) Model {
 }
 
 func (m Model) Init() tea.Cmd {
-	return fetchMilestonesByStatus(m.projID, m.notion)
+	return nil
+	// return fetchMilestonesByStatus(m.versionID, m.notion)
 }

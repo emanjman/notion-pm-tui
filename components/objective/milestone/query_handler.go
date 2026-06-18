@@ -46,7 +46,7 @@ func (m Model) onQueryMoreMilestonePages(msg notion.QueryMoreMilestonePagesMsg) 
 	g.Loading = true
 	m = m.updateGroup(msg.Status, g)
 
-	return m, m.notion.QueryMilestonePages(m.projID, msg.Status, *g.NextCursor)
+	return m, m.notion.QueryMilestonePages(m.versionID, msg.Status, *g.NextCursor)
 }
 
 func (m Model) onQueryTaskPages(msg notion.QueryTaskPagesMsg) (Model, tea.Cmd) {

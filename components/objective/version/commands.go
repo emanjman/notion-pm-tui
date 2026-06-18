@@ -6,7 +6,15 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-// todo: setup
-func fetchVersions(projID string, notion *notion.Client) tea.Cmd {
-	return notion.QueryVersionPages(projID, "")
+func fetchVersions(projID string, ntn *notion.Client) tea.Cmd {
+	return ntn.QueryVersionPages(projID, "")
+}
+
+// init kickoff to get milestones; queried by milestone status
+func fetchInitVersionMilestones(versionID string, ntn *notion.Client) tea.Cmd {
+	return tea.Batch(
+		ntn.QueryMilestonePages(versionID, notion.MilestoneUnderDevelopment, ""),
+		ntn.QueryMilestonePages(versionID, notion.MilestoneIdle, ""),
+		ntn.QueryMilestonePages(versionID, notion.MilestoneComplete, ""),
+	)
 }

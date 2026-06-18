@@ -7,16 +7,6 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-// init kickoff to get milestones; queried by milestone status
-func fetchMilestonesByStatus(projID string, ntn *notion.Client) tea.Cmd {
-	// todo: eventually depend on versionID (over projID)
-	return tea.Batch(
-		ntn.QueryMilestonePages(projID, notion.MilestoneUnderDevelopment, ""),
-		ntn.QueryMilestonePages(projID, notion.MilestoneIdle, ""),
-		ntn.QueryMilestonePages(projID, notion.MilestoneComplete, ""),
-	)
-}
-
 // fetch tasks in milestones where status:under-development
 func fetchInitMilestoneTasks(milestones *list.Model, nc *notion.Client) tea.Cmd {
 	cmds := []tea.Cmd{}

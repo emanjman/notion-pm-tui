@@ -9,7 +9,7 @@ import (
 )
 
 // todo: need to wire in getting milestone pages by versionID, not projID
-func (c *Client) QueryMilestonePages(projID string, status MilestoneStatus, cursor string) tea.Cmd {
+func (c *Client) QueryMilestonePages(versionID string, status MilestoneStatus, cursor string) tea.Cmd {
 	fprops := []string{
 		milestonePropTitle,
 		milestonePropProgress,
@@ -18,7 +18,7 @@ func (c *Client) QueryMilestonePages(projID string, status MilestoneStatus, curs
 	}
 
 	return func() tea.Msg {
-		body := queryMilestoneBody(projID, status, 5)
+		body := queryMilestoneBody(versionID, status, 5)
 		res, err := queryDatasource[MilestonePage](c, c.milestonesDatasourceID, body, cursor, fprops)
 		if err != nil {
 			return QueryMilestonePagesMsg{Err: err, Status: status}

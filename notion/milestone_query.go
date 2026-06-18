@@ -1,15 +1,13 @@
 package notion
 
-func queryMilestoneBody(projID string, status MilestoneStatus, size int) map[string]any {
+func queryMilestoneBody(versionID string, status MilestoneStatus, size int) map[string]any {
 	return map[string]any{
 		"filter": map[string]any{
 			"and": []map[string]any{
 				{
-					"property": milestonePropProjectRollupRelation,
-					"rollup": map[string]any{
-						"any": map[string]any{
-							"relation": map[string]any{"contains": projID},
-						},
+					"property": milestonePropVersionRelation,
+					"relation": map[string]any{
+						"contains": versionID,
 					},
 				},
 				{

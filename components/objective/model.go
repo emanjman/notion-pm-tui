@@ -12,12 +12,13 @@ import (
 )
 
 type Model struct {
-	projID           string
-	milestonesPropID string
-	loading          bool
-	err              error
-	panel            Panel
-	notion           *notion.Client
+	projID string
+	// milestonesPropID string
+	// versionID string
+	loading bool
+	err     error
+	panel   Panel
+	notion  *notion.Client
 
 	version   version.Model
 	milestone milestone.Model
@@ -26,18 +27,18 @@ type Model struct {
 	keys KeyMap
 }
 
-func New(n *notion.Client, projID, milestonesPropID string) Model {
+func New(n *notion.Client, projID string) Model {
 	v := version.New(n, projID)
-	ms := milestone.New(n, projID)
+	ms := milestone.New(n, "") // todo: figure out how to deliver versionID to milestone !!!!!!!!
 	t := task.New(n)
 
 	return Model{
-		projID:           projID,
-		milestonesPropID: milestonesPropID,
-		loading:          true,
-		err:              nil,
-		panel:            MilestonePanel,
-		notion:           n,
+		projID: projID,
+		// milestonesPropID: milestonesPropID,
+		loading: true,
+		err:     nil,
+		panel:   MilestonePanel,
+		notion:  n,
 
 		version:   v,
 		milestone: ms,
@@ -48,7 +49,6 @@ func New(n *notion.Client, projID, milestonesPropID string) Model {
 }
 
 func (m Model) Init() tea.Cmd {
-	// todo: it would seem that mstone depends on version pull to finish
 	return tea.Batch(m.version.Init(), m.milestone.Init(), m.task.Init())
 }
 
