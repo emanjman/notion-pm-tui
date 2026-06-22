@@ -184,6 +184,13 @@ func (m *Model) SetItemDelegate(d list.ItemDelegate) {
 	m.list.SetDelegate(d)
 }
 
+func (m Model) ClearTasks() Model {
+	m.groups = map[string][]Item{}
+	m.list.SetItems([]list.Item{})
+	m.loading = true
+	return m
+}
+
 func (m Model) buildTaskList(groups notion.TaskGroups) []list.Item {
 	var items []list.Item
 	for _, status := range notion.TaskStatusOrder {

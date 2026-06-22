@@ -61,6 +61,7 @@ func (m Model) onVersionUnfocus() (Model, tea.Cmd) {
 
 	if m.version.HesiPageIdx != m.version.PageIdx {
 		m.milestone = m.milestone.ClearMilestones()
+		m.task = m.task.ClearTasks()
 
 		// set as next reference version to diff against
 		m.version.HesiPageIdx = m.version.PageIdx

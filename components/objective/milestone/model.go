@@ -69,5 +69,6 @@ func (m Model) Init() tea.Cmd {
 func (m Model) ClearMilestones() Model {
 	m.list.SetItems([]list.Item{})
 	m.groups = notion.MilestoneGroups{}
+	m.pendingFetches = 3
 	return m
 }
