@@ -62,6 +62,9 @@ func (m Model) onQueryTaskPages(msg notion.QueryTaskPagesMsg) (Model, tea.Cmd) {
 		return m, nil
 	}
 
+	if msg.MilestoneIdx >= len(m.list.Items()) {
+		return m, nil
+	}
 	item := m.list.Items()[msg.MilestoneIdx]
 	if mstone, ok := item.(DefaultItem); ok {
 		group := mstone.TaskGroups[msg.Status]

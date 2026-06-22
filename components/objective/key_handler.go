@@ -1,6 +1,7 @@
 package objective
 
 import (
+	"log"
 	"notion-project-tui/components/objective/milestone"
 	"notion-project-tui/components/objective/task"
 
@@ -19,7 +20,7 @@ func (m Model) handleKey(msg tea.KeyMsg) (Model, tea.Cmd) {
 		return m.onPanelFocus(VersionPanel)
 	case key.Matches(msg, m.keys.UnfocusVersions):
 		if m.panel == VersionPanel {
-			return m.onPanelFocus(MilestonePanel)
+			return m.onVersionUnfocus()
 		}
 	case key.Matches(msg, m.keys.FocusMilestones):
 		return m.onPanelFocus(MilestonePanel)
@@ -51,6 +52,14 @@ func (m Model) onPanelFocus(panel Panel) (Model, tea.Cmd) {
 	m.task.SetItemDelegate(td)
 
 	return m, nil
+}
+
+// clear existing mstones + kickoff req version milestones
+func (m Model) onVersionUnfocus() (Model, tea.Cmd) {
+	log.Printf("hit on version focus")
+	m.milestone.ClearMilestones()
+	m, _ = m.onPanelFocus(MilestonePanel)
+	return m, m.version.FetchInitVersionMilestones()
 }
 
 // handle key at child-lvl

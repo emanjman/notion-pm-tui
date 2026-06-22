@@ -64,3 +64,10 @@ func (m Model) Init() tea.Cmd {
 	return nil
 	// return fetchMilestonesByStatus(m.versionID, m.notion)
 }
+
+// public list operations
+func (m Model) ClearMilestones() Model {
+	m.list.SetItems([]list.Item{})
+	m.groups = notion.MilestoneGroups{}
+	return m
+}

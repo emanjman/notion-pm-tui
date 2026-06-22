@@ -11,9 +11,8 @@ func (m Model) onNeutralPrev() (Model, tea.Cmd) {
 	}
 
 	m.CurrPage = &m.pages[m.pageIdx]
-	versionID := m.CurrPage.ID
 
-	return m, fetchInitVersionMilestones(versionID, m.notion)
+	return m, nil
 }
 
 func (m Model) onNeutralNext() (Model, tea.Cmd) {
@@ -21,7 +20,6 @@ func (m Model) onNeutralNext() (Model, tea.Cmd) {
 	m.pageIdx = (m.pageIdx + 1) % n
 
 	m.CurrPage = &m.pages[m.pageIdx]
-	versionID := m.CurrPage.ID
 
-	return m, fetchInitVersionMilestones(versionID, m.notion)
+	return m, nil
 }

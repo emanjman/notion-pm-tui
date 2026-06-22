@@ -1,7 +1,6 @@
 package version
 
 import (
-	"log"
 	"notion-project-tui/notion"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -12,8 +11,9 @@ func fetchVersions(projID string, ntn *notion.Client) tea.Cmd {
 }
 
 // init kickoff to get milestones; queried by milestone status
-func fetchInitVersionMilestones(versionID string, ntn *notion.Client) tea.Cmd {
-	log.Printf("kick off from version") // !debug
+func (m Model) FetchInitVersionMilestones() tea.Cmd {
+	versionID := m.pages[m.pageIdx].ID
+	ntn := m.notion
 	return tea.Batch(
 		ntn.QueryMilestonePages(versionID, notion.MilestoneUnderDevelopment, "", notion.VersionChange),
 		ntn.QueryMilestonePages(versionID, notion.MilestoneIdle, "", notion.VersionChange),

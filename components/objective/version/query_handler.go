@@ -18,6 +18,5 @@ func (m Model) onQueryVersionPages(msg notion.QueryVersionPagesMsg) (Model, tea.
 	m.loading = false
 
 	// kickoff req to get milestones of this version (should get caught by milestone panel)
-	versionID := m.pages[m.pageIdx].ID
-	return m, fetchInitVersionMilestones(versionID, m.notion)
+	return m, m.FetchInitVersionMilestones()
 }
