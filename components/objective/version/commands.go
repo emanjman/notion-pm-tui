@@ -12,7 +12,7 @@ func fetchVersions(projID string, ntn *notion.Client) tea.Cmd {
 
 // init kickoff to get milestones; queried by milestone status
 func (m Model) FetchInitVersionMilestones() tea.Cmd {
-	versionID := m.pages[m.pageIdx].ID
+	versionID := m.pages[m.PageIdx].ID
 	ntn := m.notion
 	return tea.Batch(
 		ntn.QueryMilestonePages(versionID, notion.MilestoneUnderDevelopment, "", notion.VersionChange),

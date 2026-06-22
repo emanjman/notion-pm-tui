@@ -8,6 +8,8 @@ import (
 )
 
 func (m Model) onQueryVersionPages(msg notion.QueryVersionPagesMsg) (Model, tea.Cmd) {
+	log.Printf("on query version pages") // !debug
+
 	if msg.Err != nil {
 		log.Printf("Error: %s", msg.Err)
 		m.err = msg.Err

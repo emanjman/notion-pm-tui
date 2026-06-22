@@ -13,9 +13,9 @@ type Model struct {
 	loading bool
 	err     error
 
-	pages    []notion.VersionPage
-	pageIdx  int
-	CurrPage *notion.VersionPage // exposed version
+	pages       []notion.VersionPage
+	PageIdx     int
+	HesiPageIdx int // hesitating val to diff check
 
 	Mode *Mode // in case we need to support more modes later
 
@@ -35,8 +35,8 @@ func New(n *notion.Client, projID string) Model {
 		loading: true,
 		err:     nil,
 
-		pageIdx:  0,
-		CurrPage: nil,
+		PageIdx:     0,
+		HesiPageIdx: 0,
 
 		Mode: &mode,
 

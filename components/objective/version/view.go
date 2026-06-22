@@ -19,7 +19,7 @@ func (m Model) View() string {
 	for i, pg := range m.pages {
 
 		var txtStyle lg.Style
-		if i == m.pageIdx {
+		if i == m.PageIdx {
 			txtStyle = lg.NewStyle().Foreground(styles.PrimaryForeground)
 		} else {
 			txtStyle = lg.NewStyle().Foreground(styles.MutedForeground)

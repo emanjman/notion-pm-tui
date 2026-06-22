@@ -1,7 +1,6 @@
 package objective
 
 import (
-	"log"
 	"notion-project-tui/components/objective/milestone"
 	"notion-project-tui/components/objective/task"
 
@@ -56,10 +55,19 @@ func (m Model) onPanelFocus(panel Panel) (Model, tea.Cmd) {
 
 // clear existing mstones + kickoff req version milestones
 func (m Model) onVersionUnfocus() (Model, tea.Cmd) {
-	log.Printf("hit on version focus")
-	m.milestone.ClearMilestones()
+	var cmd tea.Cmd
+
+	if m.version.HesiPageIdx != m.version.PageIdx {
+		m.milestone.ClearMilestones()
+
+		// set as next reference version to diff against
+		m.version.HesiPageIdx = m.version.PageIdx
+		cmd = m.version.FetchInitVersionMilestones()
+	}
+
+	// switch panel
 	m, _ = m.onPanelFocus(MilestonePanel)
-	return m, m.version.FetchInitVersionMilestones()
+	return m, cmd
 }
 
 // handle key at child-lvl
