@@ -13,11 +13,11 @@ func renderLoadMore(d ItemDelegate, loading bool, selected bool, noBorder bool, 
 	if noBorder {
 		style = style.Border(lg.NormalBorder(), false)
 	}
-	text := "..."
+	text := "…"
 	if loading {
-		text = "Loading..."
+		text = "Loading…"
 	} else if selected {
-		text = "[Enter] to load more..."
+		text = "[Enter] to load more…"
 	}
 	rendered := style.Width(windowWidth).Render(text)
 	if noBorder {

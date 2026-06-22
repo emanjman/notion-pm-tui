@@ -89,10 +89,10 @@ func renderItem(d ItemDelegate, item DefaultItem, selected bool, noBorder bool, 
 	} else if lg.Width(name) > nameMaxWidth {
 		// if past the max width, truncate until valid
 		n := item.Name
-		for lg.Width(n+"...") > nameMaxWidth && len(n) > 0 {
+		for lg.Width(n+"…") > nameMaxWidth && len(n) > 0 {
 			n = n[:len(n)-1]
 		}
-		n = n + "..."
+		n = n + "…"
 		name = nameStyle.Render(n)
 	}
 

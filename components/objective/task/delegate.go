@@ -247,10 +247,10 @@ func renderItem(d ItemDelegate, item Item, selected bool, noBorder bool, windowW
 	} else if lg.Width(title) > titleMaxWidth {
 		// if past the max width, truncate until valid
 		t := renderedTitle
-		for lg.Width(t+"...") > titleMaxWidth && len(t) > 0 {
+		for lg.Width(t+"…") > titleMaxWidth && len(t) > 0 {
 			t = t[:len(t)-1]
 		}
-		t = t + "..."
+		t = t + "…"
 		title = titleStyle.Render(t)
 	}
 
