@@ -1,29 +1,23 @@
 package notion
 
-import (
-	"net/http"
-	"time"
+import tea "github.com/charmbracelet/bubbletea"
 
-	tea "github.com/charmbracelet/bubbletea"
-)
+func (c *Client) QueryProjectPages(cursor string) tea.Cmd {
+	fprops := []string{
+		projectPropTitle,
+	}
 
-// cmd func returns a tea.Msg
-func (c *Client) FetchProject() tea.Cmd {
 	return func() tea.Msg {
-		start := time.Now()
-
-		url := c.baseURL + "/pages/" + c.projID
-
-		req, err := http.NewRequest("GET", url, nil)
+		body := queryProjectBody()
+		res, err := queryDatasource[ProjectPage](c, c.projectsDatasourceID, body, cursor, fprops)
 		if err != nil {
-			return ProjectMsg{Err: err, Duration: time.Since(start)}
+			return QueryProjectPagesMsg{Err: err}
+		}
+		var nextCursor *string
+		if res.HasMore {
+			nextCursor = res.NextCursor
 		}
 
-		// parse as json
-		var proj ProjectPage
-		if err := c.do(req, &proj); err != nil {
-			return ProjectMsg{Err: err, Duration: time.Since(start)}
-		}
-		return ProjectMsg{Data: proj, Duration: time.Since(start)}
+		return QueryProjectPagesMsg{Pages: res.Results, NextCursor: nextCursor}
 	}
 }

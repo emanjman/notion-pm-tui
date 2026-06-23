@@ -1,24 +1,16 @@
 package notion
 
-import "time"
-
-type ProjectMsg struct {
-	Data     ProjectPage
-	Err      error
-	Duration time.Duration
-}
-
-// -------
+// -- types --
 
 type ProjectPage struct {
 	ID         string            `json:"id"`
 	Properties ProjectProperties `json:"properties"`
 }
 
-type ProjectProperties struct {
-	Title        TitleProperty    `json:"project"`
-	Milestones   RelationProperty `json:"@milestones"`
-	OverviewPage RelationProperty `json:"$overview"`
-	ProjectNotes RelationProperty `json:"@notes"`
-	DebugNotes   RelationProperty `json:"@debug-notes"`
+// -- msg --
+
+type QueryProjectPagesMsg struct {
+	Pages      []ProjectPage
+	NextCursor *string // bookmark subseq notion-pages avail; unlikely
+	Err        error   // failed fetch
 }

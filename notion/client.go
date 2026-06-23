@@ -17,14 +17,16 @@ type Client struct {
 	version string
 	baseURL string
 
-	projID                 string
+	projID string
+
+	projectsDatasourceID   string
 	tasksDatasourceID      string
 	milestonesDatasourceID string
 	versionsDatasourceID   string
 }
 
 // constructor
-func NewClient() *Client {
+func NewClient(projID string) *Client {
 	// address of newly created client
 	return &Client{
 		http:    &http.Client{Timeout: 10 * time.Second},
@@ -32,7 +34,8 @@ func NewClient() *Client {
 		version: os.Getenv("NOTION_VERSION"),
 		baseURL: os.Getenv("NOTION_API_URL"),
 
-		projID:                 os.Getenv("NOTION_HOOP_ARCHIVES_ID"),
+		projID:                 projID,
+		projectsDatasourceID:   os.Getenv("NOTION_PROJECTS_DS_ID"),
 		tasksDatasourceID:      os.Getenv("NOTION_TASKS_DS_ID"),
 		milestonesDatasourceID: os.Getenv("NOTION_MILESTONES_DS_ID"),
 		versionsDatasourceID:   os.Getenv("NOTION_VERSIONS_DS_ID"),
