@@ -1,4 +1,4 @@
-package app
+package project
 
 import (
 	"github.com/charmbracelet/bubbles/key"

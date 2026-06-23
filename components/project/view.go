@@ -1,4 +1,4 @@
-package app
+package project
 
 import (
 	"notion-project-tui/styles"

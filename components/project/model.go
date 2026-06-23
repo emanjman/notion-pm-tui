@@ -1,4 +1,4 @@
-package app
+package project
 
 import (
 	// ! temp, styling ui
@@ -63,6 +63,8 @@ func New() Model {
 		keys:      RootKeyMap,
 		help:      help.New(),
 		notion:    notion.NewClient(),
+
+		// todo: get hoop archives id
 		objective: objective.New(c, os.Getenv("NOTION_HOOP_ARCHIVES_ID")),
 		// overview:  overview.New(c),
 

@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
-	"notion-project-tui/app"
+	app "notion-project-tui/components/explore"
 	"os"
 
 	tea "github.com/charmbracelet/bubbletea"

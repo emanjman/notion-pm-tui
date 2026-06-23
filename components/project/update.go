@@ -1,4 +1,4 @@
-package app
+package project
 
 import (
 	// ! temp, styling ui
