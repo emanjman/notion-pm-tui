@@ -2,6 +2,7 @@ package task
 
 import (
 	"notion-project-tui/notion"
+	"strconv"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/key"
@@ -213,9 +214,11 @@ func (m Model) onSelectingKey(msg tea.KeyMsg) (Model, tea.Cmd) {
 				}
 			}
 			taskID := m.Focus.taskID
+			priority := strconv.Itoa(task.Priority)
 			return m, func() tea.Msg {
 				err := m.notion.UpdatePageProperties(taskID, map[string]any{
-					"type": map[string]any{"select": typeOpt},
+					"type":     map[string]any{"select": typeOpt},
+					"priority": map[string]any{"select": map[string]any{"name": priority}},
 				})
 				return UpdateSelectionsMsg{Err: err}
 			}
@@ -241,6 +244,7 @@ func (m Model) onSelectingKey(msg tea.KeyMsg) (Model, tea.Cmd) {
 				m.Focus.prevType = task.Type
 				task.Type = cycleTypeField(task.Type, 1, m.typeOptions)
 			case TaskPriority:
+				m.Focus.prevPriority = task.Priority
 				task.Priority = cyclePriorityField(task.Priority, 1)
 			case TaskTitle:
 				m.Focus.Mode = WritingMode

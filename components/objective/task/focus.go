@@ -40,6 +40,7 @@ type FocusState struct {
 	tempPriority int
 	prevTitle    string
 	prevType     string
+	prevPriority int
 
 	// deletion confirmation
 	pendingDelete bool

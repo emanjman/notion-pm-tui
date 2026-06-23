@@ -25,6 +25,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		if msg.Err != nil {
 			if task, ok := m.list.SelectedItem().(Item); ok {
 				task.Type = m.Focus.prevType
+				task.Priority = m.Focus.prevPriority
 				m.list.SetItem(m.Focus.taskIdx, task)
 				m.updateTaskInGroups(task)
 			}
