@@ -303,13 +303,13 @@ func (m Model) onNeutralKey(msg tea.KeyMsg) (Model, tea.Cmd) {
 
 	case key.Matches(msg, m.neutralKeyMap.StatusPrev):
 		if task, ok := m.list.SelectedItem().(Item); ok {
-			m = m.changeTaskStatus(task, -1)
+			return m.changeTaskStatus(task, -1)
 		}
 		return m, nil
 
 	case key.Matches(msg, m.neutralKeyMap.StatusNext):
 		if task, ok := m.list.SelectedItem().(Item); ok {
-			m = m.changeTaskStatus(task, +1)
+			return m.changeTaskStatus(task, +1)
 		}
 		return m, nil
 

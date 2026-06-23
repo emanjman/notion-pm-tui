@@ -31,6 +31,9 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		}
 		return m, nil
 
+	case UpdateStatusMsg:
+		return m.onUpdateStatus(msg)
+
 	case notion.AddTaskPageMsg:
 		return m.onAddTaskPage(msg)
 
@@ -73,6 +76,28 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	var cmd tea.Cmd
 	m.list, cmd = m.list.Update(msg)
 	return m, cmd
+}
+
+// if the notion status update failed, move the task back to its prior group
+func (m Model) onUpdateStatus(msg UpdateStatusMsg) (Model, tea.Cmd) {
+	if msg.Err == nil {
+		return m, nil
+	}
+	log.Printf("[ERROR] update task status failed, reverting: %v", msg.Err)
+
+	// find the task by id across groups; move it back to PrevStatus
+	for status, group := range m.groups {
+		for i, t := range group {
+			if t.ID == msg.TaskID {
+				m.groups[status] = append(group[:i], group[i+1:]...)
+				t.Status = msg.PrevStatus
+				m.groups[msg.PrevStatus] = append(m.groups[msg.PrevStatus], t)
+				m.list.SetItems(m.buildTaskList(notion.TaskGroups{}))
+				return m, nil
+			}
+		}
+	}
+	return m, nil
 }
 
 // if the notion trash failed, restore the optimistically-deleted task

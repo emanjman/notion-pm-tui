@@ -12,7 +12,14 @@ import (
 
 type UpdateTitleMsg struct{ Err error }
 type UpdateSelectionsMsg struct{ Err error }
-type UpdateStatusMsg struct{ Err error }
+
+// result of a notion task status update. carries the task id + its prior status
+// so the optimistic group-move can be reverted on failure.
+type UpdateStatusMsg struct {
+	TaskID     string
+	PrevStatus string
+	Err        error
+}
 
 // result of a notion task-page trash. carries the deleted task + its prior list
 // index so the optimistic deletion can be reverted on failure.
@@ -86,17 +93,18 @@ func (m Model) Init() tea.Cmd {
 
 // --- helpers
 
-func (m Model) changeTaskStatus(task Item, delta int) Model {
+func (m Model) changeTaskStatus(task Item, delta int) (Model, tea.Cmd) {
+	prevStatus := task.Status
 	newStatus := cycleStatus(task.Status, delta)
-	if newStatus == task.Status {
-		return m // no change
+	if newStatus == prevStatus {
+		return m, nil // no change
 	}
 
 	// remove from old group
-	oldGroup := m.groups[task.Status]
+	oldGroup := m.groups[prevStatus]
 	for i, t := range oldGroup {
 		if t.ID == task.ID {
-			m.groups[task.Status] = append(oldGroup[:i], oldGroup[i+1:]...)
+			m.groups[prevStatus] = append(oldGroup[:i], oldGroup[i+1:]...)
 			break
 		}
 	}
@@ -108,7 +116,19 @@ func (m Model) changeTaskStatus(task Item, delta int) Model {
 	// rebuild list to show change
 	m.list.SetItems(m.buildTaskList(notion.TaskGroups{}))
 
-	return m
+	// a temp task isn't on notion yet; the create will carry its status
+	if strings.HasPrefix(task.ID, "temp") {
+		return m, nil
+	}
+
+	// persist the status change; reverted by onUpdateStatus on failure
+	taskID := task.ID
+	return m, func() tea.Msg {
+		err := m.notion.UpdatePageProperties(taskID, map[string]any{
+			"status": map[string]any{"name": newStatus},
+		})
+		return UpdateStatusMsg{TaskID: taskID, PrevStatus: prevStatus, Err: err}
+	}
 }
 
 func (m Model) updateTaskInGroups(updated Item) Model {
