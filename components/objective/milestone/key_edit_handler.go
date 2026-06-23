@@ -24,8 +24,8 @@ func (m Model) onEditSave() (Model, tea.Cmd) {
 
 		switch {
 		case isNew && title != "":
-			// create on notion; temp id gets reconciled on the response
-			cmd = m.notion.AddMilestone(mstone.ID, title)
+			// create on notion under the active version; temp id gets reconciled on the response
+			cmd = m.notion.AddMilestone(mstone.ID, title, m.versionID)
 		case isNew:
 			// discard an empty brand-new milestone instead of persisting it
 			m = m.removeMilestoneByID(mstone.ID)

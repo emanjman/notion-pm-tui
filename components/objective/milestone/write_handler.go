@@ -54,7 +54,7 @@ func (m Model) onToggleTaskGroup(msg notion.ToggleTaskGroupMsg) (Model, tea.Cmd)
 		group.Hide = !group.Hide
 		mstone.TaskGroups[msg.Status] = group
 		m = m.updateMilestone(mstone)
-		return m, refreshMilestoneTasks(mstone.TaskGroups)
+		return m, refreshMilestoneTasks(mstone.ID, mstone.TaskGroups)
 	}
 	return m, nil
 }

@@ -31,6 +31,9 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		}
 		return m, nil
 
+	case notion.AddTaskPageMsg:
+		return m.onAddTaskPage(msg)
+
 	case notion.TaskTypeOptionsMsg:
 		if msg.Err != nil {
 			log.Printf("[ERROR] fetching task type options: %v", msg.Err)
@@ -43,6 +46,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 
 	case milestone.MilestoneTasksMsg:
 		// rebuild working copy from the milestone's TaskGroups on each milestone switch
+		m.milestoneID = msg.MilestoneID
 		m.groups = map[string][]Item{}
 		for status, group := range msg.Groups {
 			items := make([]Item, len(group.Tasks))
@@ -66,4 +70,38 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	var cmd tea.Cmd
 	m.list, cmd = m.list.Update(msg)
 	return m, cmd
+}
+
+// reconcile the optimistic task-creation w/ result of actual notion-page creation
+func (m Model) onAddTaskPage(msg notion.AddTaskPageMsg) (Model, tea.Cmd) {
+	if msg.Err != nil {
+		log.Printf("[ERROR] add task failed: %v", msg.Err)
+		// drop the optimistic item that never made it to notion
+		for _, group := range m.groups {
+			for _, t := range group {
+				if t.ID == msg.TempID {
+					return m.deleteTask(t), nil
+				}
+			}
+		}
+		return m, nil
+	}
+
+	// swap the temp id for the real notion page id in groups + list
+	for status, group := range m.groups {
+		for i, t := range group {
+			if t.ID == msg.TempID {
+				t.ID = msg.Page.ID
+				m.groups[status][i] = t
+				m.list.SetItems(m.buildTaskList(notion.TaskGroups{}))
+
+				// keep focus tracking pointed at the real id
+				if m.Focus.taskID == msg.TempID {
+					m.Focus.taskID = msg.Page.ID
+				}
+				return m, nil
+			}
+		}
+	}
+	return m, nil
 }

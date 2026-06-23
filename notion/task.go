@@ -41,6 +41,14 @@ type QueryTaskPagesMsg struct {
 	Err          error
 }
 
+// result of notion task-page creation. TempID is echoed back so the caller can
+// swap the optimistic local item's id for the real one.
+type AddTaskPageMsg struct {
+	TempID string
+	Page   *TaskPage
+	Err    error
+}
+
 type TaskPage struct {
 	ID         string         `json:"id"`
 	Properties TaskProperties `json:"properties"`

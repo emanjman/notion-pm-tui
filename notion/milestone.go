@@ -43,4 +43,5 @@ type QueryMilestonePagesMsg struct {
 	NextCursor *string         // bookmarks subseq notion-pages available
 	Err        error           // failed notion-page fetch
 	Source     QueryMilestonePagesSource
+	VersionID  string // version these milestones were fetched for
 }

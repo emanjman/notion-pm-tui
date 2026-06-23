@@ -11,25 +11,25 @@ import (
 // nav down 1 + refresh
 func (m Model) onNeutralDown() (Model, tea.Cmd) {
 	m.list.CursorDown()
-	return m, refreshMilestoneTasks(m.getCurrTaskGroups())
+	return m, refreshMilestoneTasks(m.getCurrMilestoneID(), m.getCurrTaskGroups())
 }
 
 // nav up 1 + refresh
 func (m Model) onNeutralUp() (Model, tea.Cmd) {
 	m.list.CursorUp()
-	return m, refreshMilestoneTasks(m.getCurrTaskGroups())
+	return m, refreshMilestoneTasks(m.getCurrMilestoneID(), m.getCurrTaskGroups())
 }
 
 // nav down 5 + refresh
 func (m Model) onNeutralJumpDown() (Model, tea.Cmd) {
 	m.list.Select(min(len(m.list.Items())-1, m.list.Index()+5))
-	return m, refreshMilestoneTasks(m.getCurrTaskGroups())
+	return m, refreshMilestoneTasks(m.getCurrMilestoneID(), m.getCurrTaskGroups())
 }
 
 // nav up 5 + refresh
 func (m Model) onNeutralJumpUp() (Model, tea.Cmd) {
 	m.list.Select(max(0, m.list.Index()-5))
-	return m, refreshMilestoneTasks(m.getCurrTaskGroups())
+	return m, refreshMilestoneTasks(m.getCurrMilestoneID(), m.getCurrTaskGroups())
 }
 
 // handle select behavior based on item type
@@ -58,7 +58,7 @@ func (m Model) onNeutralSelect() (Model, tea.Cmd) {
 			return m, nil
 
 		case FetchSuccess:
-			return m, refreshMilestoneTasks(mstone.TaskGroups)
+			return m, refreshMilestoneTasks(mstone.ID, mstone.TaskGroups)
 		}
 	}
 

@@ -32,9 +32,9 @@ func fetchInitTasks(milestoneID string, idx int, ntn *notion.Client) tea.Cmd {
 }
 
 // hit handler; refresh task panel w/ latest milestone groups
-func refreshMilestoneTasks(g notion.TaskGroups) tea.Cmd {
+func refreshMilestoneTasks(milestoneID string, g notion.TaskGroups) tea.Cmd {
 	return func() tea.Msg {
-		return MilestoneTasksMsg{Groups: g}
+		return MilestoneTasksMsg{MilestoneID: milestoneID, Groups: g}
 	}
 }
 

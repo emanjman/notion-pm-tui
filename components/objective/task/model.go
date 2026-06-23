@@ -21,6 +21,10 @@ type Model struct {
 
 	typeOptions []notion.SelectItem
 
+	// id of the milestone backing the current task list; new tasks hang off this
+	// via the @milestone relation. set on every milestone switch (MilestoneTasksMsg).
+	milestoneID string
+
 	// working copy of the current milestone's tasks, used for local mutations
 	// (add, delete, status change) and list rendering. rebuilt on every
 	// milestone switch via MilestoneTasksMsg — not the source of truth for persistence.

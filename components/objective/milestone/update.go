@@ -111,6 +111,23 @@ func (m Model) getCurrTaskGroups() notion.TaskGroups {
 	return notion.TaskGroups{}
 }
 
+// id of the milestone backing the current selection; tasks created in the
+// task panel hang off this via the @milestone relation
+func (m Model) getCurrMilestoneID() string {
+	item := m.list.SelectedItem()
+
+	switch item := item.(type) {
+	case GroupHeaderItem:
+		group := m.groups[item.Status]
+		if len(group.Milestones) > 0 {
+			return group.Milestones[0].ID
+		}
+	case DefaultItem:
+		return item.ID
+	}
+	return ""
+}
+
 func (m *Model) SetItemDelegate(d list.ItemDelegate) {
 	m.list.SetDelegate(d)
 }

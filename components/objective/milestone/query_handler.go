@@ -19,6 +19,10 @@ func (m Model) onQueryMilestonePages(msg notion.QueryMilestonePagesMsg) (Model, 
 		return m, nil
 	}
 
+	// track the active version so adds/load-more target the right one, even when
+	// this version has no milestones (the msg still carries the id)
+	m.versionID = msg.VersionID
+
 	g := m.groups[msg.Status]
 
 	// clear existing milestones
@@ -74,7 +78,7 @@ func (m Model) onQueryTaskPages(msg notion.QueryTaskPagesMsg) (Model, tea.Cmd) {
 		mstone.TaskGroups[msg.Status] = group
 		mstone.FetchStatus = FetchSuccess
 		m.list.SetItem(msg.MilestoneIdx, mstone)
-		return m, refreshMilestoneTasks(mstone.TaskGroups)
+		return m, refreshMilestoneTasks(mstone.ID, mstone.TaskGroups)
 	}
 	return m, nil
 }
@@ -96,7 +100,7 @@ func (m Model) onQueryMoreTaskPages(msg notion.QueryMoreTaskPagesMsg) (Model, te
 			// get tasks + refresh
 			return m, tea.Batch(
 				m.notion.QueryTasks(mstone.ID, msg.Status, cursor, idx),
-				refreshMilestoneTasks(mstone.TaskGroups),
+				refreshMilestoneTasks(mstone.ID, mstone.TaskGroups),
 			)
 		}
 	}

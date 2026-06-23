@@ -20,28 +20,24 @@ func (c *Client) QueryMilestonePages(versionID string, status MilestoneStatus, c
 		body := queryMilestoneBody(versionID, status, 5)
 		res, err := queryDatasource[MilestonePage](c, c.milestonesDatasourceID, body, cursor, fprops)
 		if err != nil {
-			return QueryMilestonePagesMsg{Err: err, Status: status}
+			return QueryMilestonePagesMsg{Err: err, Status: status, VersionID: versionID}
 		}
 		var nextCursor *string
 		if res.HasMore {
 			nextCursor = res.NextCursor
 		}
-		return QueryMilestonePagesMsg{Pages: res.Results, NextCursor: nextCursor, Status: status}
+		return QueryMilestonePagesMsg{Pages: res.Results, NextCursor: nextCursor, Status: status, VersionID: versionID}
 	}
 }
 
-// AddMilestone creates a milestone page on notion. TempID is echoed back on the
-// msg so the caller can swap the optimistic local item's id for the real one.
-func (c *Client) AddMilestone(tempID, title string) tea.Cmd {
-	// todo: wire the @version datasource so the version can be selected per-project.
-	// for now the demo project ("Hoop Archives") has a single version, so we hardcode
-	// its page id. a milestone must hang off a @version (the @project is a rollup
-	// through it), otherwise it won't roll up to any project.
-	const demoVersionPageID = "346b7273-944b-80ee-bc8d-e9ead7e1e623"
-
+// AddMilestone creates a milestone page on notion under the given version. a
+// milestone must hang off a @version (the @project is a rollup through it),
+// otherwise it won't roll up to any project. TempID is echoed back on the msg so
+// the caller can swap the optimistic local item's id for the real one.
+func (c *Client) AddMilestone(tempID, title, versionID string) tea.Cmd {
 	return func() tea.Msg {
 		endpt := c.baseURL + "/pages"
-		body := addMilestoneBody(c.milestonesDatasourceID, title, demoVersionPageID)
+		body := addMilestoneBody(c.milestonesDatasourceID, title, versionID)
 		b, err := json.Marshal(body)
 		if err != nil {
 			return AddMilestonePageMsg{Err: err, TempID: tempID}
