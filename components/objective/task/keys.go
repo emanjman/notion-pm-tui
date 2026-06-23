@@ -168,7 +168,8 @@ func (m Model) onWritingKey(msg tea.KeyMsg) (Model, tea.Cmd) {
 				cmd = m.notion.AddTask(task.ID, title, m.milestoneID, task.Status, task.Type, task.Priority)
 			case isNew:
 				// discard an empty brand-new task instead of persisting it
-				m = m.deleteTask(task)
+				// (temp task was never on notion, so cmd is nil)
+				m, _ = m.deleteTask(task)
 			default:
 				// existing task: push the title update
 				newTitle := notion.TitleProperty{Title: []notion.RichText{
@@ -315,12 +316,11 @@ func (m Model) onNeutralKey(msg tea.KeyMsg) (Model, tea.Cmd) {
 	case key.Matches(msg, m.neutralKeyMap.Delete):
 		if task, ok := m.list.SelectedItem().(Item); ok {
 			if m.Focus.pendingDelete && m.Focus.taskID == task.ID {
-				m = m.deleteTask(task)
-			} else {
-				m.Focus.pendingDelete = true
-				m.Focus.taskID = task.ID
-				m.Focus.taskIdx = m.list.Index()
+				return m.deleteTask(task)
 			}
+			m.Focus.pendingDelete = true
+			m.Focus.taskID = task.ID
+			m.Focus.taskIdx = m.list.Index()
 		}
 		return m, nil
 	}

@@ -34,6 +34,9 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	case notion.AddTaskPageMsg:
 		return m.onAddTaskPage(msg)
 
+	case DeleteTaskMsg:
+		return m.onDeleteTask(msg)
+
 	case notion.TaskTypeOptionsMsg:
 		if msg.Err != nil {
 			log.Printf("[ERROR] fetching task type options: %v", msg.Err)
@@ -72,15 +75,26 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	return m, cmd
 }
 
+// if the notion trash failed, restore the optimistically-deleted task
+func (m Model) onDeleteTask(msg DeleteTaskMsg) (Model, tea.Cmd) {
+	if msg.Err != nil {
+		log.Printf("[ERROR] delete task failed, restoring: %v", msg.Err)
+		m.groups[msg.Task.Status] = append(m.groups[msg.Task.Status], msg.Task)
+		m.list.SetItems(m.buildTaskList(notion.TaskGroups{}))
+	}
+	return m, nil
+}
+
 // reconcile the optimistic task-creation w/ result of actual notion-page creation
 func (m Model) onAddTaskPage(msg notion.AddTaskPageMsg) (Model, tea.Cmd) {
 	if msg.Err != nil {
 		log.Printf("[ERROR] add task failed: %v", msg.Err)
 		// drop the optimistic item that never made it to notion
+		// (still has the temp id, so deleteTask won't hit notion)
 		for _, group := range m.groups {
 			for _, t := range group {
 				if t.ID == msg.TempID {
-					return m.deleteTask(t), nil
+					return m.deleteTask(t)
 				}
 			}
 		}

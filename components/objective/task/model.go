@@ -3,6 +3,7 @@ package task
 import (
 	"fmt"
 	"notion-project-tui/notion"
+	"strings"
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/list"
@@ -12,6 +13,14 @@ import (
 type UpdateTitleMsg struct{ Err error }
 type UpdateSelectionsMsg struct{ Err error }
 type UpdateStatusMsg struct{ Err error }
+
+// result of a notion task-page trash. carries the deleted task + its prior list
+// index so the optimistic deletion can be reverted on failure.
+type DeleteTaskMsg struct {
+	Task Item
+	Idx  int
+	Err  error
+}
 
 type Model struct {
 	// Milestone notion.SelectedMilestone // milestone these tasks source from
@@ -163,8 +172,11 @@ func (m Model) addTask() Model {
 	return m
 }
 
-func (m Model) deleteTask(task Item) Model {
-	// Remove from group
+func (m Model) deleteTask(task Item) (Model, tea.Cmd) {
+	// capture the prior list index so a failed trash can restore selection
+	idx := m.Focus.taskIdx
+
+	// optimistically remove from group
 	group := m.groups[task.Status]
 	for i, t := range group {
 		if t.ID == task.ID {
@@ -179,9 +191,17 @@ func (m Model) deleteTask(task Item) Model {
 	// Clear pending delete state
 	m.Focus.pendingDelete = false
 
-	// todo: send command to delete task in notion
+	// a temp task was never persisted; nothing to trash on notion
+	if strings.HasPrefix(task.ID, "temp") {
+		return m, nil
+	}
 
-	return m
+	// trash the page on notion; reverted by onDeleteTask on failure
+	taskID := task.ID
+	return m, func() tea.Msg {
+		err := m.notion.TrashPage(taskID)
+		return DeleteTaskMsg{Task: task, Idx: idx, Err: err}
+	}
 }
 
 func (m *Model) SetItemDelegate(d list.ItemDelegate) {
