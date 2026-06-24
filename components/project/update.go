@@ -1,11 +1,8 @@
 package project
 
 import (
-	// ! temp, styling ui
-	// "fmt"
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
-	"notion-project-tui/notion"
 )
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -78,19 +75,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		})
 
 		return m, tea.Batch(objCmd, ovrCmd, noteCmd)
-
-	// todo: on msg, start forwarding the commands to children??? use default?
-	case notion.ProjectMsg:
-		// if failed fetch, don't proceed w/ fetching ids
-		if msg.Err != nil {
-			return m, nil
-		}
-
-		// update project data
-		m.page = &msg.Data
-		m.duration = msg.Duration
-
-		return m, nil
 
 	// spill messages into children to be handled at that lvl
 	default:

@@ -9,6 +9,13 @@ import (
 	lg "github.com/charmbracelet/lipgloss"
 )
 
+var labels = []string{
+	"Objective (n%)",
+	"Notebook (n)",
+	"Bug Report (n)",
+	"Technology (n)",
+}
+
 func (m Model) View() string {
 	// ! temp, styling ui
 	// if m.page == nil {
