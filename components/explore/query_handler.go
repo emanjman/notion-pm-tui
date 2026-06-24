@@ -4,6 +4,7 @@ import (
 	"log"
 	"notion-project-tui/notion"
 
+	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -16,8 +17,12 @@ func (m Model) onQueryProjectPages(msg notion.QueryProjectPagesMsg) (Model, tea.
 		m.loading = false
 		return m, nil
 	}
-	// todo: resolve to add pages to list
-	// m.pages = msg.Pages
+
+	var items []list.Item
+	for _, pg := range msg.Pages {
+		items = append(items, NewDefaultItem(pg))
+	}
+	m.list.SetItems(items)
 	m.loading = false
 
 	return m, nil

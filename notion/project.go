@@ -5,6 +5,7 @@ package notion
 type ProjectPage struct {
 	ID         string            `json:"id"`
 	Properties ProjectProperties `json:"properties"`
+	Icon       *Icon             `json:"icon"`
 }
 
 // -- msg --

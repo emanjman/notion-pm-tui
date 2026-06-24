@@ -32,7 +32,7 @@ type Model struct {
 
 var _ tea.Model = (*Model)(nil) // conform
 
-func New(projID string) Model {
+func (m Model) New(projID string) Model {
 	ntn := notion.NewClient()
 	return Model{
 		projID:    projID,

@@ -6,17 +6,13 @@ import (
 )
 
 type KeyMap struct {
-	Quit key.Binding
 	Help key.Binding
 	Next key.Binding
 	Prev key.Binding
 }
 
 var RootKeyMap = KeyMap{
-	Quit: key.NewBinding(
-		key.WithKeys("ctrl+c"),
-		key.WithHelp("ctrl+c", "quit"),
-	),
+	// todo: should this be in `explore` model?
 	Help: key.NewBinding(
 		key.WithKeys("?"),
 		key.WithHelp("?", "help"),
@@ -32,12 +28,12 @@ var RootKeyMap = KeyMap{
 }
 
 func (k KeyMap) ShortHelp() []key.Binding {
-	return []key.Binding{k.Quit, k.Help}
+	return []key.Binding{k.Help}
 }
 
 func (k KeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.Quit, k.Help},
+		{k.Help},
 		{k.Prev, k.Next},
 	}
 }

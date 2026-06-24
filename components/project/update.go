@@ -16,9 +16,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, cmd
 		} else {
 			switch {
-
-			case key.Matches(msg, m.keys.Quit):
-				return m, tea.Quit
 			case key.Matches(msg, m.keys.Help):
 				m.help.ShowAll = !m.help.ShowAll
 				return m, nil

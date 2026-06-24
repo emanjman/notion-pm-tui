@@ -78,31 +78,26 @@ func NewItemDelegate(focused bool, mode *Mode, edit *EditModeCtx) ItemDelegate {
 	}
 }
 
-func (d ItemDelegate) Height() int  { return 2 }
-func (d ItemDelegate) Spacing() int { return 0 }
-func (d ItemDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd {
-	return nil
-}
-
 // render items (based on the list item type => header vs milestone)
-func (d ItemDelegate) Render(w io.Writer, m list.Model, index int, item list.Item) {
-	selected := index == m.Index() && d.focused
+func (d ItemDelegate) Render(w io.Writer, m list.Model, idx int, item list.Item) {
+	selected := idx == m.Index() && d.focused
 	items := m.Items()
-	isLast := index == len(items)-1
+	isLast := idx == len(items)-1
 	nextIsHeader := !isLast && func() bool {
-		_, ok := items[index+1].(GroupHeaderItem)
+		_, ok := items[idx+1].(GroupHeaderItem)
 		return ok
 	}()
 	noBorder := isLast || nextIsHeader
 
 	switch item := item.(type) {
 	case GroupHeaderItem:
-		header := renderItemHeader(d, item, selected, m.Width())
-		fmt.Fprint(w, header)
+		fmt.Fprint(w, renderItemHeader(d, item, selected, m.Width()))
 	case DefaultItem:
-		mstone := renderItem(d, item, selected, noBorder, m.Width())
-		fmt.Fprint(w, mstone)
+		fmt.Fprint(w, renderItem(d, item, selected, noBorder, m.Width()))
 	case LoadMoreItem:
 		fmt.Fprint(w, renderLoadMore(d, item.Loading, selected, noBorder, m.Width()))
 	}
 }
+func (d ItemDelegate) Height() int                               { return 2 }
+func (d ItemDelegate) Spacing() int                              { return 0 }
+func (d ItemDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd { return nil }
