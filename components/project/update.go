@@ -78,7 +78,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		var objCmd, ovrCmd, noteCmd tea.Cmd
 		m.objective, objCmd = m.objective.Update(msg)
 		// m.overview, ovrCmd = m.overview.Update(msg)
-		m.notebook, noteCmd = m.notebook.Update(msg)
+		m.notebook, noteCmd = m.notebook.Update(msg) // todo: handle related deep bug here
 		return m, tea.Batch(objCmd, ovrCmd, noteCmd)
 	}
 }

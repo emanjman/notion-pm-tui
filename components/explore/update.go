@@ -47,9 +47,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	default:
 		// feed other messages into the proj child
 		// todo: will have to funnel messages into this if this view is active
-		proj, cmd := m.project.Update(msg)
-		m.project = &proj
-		return m, cmd
+		if m.project != nil {
+			proj, cmd := m.project.Update(msg)
+			m.project = &proj
+			return m, cmd
+		}
 	}
 
 	return m, nil

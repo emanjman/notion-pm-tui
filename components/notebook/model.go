@@ -1,6 +1,7 @@
 package notebook
 
 import (
+	"log"
 	"notion-project-tui/notion"
 	"notion-project-tui/styles"
 	"slices"
@@ -129,8 +130,14 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 
 		reqCnt := 5
 		blxCmds, mdCmds := make([]tea.Cmd, reqCnt), make([]tea.Cmd, reqCnt)
+
+		log.Printf("breakpoint in notebook/model.go") // !debug
+
 		for i := range reqCnt {
-			item := m.browser.Items()[i]
+			item := m.browser.Items()[i] // todo: handle deep bug here
+
+			log.Printf("%d -> %v", i, item) // !debug
+
 			if note, ok := item.(Item); ok {
 				note.ContentState = Pending
 				m.browser.SetItem(i, note)
@@ -139,6 +146,9 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 				mdCmds[i] = m.fetchNoteMarkdown(i, note)
 			}
 		}
+
+		log.Printf("eventually exhausts the loop") // !debug
+
 		cmds := append(blxCmds, mdCmds...)
 		return m, tea.Batch(cmds...)
 
