@@ -30,9 +30,9 @@ type Model struct {
 	notebook  notebook.Model
 }
 
-var _ tea.Model = (*Model)(nil) // conform
+// var _ tea.Model = (*Model)(nil) // conform
 
-func (m Model) New(projID string) Model {
+func New(projID string) Model {
 	ntn := notion.NewClient()
 	return Model{
 		projID:    projID,

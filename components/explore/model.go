@@ -9,17 +9,12 @@ import (
 )
 
 type Model struct {
-	notion *notion.Client
-
-	list list.Model
-	// pages   []notion.ProjectPage
-	// pageIdx int
-
+	notion        *notion.Client
+	list          list.Model
 	project       *project.Model
 	neutralKeyMap NeutralKeyMap
-
-	err     error
-	loading bool
+	err           error
+	loading       bool
 }
 
 var _ tea.Model = (*Model)(nil) // conform
@@ -29,6 +24,7 @@ func New() Model {
 	l.Title = "Explore Projects"
 	l.SetShowHelp(false)
 	l.SetShowStatusBar(false)
+	l.SetShowTitle(false)
 	l.SetShowFilter(false)
 	l.SetShowPagination(false)
 	l.SetFilteringEnabled(false)
@@ -38,9 +34,9 @@ func New() Model {
 		notion:        notion.NewClient(),
 		list:          l,
 		project:       nil,
-		loading:       true,
-		err:           nil,
 		neutralKeyMap: NeutralKeyMapper,
+		err:           nil,
+		loading:       true,
 	}
 }
 

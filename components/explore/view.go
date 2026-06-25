@@ -11,5 +11,8 @@ func (m Model) View() string {
 		return style.Render("Loading...")
 	}
 
+	if m.project != nil {
+		return m.project.View()
+	}
 	return m.list.View()
 }
