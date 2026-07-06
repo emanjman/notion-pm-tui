@@ -43,7 +43,7 @@ func New(projID string) Model {
 		notion:    ntn,
 
 		objective: objective.New(ntn, projID),
-		notebook:  notebook.New(ntn, projID, "%7BGKi"), // todo: propID???
+		notebook:  notebook.New(ntn, projID, "aXR8PA"), // todo: need to deprecate dependence on propID
 	}
 }
 

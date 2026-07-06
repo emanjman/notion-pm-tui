@@ -8,6 +8,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
+// todo: rename as `QueryTaskPages()`
 func (c *Client) QueryTasks(milestoneID, status, cursor string, milestoneIdx int) tea.Cmd {
 	fprops := []string{
 		taskPropTitle,

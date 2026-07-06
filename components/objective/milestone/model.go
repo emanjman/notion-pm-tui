@@ -26,7 +26,7 @@ type Model struct {
 	deleteKeyMap  DeleteKeyMap
 }
 
-func New(n *notion.Client, versionID string) Model {
+func New(n *notion.Client) Model {
 	mode := NeutralMode
 	edit := EditModeCtx{}
 	del := DeleteModeCtx{}
@@ -43,7 +43,7 @@ func New(n *notion.Client, versionID string) Model {
 
 	return Model{
 		notion:         n,
-		versionID:      versionID,
+		versionID:      "", // initially, no version selected, injected after version selected
 		pendingFetches: 3,
 		list:           l,
 		err:            nil,

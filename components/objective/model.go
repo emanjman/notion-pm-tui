@@ -12,9 +12,7 @@ import (
 )
 
 type Model struct {
-	projID string
-	// milestonesPropID string
-	// versionID string
+	projID  string
 	loading bool
 	err     error
 	panel   Panel
@@ -29,15 +27,14 @@ type Model struct {
 
 func New(n *notion.Client, projID string) Model {
 	v := version.New(n, projID)
-	ms := milestone.New(n, "") // todo: figure out how to deliver versionID to milestone !!!!!!!!
+	ms := milestone.New(n)
 	t := task.New(n)
 
 	return Model{
-		projID: projID,
-		// milestonesPropID: milestonesPropID,
+		projID:  projID,
 		loading: true,
 		err:     nil,
-		panel:   MilestonePanel,
+		panel:   VersionPanel, // defaults here b/c version selection kicks off mstone-fetches
 		notion:  n,
 
 		version:   v,

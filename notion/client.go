@@ -59,6 +59,7 @@ func (c *Client) do(req *http.Request, target interface{}) error {
 	return json.NewDecoder(res.Body).Decode(target)
 }
 
+// todo: can we deprecate this in favor of `QueryDatasource`?
 func (c *Client) FetchRelationIDs(pageID string, propID string) ([]string, error) {
 	ids := []string{}
 	cursor := ""
@@ -88,6 +89,7 @@ func (c *Client) FetchRelationIDs(pageID string, propID string) ([]string, error
 	return ids, nil
 }
 
+// todo: can we deprecate this in favor of `QueryDatasource`? thus we don't need to use both `FetchRelationIDs` into `FetchPages`
 func FetchPages[T any](c *Client, ids []string) ([]T, error) {
 	relations := make([]T, 0, len(ids))
 	for _, id := range ids {

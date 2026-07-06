@@ -61,6 +61,7 @@ type Model struct {
 	ogMarkdown       string
 }
 
+// todo: deprecate propID
 func New(notion *notion.Client, projID, propID string) Model {
 	// list config
 	l := list.New([]list.Item{}, NewItemDelegate(true), 0, 0)
@@ -97,6 +98,7 @@ func New(notion *notion.Client, projID, propID string) Model {
 
 func (m Model) Init() tea.Cmd {
 	browserInit := func() tea.Msg {
+		// todo: deprecate propID, refer to `QueryDatasource`
 		ids, err := m.notion.FetchRelationIDs(m.projID, m.notesPropID)
 		return notion.NoteIDsMsg{IDs: ids, Err: err}
 	}
