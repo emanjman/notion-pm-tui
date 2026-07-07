@@ -1,7 +1,6 @@
 package explore
 
 import (
-	"log"
 	"notion-project-tui/components/project"
 	"notion-project-tui/notion"
 
@@ -10,6 +9,7 @@ import (
 )
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	// reserve msgs to active project
 	if m.project != nil {
 		proj, cmd := m.project.Update(msg)
 		m.project = &proj
@@ -20,14 +20,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.list.SetWidth(msg.Width)
 		m.list.SetHeight(msg.Height)
-
-		// share dims w/ children
-		if m.project != nil {
-			log.Printf("feeding window msg into proj") // !debug
-			proj, cmd := m.project.Update(msg)
-			m.project = &proj
-			return m, cmd
-		}
 		return m, nil
 
 	case tea.KeyMsg:
@@ -50,14 +42,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	case notion.QueryProjectPagesMsg:
 		return m.onQueryProjectPages(msg)
-	default:
-		// feed other messages into the proj child
-		// todo: will have to funnel messages into this if this view is active
-		if m.project != nil {
-			proj, cmd := m.project.Update(msg)
-			m.project = &proj
-			return m, cmd
-		}
 	}
 
 	return m, nil

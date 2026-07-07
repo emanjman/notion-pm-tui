@@ -1,84 +1,27 @@
 package project
 
 import (
-	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
+	"log"
 )
 
 func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
-
 	case tea.KeyMsg:
-		if m.objective.ChildPriorityMode() {
-			// forward all keys if in writing mode
-			var cmd tea.Cmd
-			m.objective, cmd = m.objective.Update(msg)
-			return m, cmd
-		} else {
-			switch {
-			case key.Matches(msg, m.keys.Help):
-				m.help.ShowAll = !m.help.ShowAll
-				return m, nil
-			case key.Matches(msg, m.keys.Next):
-				m.activeTab = (m.activeTab + 1) % tabCount
-				return m, nil
-			case key.Matches(msg, m.keys.Prev):
-				if m.activeTab == 0 {
-					m.activeTab = tabCount - 1
-				} else {
-					m.activeTab = (m.activeTab - 1) % tabCount
-				}
-				return m, nil
-
-			// send other keymaps to the active tab
-			default:
-				var cmd tea.Cmd
-
-				// todo: handle for other tabs
-				switch m.activeTab {
-				case ObjectiveTab:
-					m.objective, cmd = m.objective.Update(msg)
-				// case OverviewTab:
-				// 	m.overview, cmd = m.overview.Update(msg)
-				case NotebookTab:
-					m.notebook, cmd = m.notebook.Update(msg)
-				}
-
-				return m, cmd
-			}
-		}
-
-	// send window size to the milestones model
+		return m.handleKey(msg)
 	case tea.WindowSizeMsg:
-		m.width = msg.Width
-		m.height = msg.Height
-
-		childHeight := msg.Height - 6 // header/footer row, help bar, spacing
-
-		var objCmd, ovrCmd, noteCmd tea.Cmd
-		m.objective, objCmd = m.objective.Update(tea.WindowSizeMsg{
-			Width:  msg.Width,
-			Height: childHeight,
-		})
-
-		// m.overview, ovrCmd = m.overview.Update(tea.WindowSizeMsg{
-		// 	Width:  msg.Width,
-		// 	Height: childHeight,
-		// })
-
-		m.notebook, noteCmd = m.notebook.Update(tea.WindowSizeMsg{
-			Width:  msg.Width,
-			Height: childHeight,
-		})
-
-		return m, tea.Batch(objCmd, ovrCmd, noteCmd)
-
-	// spill messages into children to be handled at that lvl
+		return m.handleWindow(msg)
 	default:
-		var objCmd, ovrCmd, noteCmd tea.Cmd
-		m.objective, objCmd = m.objective.Update(msg)
-		// m.overview, ovrCmd = m.overview.Update(msg)
-		m.notebook, noteCmd = m.notebook.Update(msg) // todo: handle related deep bug here
-		return m, tea.Batch(objCmd, ovrCmd, noteCmd)
+		return m.handleDefault(msg)
 	}
+}
+
+// spill messages into children to be handled at that lvl
+func (m Model) handleDefault(msg tea.Msg) (Model, tea.Cmd) {
+	log.Printf("project update catches default") // !debug
+	var objCmd, ovrCmd, noteCmd tea.Cmd
+	m.objective, objCmd = m.objective.Update(msg)
+	// m.overview, ovrCmd = m.overview.Update(msg)
+	m.notebook, noteCmd = m.notebook.Update(msg) // todo: handle related deep bug here
+	return m, tea.Batch(objCmd, ovrCmd, noteCmd)
 }

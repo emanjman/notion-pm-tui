@@ -17,18 +17,7 @@ var labels = []string{
 }
 
 func (m Model) View() string {
-	// ! temp, styling ui
-	// if m.page == nil {
-	// 	return "Loading project..."
-	// }
-
 	var s strings.Builder
-
-	// ! temp, styling ui
-	// view.WriteString(fmt.Sprintf("Project ID: %s", m.page.ID))
-	// view.WriteString("\n\n")
-	// view.WriteString(fmt.Sprintf("Fetched in %dms", m.duration.Milliseconds()))
-	// view.WriteString("\n\n")
 
 	lg.JoinHorizontal(lg.Top)
 	headers := make([]string, len(labels))

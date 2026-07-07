@@ -1,14 +1,12 @@
 package project
 
-import (
-	"github.com/charmbracelet/bubbles/key"
-	// tea "github.com/charmbracelet/bubbletea"
-)
+import "github.com/charmbracelet/bubbles/key"
 
 type KeyMap struct {
 	Help key.Binding
 	Next key.Binding
 	Prev key.Binding
+	Quit key.Binding
 }
 
 var RootKeyMap = KeyMap{
@@ -24,6 +22,10 @@ var RootKeyMap = KeyMap{
 	Prev: key.NewBinding(
 		key.WithKeys("shift+tab"),
 		key.WithHelp("shift tab", "prev tab"),
+	),
+	Quit: key.NewBinding(
+		key.WithKeys("ctrl+c"),
+		key.WithHelp("ctrl+c", "quit"),
 	),
 }
 
