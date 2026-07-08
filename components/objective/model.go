@@ -25,13 +25,13 @@ type Model struct {
 	keys KeyMap
 }
 
-func New(n *notion.Client, projID string) Model {
-	v := version.New(n, projID)
+func New(n *notion.Client) Model {
+	v := version.New(n)
 	ms := milestone.New(n)
 	t := task.New(n)
 
 	return Model{
-		projID:  projID,
+		projID:  "",
 		loading: true,
 		err:     nil,
 		panel:   VersionPanel, // defaults here b/c version selection kicks off mstone-fetches
@@ -45,8 +45,9 @@ func New(n *notion.Client, projID string) Model {
 	}
 }
 
-func (m Model) Init() tea.Cmd {
-	return tea.Batch(m.version.Init(), m.milestone.Init(), m.task.Init())
+func (m Model) Init(projID string) tea.Cmd {
+	m.projID = projID
+	return tea.Batch(m.version.Init(projID), m.milestone.Init(), m.task.Init())
 }
 
 // combine objective's native keymap w/ child keymap

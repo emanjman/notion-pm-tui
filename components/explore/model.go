@@ -11,10 +11,11 @@ import (
 type Model struct {
 	notion        *notion.Client
 	list          list.Model
-	project       *project.Model
+	project       project.Model
 	neutralKeyMap NeutralKeyMap
 	err           error
 	loading       bool
+	focus         Focus
 }
 
 var _ tea.Model = (*Model)(nil) // conform
@@ -33,10 +34,11 @@ func New() Model {
 	return Model{
 		notion:        notion.NewClient(),
 		list:          l,
-		project:       nil,
+		project:       project.New(),
 		neutralKeyMap: NeutralKeyMapper,
 		err:           nil,
 		loading:       true,
+		focus:         SelectFocus,
 	}
 }
 

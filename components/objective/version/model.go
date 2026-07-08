@@ -26,12 +26,12 @@ type Model struct {
 	height int
 }
 
-func New(n *notion.Client, projID string) Model {
+func New(n *notion.Client) Model {
 	mode := NeutralMode
 
 	return Model{
 		notion:  n,
-		projID:  projID,
+		projID:  "",
 		loading: true,
 		err:     nil,
 
@@ -48,6 +48,7 @@ func New(n *notion.Client, projID string) Model {
 	}
 }
 
-func (m Model) Init() tea.Cmd {
-	return fetchVersions(m.projID, m.notion)
+func (m Model) Init(projID string) tea.Cmd {
+	m.projID = projID
+	return fetchVersions(projID, m.notion)
 }

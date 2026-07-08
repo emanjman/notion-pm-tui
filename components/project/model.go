@@ -32,24 +32,21 @@ type Model struct {
 
 // var _ tea.Model = (*Model)(nil) // conform
 
-func New(projID string) Model {
+func New() Model {
 	ntn := notion.NewClient()
 	return Model{
-		projID:    projID,
+		projID:    "",
 		activeTab: ObjectiveTab,
 		page:      nil,
 		keys:      RootKeyMap,
 		help:      help.New(),
 		notion:    ntn,
 
-		objective: objective.New(ntn, projID),
-		notebook:  notebook.New(ntn, projID, "aXR8PA"), // todo: need to deprecate dependence on propID
+		objective: objective.New(ntn),
+		notebook:  notebook.New(ntn, "aXR8PA"), // todo: need to deprecate dependence on propID
 	}
 }
 
 func (m Model) Init() tea.Cmd {
-	return tea.Batch(
-		m.objective.Init(),
-		m.notebook.Init(),
-	)
+	return nil
 }

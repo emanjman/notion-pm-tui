@@ -11,8 +11,12 @@ func (m Model) View() string {
 		return style.Render("Loading...")
 	}
 
-	if m.project != nil {
+	switch m.focus {
+	case ProjectFocus:
 		return m.project.View()
+	case SelectFocus:
+		return m.list.View()
+	default:
+		return "Unhandled view"
 	}
-	return m.list.View()
 }

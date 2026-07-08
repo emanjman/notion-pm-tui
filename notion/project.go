@@ -15,3 +15,9 @@ type QueryProjectPagesMsg struct {
 	NextCursor *string // bookmark subseq notion-pages avail; unlikely
 	Err        error   // failed fetch
 }
+
+// simple method of trickling down selected project to child models;
+// in `notion` pkg to reduce dependency conflicts
+type ProjectIDMsg struct {
+	ID string
+}

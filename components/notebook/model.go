@@ -62,7 +62,7 @@ type Model struct {
 }
 
 // todo: deprecate propID
-func New(notion *notion.Client, projID, propID string) Model {
+func New(notion *notion.Client, propID string) Model {
 	// list config
 	l := list.New([]list.Item{}, NewItemDelegate(true), 0, 0)
 	l.SetShowHelp(false)
@@ -79,7 +79,7 @@ func New(notion *notion.Client, projID, propID string) Model {
 	ta.Focus()
 
 	return Model{
-		projID:       projID,
+		projID:       "",
 		notesPropID:  propID,
 		loading:      true,
 		err:          nil,
@@ -96,7 +96,9 @@ func New(notion *notion.Client, projID, propID string) Model {
 	}
 }
 
-func (m Model) Init() tea.Cmd {
+func (m Model) Init(projID string) tea.Cmd {
+	m.projID = projID
+
 	browserInit := func() tea.Msg {
 		// todo: deprecate propID, refer to `QueryDatasource`
 		ids, err := m.notion.FetchRelationIDs(m.projID, m.notesPropID)
