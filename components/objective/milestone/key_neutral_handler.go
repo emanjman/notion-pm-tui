@@ -9,31 +9,31 @@ import (
 )
 
 // nav down 1 + refresh
-func (m Model) onNeutralDown() (Model, tea.Cmd) {
+func (m Model) handleNeutralDown() (Model, tea.Cmd) {
 	m.list.CursorDown()
 	return m, refreshMilestoneTasks(m.getCurrMilestoneID(), m.getCurrTaskGroups())
 }
 
 // nav up 1 + refresh
-func (m Model) onNeutralUp() (Model, tea.Cmd) {
+func (m Model) handleNeutralUp() (Model, tea.Cmd) {
 	m.list.CursorUp()
 	return m, refreshMilestoneTasks(m.getCurrMilestoneID(), m.getCurrTaskGroups())
 }
 
 // nav down 5 + refresh
-func (m Model) onNeutralJumpDown() (Model, tea.Cmd) {
+func (m Model) handleNeutralJumpDown() (Model, tea.Cmd) {
 	m.list.Select(min(len(m.list.Items())-1, m.list.Index()+5))
 	return m, refreshMilestoneTasks(m.getCurrMilestoneID(), m.getCurrTaskGroups())
 }
 
 // nav up 5 + refresh
-func (m Model) onNeutralJumpUp() (Model, tea.Cmd) {
+func (m Model) handleNeutralJumpUp() (Model, tea.Cmd) {
 	m.list.Select(max(0, m.list.Index()-5))
 	return m, refreshMilestoneTasks(m.getCurrMilestoneID(), m.getCurrTaskGroups())
 }
 
 // handle select behavior based on item type
-func (m Model) onNeutralSelect() (Model, tea.Cmd) {
+func (m Model) handleNeutralSelect() (Model, tea.Cmd) {
 	selected := m.list.SelectedItem()
 
 	if header, ok := selected.(GroupHeaderItem); ok {
@@ -66,7 +66,7 @@ func (m Model) onNeutralSelect() (Model, tea.Cmd) {
 }
 
 // enter edit-mode
-func (m Model) onNeutralRename() (Model, tea.Cmd) {
+func (m Model) handleNeutralRename() (Model, tea.Cmd) {
 	if mstone, ok := m.list.SelectedItem().(DefaultItem); ok {
 		// id milestone to update
 		m.Edit.milestoneID = mstone.ID
@@ -82,7 +82,7 @@ func (m Model) onNeutralRename() (Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m Model) onNeutralAdd() (Model, tea.Cmd) {
+func (m Model) handleNeutralAdd() (Model, tea.Cmd) {
 	m.Edit.tempIDs++
 	tempID := fmt.Sprintf("temp-%d", m.Edit.tempIDs)
 
@@ -119,7 +119,7 @@ func (m Model) onNeutralAdd() (Model, tea.Cmd) {
 }
 
 // store mstone + switch to delete-mode; await user decision
-func (m Model) onNeutralDelete() (Model, tea.Cmd) {
+func (m Model) handleNeutralDelete() (Model, tea.Cmd) {
 	log.Printf("on neutral delete") // !debug
 	selected := m.list.SelectedItem()
 	if cur, ok := selected.(DefaultItem); ok && cur.TaskCount == 0 {

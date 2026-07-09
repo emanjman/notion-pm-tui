@@ -95,31 +95,31 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			switch {
 			// navigation
 			case key.Matches(msg, m.neutralKeyMap.Down):
-				return m.onNeutralDown()
+				return m.handleNeutralDown()
 			case key.Matches(msg, m.neutralKeyMap.Up):
-				return m.onNeutralUp()
+				return m.handleNeutralUp()
 			case key.Matches(msg, m.neutralKeyMap.JumpDown):
-				return m.onNeutralJumpDown()
+				return m.handleNeutralJumpDown()
 			case key.Matches(msg, m.neutralKeyMap.JumpUp):
-				return m.onNeutralJumpUp()
+				return m.handleNeutralJumpUp()
 
 			// change modes
 			case key.Matches(msg, m.neutralKeyMap.Rename):
-				return m.onNeutralRename()
+				return m.handleNeutralRename()
 			case key.Matches(msg, m.neutralKeyMap.Add):
-				return m.onNeutralAdd()
+				return m.handleNeutralAdd()
 			case key.Matches(msg, m.neutralKeyMap.Delete):
-				return m.onNeutralDelete()
+				return m.handleNeutralDelete()
 
 			// dynamic: change mode, launch fetches
 			case key.Matches(msg, m.neutralKeyMap.Select):
-				return m.onNeutralSelect()
+				return m.handleNeutralSelect()
 			}
 
 		case EditMode:
 			switch {
 			case key.Matches(msg, m.editKeyMap.Save):
-				return m.onEditSave()
+				return m.handleEditSave()
 			default:
 				var cmd tea.Cmd
 				m.Edit.titleInput, cmd = m.Edit.titleInput.Update(msg)
@@ -129,11 +129,11 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		case DeleteMode:
 			switch {
 			case key.Matches(msg, m.deleteKeyMap.Cancel):
-				return m.onDeleteCancel()
+				return m.handleDeleteCancel()
 			case key.Matches(msg, m.deleteKeyMap.Confirm):
-				return m.onDeleteConfirm()
+				return m.handleDeleteConfirm()
 			default:
-				return m.onDeleteCancel()
+				return m.handleDeleteCancel()
 			}
 		}
 

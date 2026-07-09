@@ -7,7 +7,7 @@ import (
 )
 
 // update name on ui + notion server
-func (m Model) onEditSave() (Model, tea.Cmd) {
+func (m Model) handleEditSave() (Model, tea.Cmd) {
 	var cmd tea.Cmd
 
 	if mstone, ok := m.list.SelectedItem().(DefaultItem); ok {
