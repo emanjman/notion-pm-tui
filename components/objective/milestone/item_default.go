@@ -7,6 +7,15 @@ import (
 	"github.com/charmbracelet/bubbles/list"
 )
 
+type FetchStatus int
+
+const (
+	FetchIdle FetchStatus = iota
+	FetchPending
+	FetchSuccess
+	FetchFailed
+)
+
 type DefaultItem struct {
 	ID              string
 	Name            string
