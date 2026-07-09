@@ -5,6 +5,9 @@ import (
 	"notion-project-tui/notion"
 )
 
+// this file contains general operations on the model outside
+// the required ones
+
 // public list operations
 func (m Model) ClearMilestones() Model {
 	m.list.SetItems([]list.Item{})
