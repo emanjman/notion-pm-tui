@@ -8,7 +8,7 @@ import (
 )
 
 // reconcile the optimistic milestone-creation w/ result of actual notion-page creation
-func (m Model) onAddMilestonePage(msg notion.AddMilestonePageMsg) (Model, tea.Cmd) {
+func (m Model) handleAddMilestonePage(msg notion.AddMilestonePageMsg) (Model, tea.Cmd) {
 	if msg.Err != nil {
 		log.Printf("Add milestone failed: %v", msg.Err)
 		return m.removeMilestoneByID(msg.TempID), nil
@@ -32,7 +32,7 @@ func (m Model) onAddMilestonePage(msg notion.AddMilestonePageMsg) (Model, tea.Cm
 }
 
 // if update failed, revert optimistic ui update to og stashed title
-func (m Model) onUpdateNotionTitle(msg UpdateNotionTitleMsg) (Model, tea.Cmd) {
+func (m Model) handleUpdateNotionTitle(msg UpdateNotionTitleMsg) (Model, tea.Cmd) {
 	if msg.Err != nil {
 		for i, item := range m.list.Items() {
 			if mstone, ok := item.(DefaultItem); ok && mstone.ID == m.Edit.milestoneID {
@@ -47,7 +47,7 @@ func (m Model) onUpdateNotionTitle(msg UpdateNotionTitleMsg) (Model, tea.Cmd) {
 }
 
 // show/hide task group
-func (m Model) onToggleTaskGroup(msg notion.ToggleTaskGroupMsg) (Model, tea.Cmd) {
+func (m Model) handleToggleTaskGroup(msg notion.ToggleTaskGroupMsg) (Model, tea.Cmd) {
 	selected := m.list.SelectedItem()
 	if mstone, ok := selected.(DefaultItem); ok {
 		group := mstone.TaskGroups[msg.Status]
@@ -60,7 +60,7 @@ func (m Model) onToggleTaskGroup(msg notion.ToggleTaskGroupMsg) (Model, tea.Cmd)
 }
 
 // if trash-page failed, restore optimistic ui deletion
-func (m Model) onTrashMilestonePage(msg TrashMilestonePageMsg) (Model, tea.Cmd) {
+func (m Model) handleTrashMilestonePage(msg TrashMilestonePageMsg) (Model, tea.Cmd) {
 	if msg.Err != nil {
 		log.Printf("Error: %v", msg.Err)
 		m.err = msg.Err

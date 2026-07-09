@@ -8,7 +8,7 @@ import (
 )
 
 // handle received milestone-pages; re-render when all fetches resolved
-func (m Model) onQueryMilestonePages(msg notion.QueryMilestonePagesMsg) (Model, tea.Cmd) {
+func (m Model) handleQueryMilestonePages(msg notion.QueryMilestonePagesMsg) (Model, tea.Cmd) {
 	log.Printf("caught messages") // !debug
 	m.pendingFetches--
 
@@ -46,7 +46,7 @@ func (m Model) onQueryMilestonePages(msg notion.QueryMilestonePagesMsg) (Model, 
 }
 
 // fetch more milestones for group queried
-func (m Model) onQueryMoreMilestonePages(msg notion.QueryMoreMilestonePagesMsg) (Model, tea.Cmd) {
+func (m Model) handleQueryMoreMilestonePages(msg notion.QueryMoreMilestonePagesMsg) (Model, tea.Cmd) {
 	g := m.groups[msg.Status]
 
 	// not state-ready
@@ -60,7 +60,7 @@ func (m Model) onQueryMoreMilestonePages(msg notion.QueryMoreMilestonePagesMsg) 
 	return m, m.notion.QueryMilestonePages(m.versionID, msg.Status, *g.NextCursor, notion.MoreMilestones)
 }
 
-func (m Model) onQueryTaskPages(msg notion.QueryTaskPagesMsg) (Model, tea.Cmd) {
+func (m Model) handleQueryTaskPages(msg notion.QueryTaskPagesMsg) (Model, tea.Cmd) {
 	if msg.Err != nil {
 		m.err = msg.Err
 		return m, nil
@@ -84,7 +84,7 @@ func (m Model) onQueryTaskPages(msg notion.QueryTaskPagesMsg) (Model, tea.Cmd) {
 }
 
 // fetch more tasks if exists
-func (m Model) onQueryMoreTaskPages(msg notion.QueryMoreTaskPagesMsg) (Model, tea.Cmd) {
+func (m Model) handleQueryMoreTaskPages(msg notion.QueryMoreTaskPagesMsg) (Model, tea.Cmd) {
 	selected := m.list.SelectedItem()
 
 	if mstone, ok := selected.(DefaultItem); ok {

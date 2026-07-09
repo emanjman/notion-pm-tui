@@ -1,47 +1,16 @@
 package milestone
 
 import (
-	"notion-project-tui/notion"
-
-	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
-	tea "github.com/charmbracelet/bubbletea"
+	"notion-project-tui/notion"
 )
 
-// dispatch messages to handlers
-func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
-	switch msg := msg.(type) {
-	// handle queries
-	case notion.QueryMilestonePagesMsg:
-		return m.onQueryMilestonePages(msg)
-	case notion.QueryMoreMilestonePagesMsg:
-		return m.onQueryMoreMilestonePages(msg)
-	case notion.QueryMoreTaskPagesMsg:
-		return m.onQueryMoreTaskPages(msg)
-	case notion.QueryTaskPagesMsg:
-		return m.onQueryTaskPages(msg)
-
-	// handle writes
-	case notion.AddMilestonePageMsg:
-		return m.onAddMilestonePage(msg)
-	case UpdateNotionTitleMsg:
-		return m.onUpdateNotionTitle(msg)
-	case notion.ToggleTaskGroupMsg:
-		return m.onToggleTaskGroup(msg)
-	case TrashMilestonePageMsg:
-		return m.onTrashMilestonePage(msg)
-
-	// chores
-	case tea.KeyMsg:
-		return m.handleKey(msg)
-	case tea.WindowSizeMsg:
-		m.list.SetSize(msg.Width, msg.Height)
-	}
-
-	// otherwise, handle from children
-	var cmd tea.Cmd
-	m.list, cmd = m.list.Update(msg)
-	return m, cmd
+// public list operations
+func (m Model) ClearMilestones() Model {
+	m.list.SetItems([]list.Item{})
+	m.groups = notion.MilestoneGroups{}
+	m.pendingFetches = 3
+	return m
 }
 
 // builds list of milestones, grouped by status; depends on `m.groups`
@@ -128,6 +97,7 @@ func (m Model) getCurrMilestoneID() string {
 	return ""
 }
 
+// todo: this should be a value receiver, return model
 func (m *Model) SetItemDelegate(d list.ItemDelegate) {
 	m.list.SetDelegate(d)
 }
@@ -143,56 +113,4 @@ func (m Model) removeMilestoneByID(id string) Model {
 		}
 	}
 	return m
-}
-
-// dispatcher, where `onX()` logic still sits in `handlers.go`
-func (m Model) handleKey(msg tea.KeyMsg) (Model, tea.Cmd) {
-	switch *m.Mode {
-	case NeutralMode:
-		switch {
-		// navigation
-		case key.Matches(msg, m.neutralKeyMap.Down):
-			return m.onNeutralDown()
-		case key.Matches(msg, m.neutralKeyMap.Up):
-			return m.onNeutralUp()
-		case key.Matches(msg, m.neutralKeyMap.JumpDown):
-			return m.onNeutralJumpDown()
-		case key.Matches(msg, m.neutralKeyMap.JumpUp):
-			return m.onNeutralJumpUp()
-
-		// change modes
-		case key.Matches(msg, m.neutralKeyMap.Rename):
-			return m.onNeutralRename()
-		case key.Matches(msg, m.neutralKeyMap.Add):
-			return m.onNeutralAdd()
-		case key.Matches(msg, m.neutralKeyMap.Delete):
-			return m.onNeutralDelete()
-
-		// dynamic: change mode, launch fetches
-		case key.Matches(msg, m.neutralKeyMap.Select):
-			return m.onNeutralSelect()
-		}
-
-	case EditMode:
-		switch {
-		case key.Matches(msg, m.editKeyMap.Save):
-			return m.onEditSave()
-		default:
-			var cmd tea.Cmd
-			m.Edit.titleInput, cmd = m.Edit.titleInput.Update(msg)
-			return m, cmd
-		}
-
-	case DeleteMode:
-		switch {
-		case key.Matches(msg, m.deleteKeyMap.Cancel):
-			return m.onDeleteCancel()
-		case key.Matches(msg, m.deleteKeyMap.Confirm):
-			return m.onDeleteConfirm()
-		default:
-			return m.onDeleteCancel()
-		}
-	}
-
-	return m, nil
 }

@@ -203,6 +203,7 @@ func (m Model) deleteTask(task Item) (Model, tea.Cmd) {
 	}
 }
 
+// todo: this should be a value receiver, return model
 func (m *Model) SetItemDelegate(d list.ItemDelegate) {
 	m.list.SetDelegate(d)
 }
