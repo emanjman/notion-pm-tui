@@ -38,7 +38,7 @@ func NewItem(page notion.NotePage) Item {
 		label = *page.Properties.CreatedLabel.Formula.String
 	}
 
-	date, err := time.Parse(time.RFC3339Nano, page.Properties.CreatedDate.CreatedTime)
+	date, err := time.Parse(time.RFC3339Nano, page.CreatedTime)
 	if err != nil {
 		date = time.Time{}
 	}

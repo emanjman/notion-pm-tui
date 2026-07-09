@@ -21,6 +21,7 @@ type Client struct {
 	tasksDatasourceID      string
 	milestonesDatasourceID string
 	versionsDatasourceID   string
+	notesDatasourceID      string
 }
 
 // constructor
@@ -36,6 +37,7 @@ func NewClient() *Client {
 		tasksDatasourceID:      os.Getenv("NOTION_TASKS_DS_ID"),
 		milestonesDatasourceID: os.Getenv("NOTION_MILESTONES_DS_ID"),
 		versionsDatasourceID:   os.Getenv("NOTION_VERSIONS_DS_ID"),
+		notesDatasourceID:      os.Getenv("NOTION_PROJECT_NOTES_DS_ID"),
 	}
 }
 
@@ -57,54 +59,6 @@ func (c *Client) do(req *http.Request, target interface{}) error {
 
 	// parse as json
 	return json.NewDecoder(res.Body).Decode(target)
-}
-
-// todo: can we deprecate this in favor of `QueryDatasource`?
-func (c *Client) FetchRelationIDs(pageID string, propID string) ([]string, error) {
-	ids := []string{}
-	cursor := ""
-
-	for {
-		endpt := c.baseURL + "/pages/" + pageID + "/properties/" + propID + "?page_size=100"
-		if cursor != "" {
-			endpt += "&start_cursor=" + cursor
-		}
-		req, err := http.NewRequest("GET", endpt, nil)
-		if err != nil {
-			return nil, err
-		}
-		var res RelationListResponse
-		if err := c.do(req, &res); err != nil {
-			return nil, err
-		}
-		for _, result := range res.Results {
-			ids = append(ids, result.Relation.ID)
-		}
-		// exit if we've exhausted all relations
-		if !res.HasMore || res.NextCursor == nil {
-			break
-		}
-		cursor = *res.NextCursor
-	}
-	return ids, nil
-}
-
-// todo: can we deprecate this in favor of `QueryDatasource`? thus we don't need to use both `FetchRelationIDs` into `FetchPages`
-func FetchPages[T any](c *Client, ids []string) ([]T, error) {
-	relations := make([]T, 0, len(ids))
-	for _, id := range ids {
-		url := c.baseURL + "/pages/" + id
-		req, err := http.NewRequest("GET", url, nil)
-		if err != nil {
-			return nil, err
-		}
-		var relation T
-		if err := c.do(req, &relation); err != nil {
-			return nil, err
-		}
-		relations = append(relations, relation)
-	}
-	return relations, nil
 }
 
 func (c *Client) UpdatePageProperties(pageID string, props any) error {

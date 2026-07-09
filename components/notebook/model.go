@@ -1,7 +1,6 @@
 package notebook
 
 import (
-	"log"
 	"notion-project-tui/notion"
 	"notion-project-tui/styles"
 	"slices"
@@ -41,7 +40,6 @@ const (
 
 type Model struct {
 	projID       string
-	notesPropID  string
 	loading      bool
 	err          error
 	notion       *notion.Client
@@ -61,8 +59,7 @@ type Model struct {
 	ogMarkdown       string
 }
 
-// todo: deprecate propID
-func New(notion *notion.Client, propID string) Model {
+func New(notion *notion.Client) Model {
 	// list config
 	l := list.New([]list.Item{}, NewItemDelegate(true), 0, 0)
 	l.SetShowHelp(false)
@@ -80,7 +77,6 @@ func New(notion *notion.Client, propID string) Model {
 
 	return Model{
 		projID:       "",
-		notesPropID:  propID,
 		loading:      true,
 		err:          nil,
 		notion:       notion,
@@ -98,30 +94,13 @@ func New(notion *notion.Client, propID string) Model {
 
 func (m Model) Init(projID string) tea.Cmd {
 	m.projID = projID
-
-	browserInit := func() tea.Msg {
-		// todo: deprecate propID, refer to `QueryDatasource`
-		ids, err := m.notion.FetchRelationIDs(m.projID, m.notesPropID)
-		return notion.NoteIDsMsg{IDs: ids, Err: err}
-	}
-	return tea.Batch(browserInit, m.reader.Init())
+	return tea.Batch(m.notion.QueryNotePages(projID, ""), m.reader.Init())
 }
 
 func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
 
-	case notion.NoteIDsMsg:
-		if msg.Err != nil {
-			m.err = msg.Err
-			m.loading = false
-			return m, nil
-		}
-		return m, func() tea.Msg {
-			pages, err := notion.FetchPages[notion.NotePage](m.notion, msg.IDs)
-			return notion.NotePagesMsg{Pages: pages, Err: err}
-		}
-
-	case notion.NotePagesMsg:
+	case notion.QueryNotePagesMsg:
 		if msg.Err != nil {
 			m.err = msg.Err
 			m.loading = false
@@ -132,28 +111,21 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		m.browser.SetItems(items)
 		m.loading = false
 
-		reqCnt := 5
-		blxCmds, mdCmds := make([]tea.Cmd, reqCnt), make([]tea.Cmd, reqCnt)
-
-		log.Printf("breakpoint in notebook/model.go") // !debug
+		// prefetch content for the first few notes, bounded by what we actually got
+		reqCnt := min(5, len(items))
+		cmds := make([]tea.Cmd, 0, reqCnt*2)
 
 		for i := range reqCnt {
-			item := m.browser.Items()[i] // todo: handle deep bug here
-
-			log.Printf("%d -> %v", i, item) // !debug
-
-			if note, ok := item.(Item); ok {
-				note.ContentState = Pending
-				m.browser.SetItem(i, note)
-
-				blxCmds[i] = m.fetchNoteBlocks(i, note)
-				mdCmds[i] = m.fetchNoteMarkdown(i, note)
+			note, ok := m.browser.Items()[i].(Item)
+			if !ok {
+				continue
 			}
+			note.ContentState = Pending
+			m.browser.SetItem(i, note)
+
+			cmds = append(cmds, m.fetchNoteBlocks(i, note), m.fetchNoteMarkdown(i, note))
 		}
 
-		log.Printf("eventually exhausts the loop") // !debug
-
-		cmds := append(blxCmds, mdCmds...)
 		return m, tea.Batch(cmds...)
 
 	case FetchNoteContentMsg:

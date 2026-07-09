@@ -43,7 +43,7 @@ func New() Model {
 		notion:    ntn,
 
 		objective: objective.New(ntn),
-		notebook:  notebook.New(ntn, "aXR8PA"), // todo: need to deprecate dependence on propID
+		notebook:  notebook.New(ntn),
 	}
 }
 
