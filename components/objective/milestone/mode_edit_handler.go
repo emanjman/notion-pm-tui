@@ -35,7 +35,7 @@ func (m Model) handleEditSave() (Model, tea.Cmd) {
 		}
 	}
 
-	m = m.switchMode(NeutralMode)
+	m = m.switchMode(NormalMode)
 
 	return m, cmd
 }

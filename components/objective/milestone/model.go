@@ -21,14 +21,14 @@ type Model struct {
 	Edit   *EditModeCtx // todo: do these NEED to be ptrs?
 	Delete *DeleteModeCtx
 
-	ActiveKeyMap  help.KeyMap // for help focus view
-	neutralKeyMap NeutralKeyMap
-	editKeyMap    EditKeyMap
-	deleteKeyMap  DeleteKeyMap
+	ActiveKeyMap help.KeyMap // for help focus view
+	normalKeyMap NormalKeyMap
+	editKeyMap   EditKeyMap
+	deleteKeyMap DeleteKeyMap
 }
 
 func New(n *notion.Client) Model {
-	mode := NeutralMode
+	mode := NormalMode
 	edit := EditModeCtx{}
 	del := DeleteModeCtx{}
 
@@ -50,10 +50,10 @@ func New(n *notion.Client) Model {
 		err:            nil,
 		groups:         notion.MilestoneGroups{},
 
-		ActiveKeyMap:  NeutralKeyMapper, // default map view
-		neutralKeyMap: NeutralKeyMapper,
-		editKeyMap:    EditKeyMapper,
-		deleteKeyMap:  DeleteKeyMapper,
+		ActiveKeyMap: NormalKeyMapper, // default map view
+		normalKeyMap: NormalKeyMapper,
+		editKeyMap:   EditKeyMapper,
+		deleteKeyMap: DeleteKeyMapper,
 
 		Mode:   &mode,
 		Edit:   &edit,
@@ -91,29 +91,29 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	// handle keys
 	case tea.KeyMsg:
 		switch *m.Mode {
-		case NeutralMode:
+		case NormalMode:
 			switch {
 			// navigation
-			case key.Matches(msg, m.neutralKeyMap.Down):
-				return m.handleNeutralDown()
-			case key.Matches(msg, m.neutralKeyMap.Up):
-				return m.handleNeutralUp()
-			case key.Matches(msg, m.neutralKeyMap.JumpDown):
-				return m.handleNeutralJumpDown()
-			case key.Matches(msg, m.neutralKeyMap.JumpUp):
-				return m.handleNeutralJumpUp()
+			case key.Matches(msg, m.normalKeyMap.Down):
+				return m.handleNormalDown()
+			case key.Matches(msg, m.normalKeyMap.Up):
+				return m.handleNormalUp()
+			case key.Matches(msg, m.normalKeyMap.JumpDown):
+				return m.handleNormalJumpDown()
+			case key.Matches(msg, m.normalKeyMap.JumpUp):
+				return m.handleNormalJumpUp()
 
 			// change modes
-			case key.Matches(msg, m.neutralKeyMap.Rename):
-				return m.handleNeutralRename()
-			case key.Matches(msg, m.neutralKeyMap.Add):
-				return m.handleNeutralAdd()
-			case key.Matches(msg, m.neutralKeyMap.Delete):
-				return m.handleNeutralDelete()
+			case key.Matches(msg, m.normalKeyMap.Rename):
+				return m.handleNormalRename()
+			case key.Matches(msg, m.normalKeyMap.Add):
+				return m.handleNormalAdd()
+			case key.Matches(msg, m.normalKeyMap.Delete):
+				return m.handleNormalDelete()
 
 			// dynamic: change mode, launch fetches
-			case key.Matches(msg, m.neutralKeyMap.Select):
-				return m.handleNeutralSelect()
+			case key.Matches(msg, m.normalKeyMap.Select):
+				return m.handleNormalSelect()
 			}
 
 		case EditMode:

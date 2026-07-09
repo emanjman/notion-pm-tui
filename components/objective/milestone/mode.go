@@ -13,8 +13,8 @@ import (
 type Mode int
 
 const (
-	NeutralMode Mode = iota
-	EditMode         // editing title; reserve all keys
+	NormalMode Mode = iota
+	EditMode        // editing title; reserve all keys
 	DeleteMode
 )
 
@@ -56,9 +56,9 @@ func (m Model) switchMode(mode Mode) Model {
 	// mutate THROUGH the shared ptr (not `m.Mode = &x`) so the list delegate,
 	// which holds the same *Mode, sees the switch live
 	switch mode {
-	case NeutralMode:
-		*m.Mode = NeutralMode
-		m.ActiveKeyMap = NeutralKeyMapper
+	case NormalMode:
+		*m.Mode = NormalMode
+		m.ActiveKeyMap = NormalKeyMapper
 	case EditMode:
 		*m.Mode = EditMode
 		m.ActiveKeyMap = EditKeyMapper

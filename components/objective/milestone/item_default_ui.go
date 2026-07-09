@@ -28,7 +28,7 @@ func renderItem(d ItemDelegate, item DefaultItem, selected bool, noBorder bool, 
 	// handle field highlighting by mode
 	if selected {
 		switch *d.mode {
-		case NeutralMode:
+		case NormalMode:
 			segStyle = d.style.itemSegment.selected
 			countStyle = d.style.itemContainer.selected
 

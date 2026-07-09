@@ -2,7 +2,7 @@ package milestone
 
 import "github.com/charmbracelet/bubbles/key"
 
-type NeutralKeyMap struct {
+type NormalKeyMap struct {
 	Up       key.Binding
 	Down     key.Binding
 	JumpUp   key.Binding // jump up 5
@@ -13,7 +13,7 @@ type NeutralKeyMap struct {
 	Delete   key.Binding
 }
 
-var NeutralKeyMapper = NeutralKeyMap{
+var NormalKeyMapper = NormalKeyMap{
 	Up: key.NewBinding(
 		key.WithKeys("k"),
 		key.WithHelp("k", "up"),
@@ -48,11 +48,11 @@ var NeutralKeyMapper = NeutralKeyMap{
 	),
 }
 
-func (k NeutralKeyMap) ShortHelp() []key.Binding {
+func (k NormalKeyMap) ShortHelp() []key.Binding {
 	return []key.Binding{k.Up, k.Down, k.Select, k.Rename, k.Add, k.Delete}
 }
 
-func (k NeutralKeyMap) FullHelp() [][]key.Binding {
+func (k NormalKeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
 		{k.Up, k.Down, k.Select, k.Rename, k.Add, k.Delete},
 		{},

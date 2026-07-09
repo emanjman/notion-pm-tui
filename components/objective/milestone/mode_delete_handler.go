@@ -4,7 +4,7 @@ import tea "github.com/charmbracelet/bubbletea"
 
 // return to neutral-mode
 func (m Model) handleDeleteCancel() (Model, tea.Cmd) {
-	m = m.switchMode(NeutralMode)
+	m = m.switchMode(NormalMode)
 	return m, nil
 }
 
@@ -20,6 +20,6 @@ func (m Model) handleDeleteConfirm() (Model, tea.Cmd) {
 		return m, emitTrashMilestonePage(err)
 	}
 
-	m = m.switchMode(NeutralMode)
+	m = m.switchMode(NormalMode)
 	return m, nil
 }
