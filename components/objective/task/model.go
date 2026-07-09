@@ -10,27 +10,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-type UpdateTitleMsg struct{ Err error }
-type UpdateSelectionsMsg struct{ Err error }
-
-// result of a notion task status update. carries the task id + its prior status
-// so the optimistic group-move can be reverted on failure.
-type UpdateStatusMsg struct {
-	TaskID     string
-	PrevStatus string
-	Err        error
-}
-
-// result of a notion task-page trash. carries the deleted task + its prior list
-// index so the optimistic deletion can be reverted on failure.
-type DeleteTaskMsg struct {
-	Task Item
-	Idx  int
-	Err  error
-}
-
 type Model struct {
-	// Milestone notion.SelectedMilestone // milestone these tasks source from
 	list    list.Model
 	notion  *notion.Client
 	loading bool
@@ -57,7 +37,7 @@ type Model struct {
 	tempIDCounter int // for generating temp IDs for new tasks
 }
 
-func New(clt *notion.Client) Model {
+func New(client *notion.Client) Model {
 	f := FocusState{}
 
 	l := list.New([]list.Item{}, NewItemDelegate(false, &f), 0, 0)
@@ -71,9 +51,8 @@ func New(clt *notion.Client) Model {
 	l.DisableQuitKeybindings()
 
 	return Model{
-		// Milestone: mstone,
 		list:    l,
-		notion:  clt,
+		notion:  client,
 		loading: true,
 
 		groups: map[string][]Item{},
