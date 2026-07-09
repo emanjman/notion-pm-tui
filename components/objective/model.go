@@ -22,6 +22,12 @@ type Model struct {
 	milestone milestone.Model
 	task      task.Model
 
+	// pins the panel styles to these so an empty child
+	// list doesn't collapse the panel to its content width
+	versionWidth              int
+	milestoneWidth, taskWidth int
+	panelHeight               int
+
 	keys KeyMap
 }
 

@@ -22,21 +22,28 @@ func (m Model) handleWindow(msg tea.WindowSizeMsg) (Model, tea.Cmd) {
 	rightWidth := availableWidth - leftWidth
 
 	versionHeight := 1
+	versionWidth := msg.Width - (panelBorderHeight + panelPaddingWidth)
+	panelHeight := msg.Height - totalHeightOverhead - 1 - versionHeight - panelBorderHeight
 
 	// log.Printf("%v %v %v %v %v %v", totalWidthOverhead, totalHeightOverhead, availableWidth, leftWidth, rightWidth, versionHeight)
 
+	m.versionWidth = versionWidth
+	m.milestoneWidth = leftWidth
+	m.taskWidth = rightWidth
+	m.panelHeight = panelHeight
+
 	m.version, versionCmd = m.version.Update(tea.WindowSizeMsg{
-		Width:  msg.Width - (panelBorderHeight + panelPaddingWidth),
+		Width:  versionWidth,
 		Height: versionHeight,
 	})
 
 	m.milestone, mstoneCmd = m.milestone.Update(tea.WindowSizeMsg{
 		Width:  leftWidth,
-		Height: msg.Height - totalHeightOverhead - 1 - versionHeight - panelBorderHeight,
+		Height: panelHeight,
 	})
 	m.task, taskCmd = m.task.Update(tea.WindowSizeMsg{
 		Width:  rightWidth,
-		Height: msg.Height - totalHeightOverhead - 1 - versionHeight - panelBorderHeight,
+		Height: panelHeight,
 	})
 
 	return m, tea.Batch(versionCmd, mstoneCmd, taskCmd)
