@@ -2,7 +2,7 @@ package milestone
 
 import tea "github.com/charmbracelet/bubbletea"
 
-// return to neutral-mode
+// return to norm-mode
 func (m Model) handleDeleteCancel() (Model, tea.Cmd) {
 	m = m.switchMode(NormalMode)
 	return m, nil

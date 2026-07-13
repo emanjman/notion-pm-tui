@@ -28,7 +28,7 @@ type Model struct {
 	groups map[notion.TaskStatus][]Item
 
 	ActiveKeyMap    help.KeyMap // for help focus view
-	neutralKeyMap   NeutralKeyMap
+	normalKeyMap    NormalKeyMap
 	selectingKeyMap SelectingKeyMap
 	writingKeyMap   WritingKeyMap
 
@@ -57,8 +57,8 @@ func New(client *notion.Client) Model {
 
 		groups: map[notion.TaskStatus][]Item{},
 
-		ActiveKeyMap:    NeutralKeyMapper, // default map view
-		neutralKeyMap:   NeutralKeyMapper,
+		ActiveKeyMap:    NormalKeyMapper, // default map view
+		normalKeyMap:    NormalKeyMapper,
 		selectingKeyMap: SelectingKeyMapper,
 		writingKeyMap:   WritingKeyMapper,
 

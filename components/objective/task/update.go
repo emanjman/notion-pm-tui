@@ -79,6 +79,18 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	return m, cmd
 }
 
+func (m Model) handleKey(msg tea.KeyMsg) (Model, tea.Cmd) {
+	switch m.Focus.Mode {
+	case WriteMode:
+		return m.onWriteKey(msg)
+	case SelectMode:
+		return m.onSelectKey(msg)
+	case NormalMode:
+		return m.onNormalKey(msg)
+	}
+	return m, nil
+}
+
 // if the notion status update failed, move the task back to its prior group
 func (m Model) onUpdateStatus(msg UpdateStatusMsg) (Model, tea.Cmd) {
 	if msg.Err == nil {
