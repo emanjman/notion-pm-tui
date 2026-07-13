@@ -8,12 +8,14 @@ import (
 	lg "github.com/charmbracelet/lipgloss"
 )
 
-type FocusMode int
+// -- enum --
+
+type Mode int
 
 const (
-	NeutralMode   FocusMode = iota
-	SelectingMode           // selecting field of a task
-	WritingMode             // editing field; reserve all keys
+	NormalMode Mode = iota
+	SelectMode      // selecting field of a task
+	WriteMode       // editing field; reserve all keys
 )
 
 type SelectedField int
@@ -22,16 +24,16 @@ const (
 	TaskType SelectedField = iota
 	TaskTitle
 	TaskPriority
+	_SelectedFieldCount
 )
-const fieldCnt = 3
 
-// ---
-// main edit state
+// -- types --
 
+// todo: this is gonna be ctx
 type FocusState struct {
 	taskID  string // page id to send update to
 	taskIdx int    // list index to SetItem in client
-	Mode    FocusMode
+	Mode    Mode
 	field   SelectedField
 
 	// temp state of edits
@@ -46,8 +48,7 @@ type FocusState struct {
 	pendingDelete bool
 }
 
-// ---
-// helpers
+// -- helpers --
 
 func cycleTypeField(curr string, delta int, options []notion.SelectItem) string {
 	n := len(options)

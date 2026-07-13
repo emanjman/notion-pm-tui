@@ -175,7 +175,7 @@ func renderItem(d ItemDelegate, item Item, selected bool, noBorder bool, windowW
 
 	// handle field highlighting by mode
 	if selected {
-		if d.focus.Mode == NeutralMode {
+		if d.focus.Mode == NormalMode {
 			segStyle = d.style.itemSegment.selected
 			contStyle = d.style.itemContainer.selected
 
@@ -241,8 +241,8 @@ func renderItem(d ItemDelegate, item Item, selected bool, noBorder bool, windowW
 	offset := leftOffset + rightOffset + fieldSpacing
 	titleMaxWidth := windowWidth - lg.Width(typ) - lg.Width(priority) - offset
 
-	if selected && d.focus.Mode == WritingMode {
-		// use textinput component in writing mode
+	if selected && d.focus.Mode == WriteMode {
+		// use textinput component in write mode
 		d.focus.tempTitle.Width = titleMaxWidth
 		title = d.focus.tempTitle.View()
 	} else if lg.Width(title) > titleMaxWidth {

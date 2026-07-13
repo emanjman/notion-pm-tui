@@ -138,11 +138,11 @@ func (k WritingKeyMap) FullHelp() [][]key.Binding {
 
 func (m Model) handleKey(msg tea.KeyMsg) (Model, tea.Cmd) {
 	switch m.Focus.Mode {
-	case WritingMode:
+	case WriteMode:
 		return m.onWritingKey(msg)
-	case SelectingMode:
+	case SelectMode:
 		return m.onSelectingKey(msg)
-	case NeutralMode:
+	case NormalMode:
 		return m.onNeutralKey(msg)
 	}
 	return m, nil
@@ -188,7 +188,7 @@ func (m Model) onWritingKey(msg tea.KeyMsg) (Model, tea.Cmd) {
 		}
 
 		m.ActiveKeyMap = NeutralKeyMapper
-		m.Focus.Mode = NeutralMode
+		m.Focus.Mode = NormalMode
 
 		return m, cmd
 
@@ -202,7 +202,7 @@ func (m Model) onWritingKey(msg tea.KeyMsg) (Model, tea.Cmd) {
 func (m Model) onSelectingKey(msg tea.KeyMsg) (Model, tea.Cmd) {
 	switch {
 	case key.Matches(msg, m.selectingKeyMap.Exit):
-		m.Focus.Mode = NeutralMode
+		m.Focus.Mode = NormalMode
 		m.ActiveKeyMap = NeutralKeyMapper
 
 		if task, ok := m.list.SelectedItem().(Item); ok {
@@ -227,14 +227,14 @@ func (m Model) onSelectingKey(msg tea.KeyMsg) (Model, tea.Cmd) {
 
 	case key.Matches(msg, m.selectingKeyMap.Left):
 		if m.Focus.field == TaskType {
-			m.Focus.field = fieldCnt - 1
+			m.Focus.field = _SelectedFieldCount - 1
 		} else {
-			m.Focus.field = (m.Focus.field - 1) % fieldCnt
+			m.Focus.field = (m.Focus.field - 1) % _SelectedFieldCount
 		}
 		return m, nil
 
 	case key.Matches(msg, m.selectingKeyMap.Right):
-		m.Focus.field = (m.Focus.field + 1) % fieldCnt
+		m.Focus.field = (m.Focus.field + 1) % _SelectedFieldCount
 		return m, nil
 
 	case key.Matches(msg, m.selectingKeyMap.Select):
@@ -247,7 +247,7 @@ func (m Model) onSelectingKey(msg tea.KeyMsg) (Model, tea.Cmd) {
 				m.Focus.prevPriority = task.Priority
 				task.Priority = cyclePriorityField(task.Priority, 1)
 			case TaskTitle:
-				m.Focus.Mode = WritingMode
+				m.Focus.Mode = WriteMode
 				m.ActiveKeyMap = WritingKeyMapper
 
 				if item, ok := m.list.SelectedItem().(Item); ok {
@@ -289,7 +289,7 @@ func (m Model) onNeutralKey(msg tea.KeyMsg) (Model, tea.Cmd) {
 			m.Focus.field = TaskTitle
 
 			m.ActiveKeyMap = SelectingKeyMapper
-			m.Focus.Mode = SelectingMode
+			m.Focus.Mode = SelectMode
 		}
 		return m, nil
 

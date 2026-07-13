@@ -161,7 +161,7 @@ func (m Model) addTask() Model {
 
 			// Initialize text input and enter writing mode
 			m.Focus.tempTitle = initTempTitle(newTask)
-			m.Focus.Mode = WritingMode
+			m.Focus.Mode = WriteMode
 			m.ActiveKeyMap = m.writingKeyMap
 
 			break
