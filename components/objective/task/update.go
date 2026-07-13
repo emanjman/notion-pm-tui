@@ -54,7 +54,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	case milestone.MilestoneTasksMsg:
 		// rebuild working copy from the milestone's TaskGroups on each milestone switch
 		m.milestoneID = msg.MilestoneID
-		m.groups = map[string][]Item{}
+		m.groups = map[notion.TaskStatus][]Item{}
 		for status, group := range msg.Groups {
 			items := make([]Item, len(group.Tasks))
 			for i, page := range group.Tasks {

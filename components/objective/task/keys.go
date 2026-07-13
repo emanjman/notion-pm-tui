@@ -166,7 +166,7 @@ func (m Model) onWritingKey(msg tea.KeyMsg) (Model, tea.Cmd) {
 			switch {
 			case isNew && title != "":
 				// create on notion; temp id gets reconciled on the response
-				cmd = m.notion.AddTask(task.ID, title, m.milestoneID, task.Status, task.Type, task.Priority)
+				cmd = m.notion.AddTaskPage(task.ID, title, m.milestoneID, task.Type, task.Status, task.Priority)
 			case isNew:
 				// discard an empty brand-new task instead of persisting it
 				// (temp task was never on notion, so cmd is nil)
@@ -277,7 +277,7 @@ func (m Model) onNeutralKey(msg tea.KeyMsg) (Model, tea.Cmd) {
 		selected := m.list.SelectedItem()
 		if header, ok := selected.(GroupHeader); ok {
 			return m, func() tea.Msg {
-				return notion.ToggleTaskGroupMsg{Status: header.Label}
+				return notion.ToggleTaskGroupMsg{Status: header.Status}
 			}
 		} else if loadMore, ok := selected.(LoadMoreItem); ok && !loadMore.Loading {
 			return m, func() tea.Msg {

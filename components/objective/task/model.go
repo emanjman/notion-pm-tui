@@ -25,7 +25,7 @@ type Model struct {
 	// (add, delete, status change) and list rendering. rebuilt on every
 	// milestone switch via MilestoneTasksMsg — not the source of truth for persistence.
 	// note: local mutations here do not sync back to the milestone's TaskGroups.
-	groups map[string][]Item
+	groups map[notion.TaskStatus][]Item
 
 	ActiveKeyMap    help.KeyMap // for help focus view
 	neutralKeyMap   NeutralKeyMap
@@ -55,7 +55,7 @@ func New(client *notion.Client) Model {
 		notion:  client,
 		loading: true,
 
-		groups: map[string][]Item{},
+		groups: map[notion.TaskStatus][]Item{},
 
 		ActiveKeyMap:    NeutralKeyMapper, // default map view
 		neutralKeyMap:   NeutralKeyMapper,
@@ -127,7 +127,7 @@ func (m Model) updateTaskInGroups(updated Item) Model {
 }
 
 func (m Model) addTask() Model {
-	defaultStatus := "idle"
+	defaultStatus := notion.TaskIdle
 
 	m.tempIDCounter++
 	tempID := fmt.Sprintf("temp-%d", m.tempIDCounter)
@@ -136,7 +136,7 @@ func (m Model) addTask() Model {
 	newTask := Item{
 		ID:       tempID,
 		Task:     "",
-		Status:   "idle",
+		Status:   notion.TaskIdle,
 		Priority: 0, // p0
 		Type:     "feat",
 	}
@@ -209,7 +209,7 @@ func (m *Model) SetItemDelegate(d list.ItemDelegate) {
 }
 
 func (m Model) ClearTasks() Model {
-	m.groups = map[string][]Item{}
+	m.groups = map[notion.TaskStatus][]Item{}
 	m.list.SetItems([]list.Item{})
 	m.loading = true
 	return m
@@ -217,14 +217,14 @@ func (m Model) ClearTasks() Model {
 
 func (m Model) buildTaskList(groups notion.TaskGroups) []list.Item {
 	var items []list.Item
-	for _, status := range notion.TaskStatusOrder {
+	for _, status := range notion.TaskStatusOrder() {
 		group, ok := m.groups[status]
 		if !ok || len(group) == 0 {
 			continue
 		}
 		hasMore := groups[status].NextCursor != nil
 		items = append(items, GroupHeader{
-			Label:   status,
+			Status:  status,
 			Hidden:  groups[status].Hide,
 			Count:   len(group),
 			HasMore: hasMore,

@@ -99,7 +99,7 @@ func (m Model) handleQueryMoreTaskPages(msg notion.QueryMoreTaskPagesMsg) (Model
 
 			// get tasks + refresh
 			return m, tea.Batch(
-				m.notion.QueryTasks(mstone.ID, msg.Status, cursor, idx),
+				m.notion.QueryTaskPages(mstone.ID, msg.Status, cursor, idx),
 				refreshMilestoneTasks(mstone.ID, mstone.TaskGroups),
 			)
 		}

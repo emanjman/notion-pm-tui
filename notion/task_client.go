@@ -8,8 +8,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-// todo: rename as `QueryTaskPages()`
-func (c *Client) QueryTasks(milestoneID, status, cursor string, milestoneIdx int) tea.Cmd {
+func (c *Client) QueryTaskPages(milestoneID string, status TaskStatus, cursor string, milestoneIdx int) tea.Cmd {
 	fprops := []string{
 		taskPropTitle,
 		taskPropTypeSelect,
@@ -18,7 +17,7 @@ func (c *Client) QueryTasks(milestoneID, status, cursor string, milestoneIdx int
 	}
 
 	return func() tea.Msg {
-		body := taskQueryBody(milestoneID, status, 5)
+		body := taskQueryBody(milestoneID, status.String(), 5)
 		res, err := queryDatasource[TaskPage](c, c.tasksDatasourceID, body, cursor, fprops)
 		if err != nil {
 			return QueryTaskPagesMsg{Err: err, Status: status, MilestoneIdx: milestoneIdx}
@@ -39,10 +38,10 @@ func (c *Client) QueryTasks(milestoneID, status, cursor string, milestoneIdx int
 // AddTask creates a task page on notion under the given milestone. TempID is
 // echoed back on the msg so the caller can swap the optimistic local item's id
 // for the real one.
-func (c *Client) AddTask(tempID, title, milestoneID, status, taskType string, priority int) tea.Cmd {
+func (c *Client) AddTaskPage(tempID, title, milestoneID, taskType string, status TaskStatus, priority int) tea.Cmd {
 	return func() tea.Msg {
 		endpt := c.baseURL + "/pages"
-		body := addTaskBody(c.tasksDatasourceID, title, milestoneID, status, taskType, priority)
+		body := addTaskBody(c.tasksDatasourceID, title, milestoneID, status.String(), taskType, priority)
 		b, err := json.Marshal(body)
 		if err != nil {
 			return AddTaskPageMsg{Err: err, TempID: tempID}

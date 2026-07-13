@@ -6,14 +6,14 @@ import (
 )
 
 type LoadMoreItem struct {
-	Status  string
+	Status  notion.TaskStatus
 	Loading bool
 }
 
 func (l LoadMoreItem) FilterValue() string { return "" }
 
 type GroupHeader struct {
-	Label   string
+	Status  notion.TaskStatus
 	Hidden  bool
 	Count   int
 	HasMore bool
@@ -24,19 +24,24 @@ func (h GroupHeader) FilterValue() string { return "" }
 type Item struct {
 	ID       string
 	Task     string
-	Status   string
+	Status   notion.TaskStatus
 	Priority int
 	Type     string
 }
 
 func (t Item) FilterValue() string { return t.Task + "_" + t.Type }
-func (t Item) GroupKey() string    { return t.Status }
 
 func NewItem(page notion.TaskPage) Item {
+	statusString := page.Properties.Status.Status.Name
+	status, _ := notion.TaskStatusFromString(statusString)
+
+	titleProp := page.Properties.Title.Title
+	title := notion.ExtractPlainText(titleProp)
+
 	t := Item{
 		ID:     page.ID,
-		Task:   notion.ExtractPlainText(page.Properties.Title.Title),
-		Status: page.Properties.Status.Status.Name,
+		Task:   title,
+		Status: status,
 		Type:   page.Properties.Type.Select.Name,
 	}
 

@@ -1,5 +1,7 @@
 package task
 
+import "notion-project-tui/notion"
+
 type UpdateTitleMsg struct{ Err error }
 
 type UpdateSelectionsMsg struct{ Err error }
@@ -8,7 +10,7 @@ type UpdateSelectionsMsg struct{ Err error }
 // so the optimistic group-move can be reverted on failure.
 type UpdateStatusMsg struct {
 	TaskID     string
-	PrevStatus string
+	PrevStatus notion.TaskStatus
 	Err        error
 }
 

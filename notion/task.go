@@ -22,21 +22,20 @@ type TaskGroup struct {
 	Loading    bool
 }
 
-// keyed by status: "dev", "idle", "done", "archive"
-type TaskGroups map[string]TaskGroup
+type TaskGroups map[TaskStatus]TaskGroup
 
 type ToggleTaskGroupMsg struct {
-	Status string
+	Status TaskStatus
 }
 
 type QueryMoreTaskPagesMsg struct {
-	Status string
+	Status TaskStatus
 }
 
 type QueryTaskPagesMsg struct {
 	Pages        []TaskPage
 	NextCursor   *string
-	Status       string
+	Status       TaskStatus
 	MilestoneIdx int
 	Err          error
 }

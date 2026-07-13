@@ -30,11 +30,11 @@ func (c *Client) QueryMilestonePages(versionID string, status MilestoneStatus, c
 	}
 }
 
-// AddMilestone creates a milestone page on notion under the given version. a
+// AddMilestonePage creates a milestone page on notion under the given version. a
 // milestone must hang off a @version (the @project is a rollup through it),
 // otherwise it won't roll up to any project. TempID is echoed back on the msg so
 // the caller can swap the optimistic local item's id for the real one.
-func (c *Client) AddMilestone(tempID, title, versionID string) tea.Cmd {
+func (c *Client) AddMilestonePage(tempID, title, versionID string) tea.Cmd {
 	return func() tea.Msg {
 		endpt := c.baseURL + "/pages"
 		body := addMilestoneBody(c.milestonesDatasourceID, title, versionID)

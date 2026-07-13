@@ -67,10 +67,10 @@ func cyclePriorityField(curr, delta int) int {
 	return ((curr+delta)%n + n) % n // todo: vet logic
 }
 
-func cycleStatus(curr string, delta int) string {
-	progression := []string{"idle", "dev", "done"} // workflow order
+func cycleStatus(curr notion.TaskStatus, delta int) notion.TaskStatus {
+	order := notion.TaskStatusOrder()
 
-	for i, status := range progression {
+	for i, status := range order {
 		if status == curr {
 			newIdx := i + delta
 
@@ -78,14 +78,14 @@ func cycleStatus(curr string, delta int) string {
 			if newIdx < 0 {
 				return curr // stay at idle
 			}
-			if newIdx >= len(progression) {
+			if newIdx >= len(order) {
 				return curr // stay at done
 			}
 
-			return progression[newIdx]
+			return order[newIdx]
 		}
 	}
-	return "idle" // default
+	return notion.TaskIdle // default
 }
 
 func initTempTitle(item Item) textinput.Model {

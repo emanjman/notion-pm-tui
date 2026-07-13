@@ -32,12 +32,12 @@ func MilestoneStatusOrder() []MilestoneStatus {
 }
 
 // map each status to a neat string (indexed by enum val); use static/fixed arr
-func (state MilestoneStatus) String() string {
+func (status MilestoneStatus) String() string {
 	return [...]string{
 		"🚧 under development",
 		"😴 idle",
 		"🎉 complete",
-	}[state]
+	}[status]
 }
 
 // map dedicated status string back to an enum

@@ -24,10 +24,10 @@ func fetchInitMilestoneTasks(milestones *list.Model, nc *notion.Client) tea.Cmd 
 func fetchInitTasks(milestoneID string, idx int, ntn *notion.Client) tea.Cmd {
 	// todo: i sus we update this later to use enums
 	return tea.Batch(
-		ntn.QueryTasks(milestoneID, "dev", "", idx),
-		ntn.QueryTasks(milestoneID, "idle", "", idx),
-		ntn.QueryTasks(milestoneID, "done", "", idx),
-		ntn.QueryTasks(milestoneID, "archive", "", idx),
+		ntn.QueryTaskPages(milestoneID, notion.TaskDev, "", idx),
+		ntn.QueryTaskPages(milestoneID, notion.TaskIdle, "", idx),
+		ntn.QueryTaskPages(milestoneID, notion.TaskDone, "", idx),
+		ntn.QueryTaskPages(milestoneID, notion.TaskArchive, "", idx),
 	)
 }
 

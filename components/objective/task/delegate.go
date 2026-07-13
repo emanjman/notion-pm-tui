@@ -3,6 +3,7 @@ package task
 import (
 	"fmt"
 	"io"
+	"notion-project-tui/notion"
 	"notion-project-tui/styles"
 
 	"github.com/charmbracelet/bubbles/list"
@@ -140,7 +141,7 @@ func renderItemHeader(d ItemDelegate, item GroupHeader, selected bool, windowWid
 	if item.HasMore {
 		count += "+"
 	}
-	content := fmt.Sprintf("%s %s (%s)", chevron, item.Label, count)
+	content := fmt.Sprintf("%s %s (%s)", chevron, item.Status.String(), count)
 	label := style.Width(windowWidth).Render(content)
 	spacer := lg.NewStyle().Render("")
 	return label + "\n" + spacer
@@ -160,11 +161,11 @@ var priorities = []priority{
 	{fg: lg.Color("#f7768e"), severity: "crit"},
 }
 
-var statusColors = map[string]lg.Color{
-	"idle":    lg.Color("#212121"),
-	"dev":     lg.Color("#4267fc"),
-	"done":    lg.Color("#24ff7b"),
-	"archive": lg.Color("#ff244c"),
+var statusColors = map[notion.TaskStatus]lg.Color{
+	notion.TaskIdle:    lg.Color("#212121"),
+	notion.TaskDev:     lg.Color("#4267fc"),
+	notion.TaskDone:    lg.Color("#24ff7b"),
+	notion.TaskArchive: lg.Color("#ff244c"),
 }
 
 func renderItem(d ItemDelegate, item Item, selected bool, noBorder bool, windowWidth int) string {
