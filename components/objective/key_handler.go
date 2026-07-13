@@ -89,7 +89,7 @@ func (m Model) onChild(msg tea.KeyMsg) (Model, tea.Cmd) {
 
 // child in mode that needs to reserve all keys, e.g. typing
 func (m Model) ChildPriorityMode() bool {
-	mstoneTakesPriority := *m.milestone.Mode > milestone.NeutralMode
+	mstoneTakesPriority := *m.milestone.Mode > milestone.NormalMode
 	taskTakesPriority := m.task.Focus.Mode > task.NeutralMode
 	return mstoneTakesPriority || taskTakesPriority
 }
