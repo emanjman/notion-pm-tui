@@ -241,7 +241,7 @@ func renderItem(d ItemDelegate, item Item, selected bool, noBorder bool, windowW
 	offset := leftOffset + rightOffset + fieldSpacing
 	titleMaxWidth := windowWidth - lg.Width(typ) - lg.Width(priority) - offset
 
-	if selected && d.focus.Mode == WriteMode {
+	if selected && d.focus.Mode == EditMode {
 		// use textinput component in write mode
 		d.focus.tempTitle.Width = titleMaxWidth
 		title = d.focus.tempTitle.View()

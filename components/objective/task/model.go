@@ -27,18 +27,26 @@ type Model struct {
 	// note: local mutations here do not sync back to the milestone's TaskGroups.
 	groups map[notion.TaskStatus][]Item
 
-	ActiveKeyMap    help.KeyMap // for help focus view
-	normalKeyMap    NormalKeyMap
-	selectingKeyMap SelectingKeyMap
-	writingKeyMap   WritingKeyMap
+	ActiveKeyMap help.KeyMap // for help focus view
+	normalKeyMap NormalKeyMap
+	selectKeyMap SelectKeyMap
+	editKeyMap   EditKeyMap
 
-	Focus *FocusState
+	Mode      *Mode // ptr so the delegates see mode switches live
+	SelectCtx *SelectModeCtx
+	EditCtx   *EditModeCtx
+	DeleteCtx *DeleteModeCtx
 
+	// todo: this might go into the editModeCtx
 	tempIDCounter int // for generating temp IDs for new tasks
 }
 
 func New(client *notion.Client) Model {
-	f := FocusState{}
+	// f := FocusState{}
+	mode := NormalMode
+	sel := SelectModeCtx{}
+	edit := EditModeCtx{}
+	del := DeleteModeCtx{}
 
 	l := list.New([]list.Item{}, NewItemDelegate(false, &f), 0, 0)
 	l.Title = "Tasks"
@@ -57,12 +65,15 @@ func New(client *notion.Client) Model {
 
 		groups: map[notion.TaskStatus][]Item{},
 
-		ActiveKeyMap:    NormalKeyMapper, // default map view
-		normalKeyMap:    NormalKeyMapper,
-		selectingKeyMap: SelectingKeyMapper,
-		writingKeyMap:   WritingKeyMapper,
+		ActiveKeyMap: NormalKeyMapper, // default map view
+		normalKeyMap: NormalKeyMapper,
+		selectKeyMap: SelectKeyMapper,
+		editKeyMap:   EditKeyMapper,
 
-		Focus: &f,
+		Mode:      &mode,
+		SelectCtx: &sel,
+		EditCtx:   &edit,
+		DeleteCtx: &del,
 	}
 }
 
@@ -70,7 +81,7 @@ func (m Model) Init() tea.Cmd {
 	return m.notion.FetchTaskTypeOptions()
 }
 
-// --- helpers
+// -- helpers --
 
 func (m Model) changeTaskStatus(task Item, delta int) (Model, tea.Cmd) {
 	prevStatus := task.Status
@@ -161,8 +172,8 @@ func (m Model) addTask() Model {
 
 			// Initialize text input and enter writing mode
 			m.Focus.tempTitle = initTempTitle(newTask)
-			m.Focus.Mode = WriteMode
-			m.ActiveKeyMap = m.writingKeyMap
+			m.Focus.Mode = EditMode
+			m.ActiveKeyMap = m.editKeyMap
 
 			break
 		}

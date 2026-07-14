@@ -8,19 +8,19 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-func (m Model) onWriteKey(msg tea.KeyMsg) (Model, tea.Cmd) {
+func (m Model) onEditKey(msg tea.KeyMsg) (Model, tea.Cmd) {
 	switch {
-	case key.Matches(msg, m.writingKeyMap.Save):
+	case key.Matches(msg, m.editKeyMap.Save):
 		var cmd tea.Cmd
 
 		if task, ok := m.list.SelectedItem().(Item); ok {
 			isNew := strings.HasPrefix(task.ID, "temp")
-			title := strings.TrimSpace(m.Focus.tempTitle.Value())
+			title := strings.TrimSpace(m.EditCtx.titleInput.Value())
 
 			// optimistically update local task title
-			m.Focus.prevTitle = task.Task
-			task.Task = m.Focus.tempTitle.Value()
-			m.list.SetItem(m.Focus.taskIdx, task)
+			m.EditCtx.titleBackup = task.Task
+			task.Task = title
+			m.list.SetItem(m.EditCtx.taskIdx, task)
 			m.updateTaskInGroups(task)
 
 			switch {
@@ -48,13 +48,13 @@ func (m Model) onWriteKey(msg tea.KeyMsg) (Model, tea.Cmd) {
 		}
 
 		m.ActiveKeyMap = NormalKeyMapper
-		m.Focus.Mode = NormalMode
+		*m.Mode = NormalMode
 
 		return m, cmd
 
 	default:
 		var cmd tea.Cmd
-		m.Focus.tempTitle, cmd = m.Focus.tempTitle.Update(msg)
+		m.EditCtx.titleInput, cmd = m.EditCtx.titleInput.Update(msg)
 		return m, cmd
 	}
 }

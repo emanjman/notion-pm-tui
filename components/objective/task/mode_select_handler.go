@@ -10,7 +10,7 @@ import (
 
 func (m Model) onSelectKey(msg tea.KeyMsg) (Model, tea.Cmd) {
 	switch {
-	case key.Matches(msg, m.selectingKeyMap.Exit):
+	case key.Matches(msg, m.selectKeyMap.Exit):
 		m.Focus.Mode = NormalMode
 		m.ActiveKeyMap = NormalKeyMapper
 
@@ -34,7 +34,7 @@ func (m Model) onSelectKey(msg tea.KeyMsg) (Model, tea.Cmd) {
 		}
 		return m, nil
 
-	case key.Matches(msg, m.selectingKeyMap.Left):
+	case key.Matches(msg, m.selectKeyMap.Left):
 		if m.Focus.field == TaskType {
 			m.Focus.field = _SelectedFieldCount - 1
 		} else {
@@ -42,11 +42,11 @@ func (m Model) onSelectKey(msg tea.KeyMsg) (Model, tea.Cmd) {
 		}
 		return m, nil
 
-	case key.Matches(msg, m.selectingKeyMap.Right):
+	case key.Matches(msg, m.selectKeyMap.Right):
 		m.Focus.field = (m.Focus.field + 1) % _SelectedFieldCount
 		return m, nil
 
-	case key.Matches(msg, m.selectingKeyMap.Select):
+	case key.Matches(msg, m.selectKeyMap.Select):
 		if task, ok := m.list.SelectedItem().(Item); ok {
 			switch m.Focus.field {
 			case TaskType:
@@ -56,8 +56,8 @@ func (m Model) onSelectKey(msg tea.KeyMsg) (Model, tea.Cmd) {
 				m.Focus.prevPriority = task.Priority
 				task.Priority = cyclePriorityField(task.Priority, 1)
 			case TaskTitle:
-				m.Focus.Mode = WriteMode
-				m.ActiveKeyMap = WritingKeyMapper
+				m.Focus.Mode = EditMode
+				m.ActiveKeyMap = EditKeyMapper
 
 				if item, ok := m.list.SelectedItem().(Item); ok {
 					m.Focus.tempTitle = initTempTitle(item)

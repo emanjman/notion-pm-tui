@@ -66,6 +66,5 @@ func (m Model) switchMode(mode Mode) Model {
 		*m.Mode = DeleteMode
 		m.ActiveKeyMap = DeleteKeyMapper
 	}
-
 	return m
 }

@@ -8,6 +8,7 @@ import (
 )
 
 func (m Model) onNormalKey(msg tea.KeyMsg) (Model, tea.Cmd) {
+	// todo: this is an interesting method; investigate if we keep or conform towards mstone
 	// cancel pending delete if any key other than Delete is pressed
 	if m.Focus.pendingDelete && !key.Matches(msg, m.normalKeyMap.Delete) {
 		m.Focus.pendingDelete = false
@@ -30,7 +31,7 @@ func (m Model) onNormalKey(msg tea.KeyMsg) (Model, tea.Cmd) {
 			m.Focus.taskIdx = m.list.Index()
 			m.Focus.field = TaskTitle
 
-			m.ActiveKeyMap = SelectingKeyMapper
+			m.ActiveKeyMap = SelectKeyMapper
 			m.Focus.Mode = SelectMode
 		}
 		return m, nil
@@ -59,6 +60,7 @@ func (m Model) onNormalKey(msg tea.KeyMsg) (Model, tea.Cmd) {
 		}
 		return m, nil
 
+	// todo: instead, we should enter deleteMode and await key
 	case key.Matches(msg, m.normalKeyMap.Delete):
 		if task, ok := m.list.SelectedItem().(Item); ok {
 			if m.Focus.pendingDelete && m.Focus.taskID == task.ID {

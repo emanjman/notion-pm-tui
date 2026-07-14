@@ -15,7 +15,8 @@ type Mode int
 const (
 	NormalMode Mode = iota
 	SelectMode      // selecting field of a task
-	WriteMode       // editing field; reserve all keys
+	EditMode        // editing field; reserve all keys
+	DeleteMode
 )
 
 type SelectedField int
@@ -29,23 +30,26 @@ const (
 
 // -- types --
 
-// todo: this is gonna be ctx
-type FocusState struct {
+type SelectModeCtx struct {
+	field SelectedField
+}
+
+type EditModeCtx struct {
 	taskID  string // page id to send update to
 	taskIdx int    // list index to SetItem in client
-	Mode    Mode
-	field   SelectedField
 
-	// temp state of edits
-	tempType     string
-	tempTitle    textinput.Model
-	tempPriority int
-	prevTitle    string
-	prevType     string
-	prevPriority int
+	titleInput     textinput.Model
+	titleBackup    string
+	typeBackup     string
+	priorityBackup int
 
-	// deletion confirmation
-	pendingDelete bool
+	pendingDelete bool // delete confirmation
+}
+
+// todo: is this doable?
+type DeleteModeCtx struct {
+	pendingDelete bool            // delete confirmation
+	taskBackup    notion.TaskPage // todo: mirrors mstone
 }
 
 // -- helpers --
@@ -101,5 +105,22 @@ func initTempTitle(item Item) textinput.Model {
 	ti.Prompt = ""
 
 	return ti
-
 }
+
+// // ez switch
+// func (m Model) switchMode(mode Mode) Model {
+// 	// mutate THROUGH the shared ptr (not `m.Mode = &x`) so the list delegate,
+// 	// which holds the same *Mode, sees the switch live
+// 	switch mode {
+// 	case NormalMode:
+// 		*m.Mode = NormalMode
+// 		m.ActiveKeyMap = NormalKeyMapper
+// 	case EditMode:
+// 		*m.Mode = EditMode
+// 		m.ActiveKeyMap = EditKeyMapper
+// 	case DeleteMode:
+// 		*m.Mode = DeleteMode
+// 		m.ActiveKeyMap = DeleteKeyMapper
+// 	}
+// 	return m
+// }

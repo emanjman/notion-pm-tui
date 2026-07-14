@@ -81,8 +81,8 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 
 func (m Model) handleKey(msg tea.KeyMsg) (Model, tea.Cmd) {
 	switch m.Focus.Mode {
-	case WriteMode:
-		return m.onWriteKey(msg)
+	case EditMode:
+		return m.onEditKey(msg)
 	case SelectMode:
 		return m.onSelectKey(msg)
 	case NormalMode:
